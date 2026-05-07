@@ -4494,47 +4494,5 @@
       "visible_ai_signal": true,
       "description": "Chambers, B.A., Collins, L.G, Bazigos, M.N., Norris-Watts, C., Reynolds, D., & Tsacoumis, S. (2026, April 30-May 2). Will AI save or replace assessment centers? A debate on the future. [Panel Discussion]. Society for Industrial and Organiza"
     }
-  ],
-  "examples": [
-    {
-      "year": 2025,
-      "ai_context_group": "Selection/assessment/methods",
-      "title": "Machine Learning for I-O 7.0: Large Language Models for Assessments - (Session ID 733)",
-      "session_format": "Symposium",
-      "tracks": "Measurement/Statistical Techniques",
-      "description": "Authors: Hickman, L. (Co-Chair), Liu, M. (Co-Chair). (2025). Machine learning for I-O 7.0: Large Language Models for Assessments [Symposium]. Society for Industrial and Organizational Psychology Annual Conference, Denver, CO, United States. Speer, A., Delacruz, A. Y., Chawota, T. A., Perrotta, J., & Rudolph, C. (2025). Exploring the validity of open-ended pe"
-    },
-    {
-      "year": 2026,
-      "ai_context_group": "Selection/assessment/methods",
-      "title": "Protecting Assessment Integrity in the AI Era: Cheating and Faking in Selection (Session ID 848)",
-      "session_format": "Symposium",
-      "tracks": "Technology/Artificial Intelligence",
-      "description": "Baytalskaya, N. (Co-Chair) & Robie, C. (Co-Chair). (2026, April 30 \u2013 May 2). Protecting assessment integrity in the AI era: Cheating and faking in selection [Symposium]. Society for Industrial and Organizational Psychology Annual Conference, New Orleans, LA, United States. Brown, M. I., & Grossenbacher, M. A. (2026, April 30 \u2013 May 2). Addressing cheating and"
-    },
-    {
-      "year": 2025,
-      "ai_context_group": "Org/development/training",
-      "title": "AI and EX: How AI Can Help Shape the Employee Experience at Work - (Session ID 1528)",
-      "session_format": "Symposium",
-      "tracks": "Job Attitudes/Engagement",
-      "description": "Authors: Samo, A. (Chair). (2025). AI & EX: How AI can help shape the Employee Experience at Work [Symposium]. Society for Industrial and Organizational Psychology Annual Conference, Denver, CO, United States. Walmsley, P. T., Bricka, T. M., Levey, Z. J. (2025). Using language-based analytics to enhance career exploration options. Sylvara, A., Yankov, G. P.,"
-    },
-    {
-      "year": 2026,
-      "ai_context_group": "Org/development/training",
-      "title": "The Rise of AI in the Training Ecosystem: Insights From Applied Research (Session ID 585)",
-      "session_format": "Symposium",
-      "tracks": "Technology/Artificial Intelligence",
-      "description": "Stalker, W. A. (Co-Chair) & Bessey, A. F. (Co-Chair & Discussant). (2026, April 30 \u2013 May 2). The rise of AI in the training ecosystem: Insights from applied research [Symposium]. Society for Industrial and Organizational Psychology Annual Conference, New Orleans, LA, United States. McCormack, R., Ganberg, G., & Shires, R. (2026). An AI-assisted system for ge"
-    },
-    {
-      "year": 2026,
-      "ai_context_group": "DEI/accessibility",
-      "title": "Intersection Between Artificial Intelligence (AI) and Disability in the Workplace (Session ID 488)",
-      "session_format": "Panel",
-      "tracks": "Diversity, Equity, Inclusion, and Accessibility | Content Area Theme Track",
-      "description": "Velazco, E. (Co-chair), Tay, A. (Co-chair), Hebl, M., Prasad, J., Wu, Y.F., Willis, C., Laura, G.B., Intersection between artificial intelligence (AI) and disability in the workplace [Panel]. Society for Industrial and Organizational Psychology Annual Conference, New Orleans, LA, United States of America. This panel will present research and applied experien"
-    }
   ]
 }

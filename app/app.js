@@ -95,11 +95,9 @@ function resetExploration() {
   document.querySelector("#session-year").value = "All";
   document.querySelector("#session-context").value = "All";
   document.querySelector("#session-search").value = "";
-  renderExamples(storyData);
   drawContextChart(storyData);
   drawContextNetwork(storyData);
   drawTrackChart(storyData);
-  updateFilterButtons();
   renderSessionExplorer(storyData);
 }
 
@@ -124,7 +122,6 @@ function setHeroStats(data) {
   );
   document.querySelector("#context-stat").textContent =
     `${percent(selection2025.share)} -> ${percent(selection2026.share)}`;
-  document.querySelector("#method-copy").textContent = data.summary.method_note;
 }
 
 function drawHeadlineChart(data) {
@@ -313,9 +310,7 @@ function drawContextChart(data) {
     .on("click", (_, d) => {
       activeContext = d.context;
       selectedLink = null;
-      renderExamples(storyData);
       drawContextChart(storyData);
-      updateFilterButtons();
       setExplorerLens({ year: d.year, context: d.context, query: "", link: null });
     });
 
@@ -437,8 +432,6 @@ function drawContextNetwork(data) {
     .on("click", (_, d) => {
       activeContext = d.id;
       selectedLink = null;
-      renderExamples(storyData);
-      updateFilterButtons();
       setExplorerLens({ year: activeNetworkYear, context: d.id, query: "", link: null });
       drawContextChart(storyData);
       drawContextNetwork(storyData);
@@ -635,12 +628,6 @@ function wireNetworkButtons() {
   });
 }
 
-function updateFilterButtons() {
-  d3.selectAll("#example-filters button").classed("active", function () {
-    return this.dataset.context === activeContext;
-  });
-}
-
 function populateSessionContextOptions(data) {
   const select = document.querySelector("#session-context");
   const contexts = [...new Set(data.session_explorer.map((d) => d.context))].sort(
@@ -743,49 +730,6 @@ function wireSessionExplorer(data) {
   renderSessionExplorer(data);
 }
 
-function renderFilters(data) {
-  const contexts = ["All", ...new Set(data.examples.map((d) => d.ai_context_group))];
-  d3.select("#example-filters")
-    .selectAll("button")
-    .data(contexts)
-    .join("button")
-    .attr("type", "button")
-    .attr("data-context", (d) => d)
-    .classed("active", (d) => d === activeContext)
-    .text((d) => d)
-    .on("click", (_, d) => {
-      activeContext = d;
-      renderExamples(data);
-      drawContextChart(data);
-      updateFilterButtons();
-    });
-}
-
-function renderExamples(data) {
-  const examples =
-    activeContext === "All"
-      ? data.examples
-      : data.examples.filter((example) => example.ai_context_group === activeContext);
-  const cards = d3.select("#examples").selectAll(".example-card").data(examples, (d) => `${d.year}-${d.title}`);
-
-  const entered = cards.enter().append("article").attr("class", "example-card");
-  entered.append("div").attr("class", "example-meta");
-  entered.append("h3");
-  entered.append("p");
-
-  const merged = entered.merge(cards);
-  merged.select(".example-meta").html("");
-  merged.each(function (d) {
-    const meta = d3.select(this).select(".example-meta");
-    [d.year, d.ai_context_group, d.session_format].forEach((value) => {
-      meta.append("span").attr("class", "pill").text(value);
-    });
-  });
-  merged.select("h3").text((d) => d.title);
-  merged.select("p").text((d) => d.description || d.tracks);
-  cards.exit().remove();
-}
-
 function wireMetricButtons() {
   document.querySelectorAll(".metric-toggle").forEach((button) => {
     button.addEventListener("click", () => {
@@ -807,8 +751,6 @@ async function init() {
     drawContextNetwork(storyData);
     drawTrackChart(storyData);
     renderFormatSummary(storyData);
-    renderFilters(storyData);
-    renderExamples(storyData);
     wireMetricButtons();
     wireNetworkButtons();
     wireSessionExplorer(storyData);
@@ -816,7 +758,7 @@ async function init() {
   } catch (error) {
     document.body.insertAdjacentHTML(
       "afterbegin",
-      `<div class="method-note"><strong>Data failed to load.</strong> ${error.message}</div>`,
+      `<div class="error-banner"><strong>Data failed to load.</strong> ${error.message}</div>`,
     );
   }
 }

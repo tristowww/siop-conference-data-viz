@@ -274,37 +274,6 @@ def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
     ]
 
 
-def selected_examples(df: pd.DataFrame) -> list[dict[str, object]]:
-    examples = [
-        ("Selection/assessment/methods", 2025),
-        ("Selection/assessment/methods", 2026),
-        ("Org/development/training", 2025),
-        ("Org/development/training", 2026),
-        ("DEI/accessibility", 2026),
-    ]
-    output = []
-    ai_df = df[df["is_ai_related"]].copy()
-    ai_df["description_len"] = ai_df["description"].map(len)
-    for group, year in examples:
-        candidates = ai_df[
-            (ai_df["conference_year"] == year) & (ai_df["primary_ai_context_group"] == group)
-        ].sort_values(["has_visible_ai_signal", "description_len", "title"], ascending=[False, False, True])
-        if candidates.empty:
-            continue
-        row = candidates.iloc[0]
-        output.append(
-            {
-                "year": int(row["conference_year"]),
-                "ai_context_group": group,
-                "title": row["title"],
-                "session_format": row["normalized_session_format"],
-                "tracks": row["normalized_tracks"],
-                "description": row["description"][:360].rstrip(),
-            }
-        )
-    return output
-
-
 def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
     df = pd.read_csv(input_path)
     df["visible_text_for_classification"] = (
@@ -378,7 +347,6 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
         "track_summary": summarize_tracks(df),
         "format_summary": summarize_formats(df),
         "session_explorer": session_explorer_rows(df),
-        "examples": selected_examples(df),
     }
     return story_sessions, payload
 
