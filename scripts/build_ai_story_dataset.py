@@ -169,6 +169,42 @@ def summarize_contexts(context_df: pd.DataFrame) -> list[dict[str, object]]:
     return counts.drop(columns=["sort_order"]).to_dict(orient="records")
 
 
+def summarize_tracks(df: pd.DataFrame) -> list[dict[str, object]]:
+    rows = []
+    ai_df = df[df["is_ai_related"]]
+    for _, row in ai_df.iterrows():
+        for track in split_tracks(row.get("tracks", "")):
+            rows.append(
+                {
+                    "conference_year": int(row["conference_year"]),
+                    "track": track,
+                    "session_id": row["session_id"],
+                }
+            )
+    if not rows:
+        return []
+    track_df = pd.DataFrame(rows)
+    counts = (
+        track_df.groupby(["conference_year", "track"])["session_id"]
+        .nunique()
+        .reset_index(name="sessions")
+        .sort_values(["conference_year", "sessions", "track"], ascending=[True, False, True])
+    )
+    return counts.groupby("conference_year").head(8).to_dict(orient="records")
+
+
+def summarize_formats(df: pd.DataFrame) -> list[dict[str, object]]:
+    ai_df = df[df["is_ai_related"]]
+    counts = (
+        ai_df.groupby(["conference_year", "normalized_session_format"])["session_id"]
+        .nunique()
+        .reset_index(name="sessions")
+        .rename(columns={"normalized_session_format": "session_format"})
+        .sort_values(["conference_year", "sessions", "session_format"], ascending=[True, False, True])
+    )
+    return counts.groupby("conference_year").head(5).to_dict(orient="records")
+
+
 def selected_examples(df: pd.DataFrame) -> list[dict[str, object]]:
     examples = [
         ("Selection/assessment/methods", 2025),
@@ -269,6 +305,8 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
         },
         "ai_summary": summarize_ai(df),
         "context_summary": summarize_contexts(contexts),
+        "track_summary": summarize_tracks(df),
+        "format_summary": summarize_formats(df),
         "examples": selected_examples(df),
     }
     return story_sessions, payload

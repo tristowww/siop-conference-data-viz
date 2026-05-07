@@ -90,6 +90,140 @@
       "share": 0.2094
     }
   ],
+  "track_summary": [
+    {
+      "conference_year": 2025,
+      "track": "Technology",
+      "sessions": 32
+    },
+    {
+      "conference_year": 2025,
+      "track": "Testing/Assessment",
+      "sessions": 27
+    },
+    {
+      "conference_year": 2025,
+      "track": "Measurement/Statistical Techniques",
+      "sessions": 13
+    },
+    {
+      "conference_year": 2025,
+      "track": "Strategic HR/Utility/Changing Role of HR",
+      "sessions": 13
+    },
+    {
+      "conference_year": 2025,
+      "track": "Sponsored",
+      "sessions": 6
+    },
+    {
+      "conference_year": 2025,
+      "track": "Careers/Mentoring/Socialization/Onboarding/Retirement",
+      "sessions": 5
+    },
+    {
+      "conference_year": 2025,
+      "track": "Global/International/Cross-Cultural Issues",
+      "sessions": 5
+    },
+    {
+      "conference_year": 2025,
+      "track": "Inclusion/Diversity",
+      "sessions": 4
+    },
+    {
+      "conference_year": 2026,
+      "track": "Technology/Artificial Intelligence",
+      "sessions": 71
+    },
+    {
+      "conference_year": 2026,
+      "track": "Selection/Assessment/Individual Differences",
+      "sessions": 26
+    },
+    {
+      "conference_year": 2026,
+      "track": "Content Area Theme Track",
+      "sessions": 14
+    },
+    {
+      "conference_year": 2026,
+      "track": "I-O Psychologist Career Development/Teaching",
+      "sessions": 11
+    },
+    {
+      "conference_year": 2026,
+      "track": "Organizational Processes/Development/Culture",
+      "sessions": 10
+    },
+    {
+      "conference_year": 2026,
+      "track": "Research Methods/Measurement/Statistics",
+      "sessions": 10
+    },
+    {
+      "conference_year": 2026,
+      "track": "Sponsored",
+      "sessions": 9
+    },
+    {
+      "conference_year": 2026,
+      "track": "Leadership/Leader Development",
+      "sessions": 7
+    }
+  ],
+  "format_summary": [
+    {
+      "conference_year": 2025,
+      "session_format": "Panel",
+      "sessions": 52
+    },
+    {
+      "conference_year": 2025,
+      "session_format": "Symposium",
+      "sessions": 21
+    },
+    {
+      "conference_year": 2025,
+      "session_format": "Unspecified",
+      "sessions": 16
+    },
+    {
+      "conference_year": 2025,
+      "session_format": "Alternative session",
+      "sessions": 14
+    },
+    {
+      "conference_year": 2025,
+      "session_format": "Tutorial",
+      "sessions": 12
+    },
+    {
+      "conference_year": 2026,
+      "session_format": "Panel",
+      "sessions": 55
+    },
+    {
+      "conference_year": 2026,
+      "session_format": "Symposium",
+      "sessions": 36
+    },
+    {
+      "conference_year": 2026,
+      "session_format": "Unspecified",
+      "sessions": 27
+    },
+    {
+      "conference_year": 2026,
+      "session_format": "Alternative session",
+      "sessions": 18
+    },
+    {
+      "conference_year": 2026,
+      "session_format": "Tutorial",
+      "sessions": 17
+    }
+  ],
   "examples": [
     {
       "year": 2025,

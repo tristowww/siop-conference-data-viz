@@ -258,6 +258,128 @@ function drawContextChart(data) {
   });
 }
 
+function drawTrackChart(data) {
+  const width = 980;
+  const height = 560;
+  const margin = { top: 28, right: 54, bottom: 46, left: 270 };
+  const svg = makeSvg("#track-chart", width, height);
+  const rows = data.track_summary
+    .filter((d) => d.conference_year === 2026)
+    .slice(0, 8)
+    .map((d) => {
+      const previous = data.track_summary.find(
+        (item) => item.conference_year === 2025 && item.track === d.track,
+      );
+      return {
+        track: d.track,
+        sessions2026: d.sessions,
+        sessions2025: previous ? previous.sessions : 0,
+      };
+    });
+
+  const y = d3
+    .scaleBand()
+    .domain(rows.map((d) => d.track))
+    .range([margin.top, height - margin.bottom])
+    .padding(0.24);
+  const x = d3
+    .scaleLinear()
+    .domain([0, d3.max(rows, (d) => d.sessions2026) || 1])
+    .nice()
+    .range([margin.left, width - margin.right]);
+
+  svg
+    .append("g")
+    .attr("class", "grid")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).ticks(5).tickSize(-(height - margin.top - margin.bottom)).tickFormat(""))
+    .call((g) => g.select(".domain").remove());
+
+  svg
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).ticks(5));
+
+  svg
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(d3.axisLeft(y).tickSizeOuter(0))
+    .call((g) => g.select(".domain").remove());
+
+  svg
+    .append("g")
+    .selectAll("line")
+    .data(rows)
+    .join("line")
+    .attr("x1", (d) => x(d.sessions2025))
+    .attr("x2", (d) => x(d.sessions2026))
+    .attr("y1", (d) => y(d.track) + y.bandwidth() / 2)
+    .attr("y2", (d) => y(d.track) + y.bandwidth() / 2)
+    .attr("stroke", "#b7c3ce")
+    .attr("stroke-width", 3)
+    .attr("stroke-linecap", "round");
+
+  [2025, 2026].forEach((year) => {
+    svg
+      .append("g")
+      .selectAll("circle")
+      .data(rows)
+      .join("circle")
+      .attr("cx", (d) => x(year === 2025 ? d.sessions2025 : d.sessions2026))
+      .attr("cy", (d) => y(d.track) + y.bandwidth() / 2)
+      .attr("r", 7)
+      .attr("fill", COLORS[year]);
+  });
+
+  svg
+    .append("g")
+    .selectAll("text")
+    .data(rows)
+    .join("text")
+    .attr("class", "bar-label")
+    .attr("x", (d) => x(d.sessions2026) + 12)
+    .attr("y", (d) => y(d.track) + y.bandwidth() / 2 + 4)
+    .text((d) => d.sessions2026);
+
+  const legend = svg.append("g").attr("transform", `translate(${margin.left},${height - 14})`);
+  [2025, 2026].forEach((year, index) => {
+    const item = legend.append("g").attr("transform", `translate(${index * 92},0)`);
+    item.append("circle").attr("cx", 7).attr("cy", 7).attr("r", 7).attr("fill", COLORS[year]);
+    item
+      .append("text")
+      .attr("x", 22)
+      .attr("y", 12)
+      .attr("fill", "#17202a")
+      .attr("font-size", 13)
+      .attr("font-weight", 700)
+      .text(year);
+  });
+}
+
+function renderFormatSummary(data) {
+  const years = [2025, 2026];
+  const articles = d3.select("#format-summary").selectAll("article").data(years);
+  const entered = articles.enter().append("article");
+  entered.append("h3");
+  entered.append("div").attr("class", "format-list");
+
+  const merged = entered.merge(articles);
+  merged.select("h3").text((year) => `${year} top AI-related formats`);
+  merged.each(function (year) {
+    const rows = data.format_summary.filter((d) => d.conference_year === year).slice(0, 5);
+    const list = d3.select(this).select(".format-list");
+    const items = list.selectAll(".format-row").data(rows, (d) => d.session_format);
+    const itemEnter = items.enter().append("div").attr("class", "format-row");
+    itemEnter.append("span");
+    itemEnter.append("strong");
+    itemEnter.merge(items).select("span").text((d) => d.session_format);
+    itemEnter.merge(items).select("strong").text((d) => d.sessions);
+    items.exit().remove();
+  });
+}
+
 function updateFilterButtons() {
   d3.selectAll("#example-filters button").classed("active", function () {
     return this.dataset.context === activeContext;
@@ -325,6 +447,8 @@ async function init() {
     setHeroStats(storyData);
     drawHeadlineChart(storyData);
     drawContextChart(storyData);
+    drawTrackChart(storyData);
+    renderFormatSummary(storyData);
     renderFilters(storyData);
     renderExamples(storyData);
     wireMetricButtons();
