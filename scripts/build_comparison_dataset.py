@@ -32,7 +32,7 @@ def common_from_2025(path: Path) -> pd.DataFrame:
             "tracks": df["tracks"],
             "speakers": df["speakers"],
             "speaker_affiliations": "",
-            "description": "",
+            "description": df["description"],
             "session_format": df["session_format"],
             "adds": df["adds"],
             "likes": df["likes"],

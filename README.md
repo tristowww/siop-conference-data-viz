@@ -63,6 +63,18 @@ Build the year-over-year comparison table:
 python scripts/build_comparison_dataset.py
 ```
 
+Build the AI shift story dataset used by the static app:
+
+```bash
+python scripts/build_ai_story_dataset.py
+```
+
+Preview the static app locally:
+
+```bash
+python -m http.server 8000 --directory app
+```
+
 Start the assisted authenticated Whova capture workflow only if the public embed is not enough:
 
 ```bash
