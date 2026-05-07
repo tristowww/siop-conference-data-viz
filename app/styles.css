@@ -23,7 +23,9 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background:
+    linear-gradient(180deg, #f7fbfc 0, var(--bg) 28rem),
+    var(--bg);
   color: var(--ink);
 }
 
@@ -34,7 +36,7 @@ main {
 }
 
 .hero {
-  min-height: 84vh;
+  min-height: 92vh;
   display: grid;
   align-content: center;
   gap: 28px;
@@ -81,6 +83,31 @@ p {
 .hero-copy {
   max-width: 820px;
   font-size: clamp(1.05rem, 1.5vw, 1.32rem);
+}
+
+.hero-signal-field {
+  width: min(1080px, 100%);
+  min-height: 360px;
+  border-block: 1px solid var(--line);
+  overflow: hidden;
+  padding: 4px 0;
+}
+
+.hero-signal-field svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.signal-node {
+  cursor: pointer;
+  transition:
+    opacity 160ms ease,
+    filter 160ms ease;
+}
+
+.signal-node:hover {
+  filter: drop-shadow(0 6px 12px rgba(23, 32, 42, 0.25));
 }
 
 .hero-grid {
@@ -187,6 +214,10 @@ p {
 
 .network-chart {
   min-height: 520px;
+}
+
+.rhythm-chart {
+  min-height: 500px;
 }
 
 .chart svg {
@@ -332,6 +363,10 @@ button.active {
 .tooltip strong {
   display: block;
   margin-bottom: 4px;
+}
+
+.rhythm-cell {
+  cursor: pointer;
 }
 
 .empty-state {
@@ -550,6 +585,10 @@ select:focus {
   .chart,
   .chart.tall {
     min-height: 420px;
+  }
+
+  .hero-signal-field {
+    min-height: 280px;
   }
 
   .network-chart {

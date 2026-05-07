@@ -24,6 +24,7 @@ let activeMetric = "sessions";
 let activeContext = "All";
 let activeNetworkYear = 2026;
 let selectedLink = null;
+let selectedTime = null;
 let storyData;
 
 function percent(value) {
@@ -92,12 +93,14 @@ function setExplorerLens({ year = null, context = null, query = null, link = und
 function resetExploration() {
   activeContext = "All";
   selectedLink = null;
+  selectedTime = null;
   document.querySelector("#session-year").value = "All";
   document.querySelector("#session-context").value = "All";
   document.querySelector("#session-search").value = "";
   drawContextChart(storyData);
   drawContextNetwork(storyData);
   drawTrackChart(storyData);
+  drawRhythmChart(storyData);
   renderSessionExplorer(storyData);
 }
 
@@ -122,6 +125,106 @@ function setHeroStats(data) {
   );
   document.querySelector("#context-stat").textContent =
     `${percent(selection2025.share)} -> ${percent(selection2026.share)}`;
+}
+
+function drawHeroSignalField(data) {
+  const width = 1080;
+  const height = 360;
+  const margin = { top: 42, right: 42, bottom: 48, left: 42 };
+  const svg = makeSvg("#hero-signal-field", width, height);
+  const rows = data.context_summary.map((d) => ({
+    ...d,
+    x: d.conference_year === 2025 ? width * 0.28 : width * 0.72,
+    y: margin.top + CONTEXT_ORDER.indexOf(d.ai_context_group) * 55,
+  }));
+  const byKey = new Map(rows.map((d) => [`${d.conference_year}-${d.ai_context_group}`, d]));
+  const radius = d3
+    .scaleSqrt()
+    .domain([0, d3.max(rows, (d) => d.sessions) || 1])
+    .range([8, 34]);
+
+  svg
+    .append("text")
+    .attr("x", margin.left)
+    .attr("y", 24)
+    .attr("class", "chart-note")
+    .text("AI-related session contexts, 2025 to 2026");
+
+  const linkRows = CONTEXT_ORDER.map((context) => ({
+    context,
+    source: byKey.get(`2025-${context}`),
+    target: byKey.get(`2026-${context}`),
+  })).filter((d) => d.source && d.target);
+
+  svg
+    .append("g")
+    .selectAll("path")
+    .data(linkRows)
+    .join("path")
+    .attr("d", (d) => {
+      const mid = (d.source.x + d.target.x) / 2;
+      return `M${d.source.x},${d.source.y} C${mid},${d.source.y} ${mid},${d.target.y} ${d.target.x},${d.target.y}`;
+    })
+    .attr("fill", "none")
+    .attr("stroke", (d) => COLORS.contexts[d.context])
+    .attr("stroke-width", 2)
+    .attr("opacity", 0.28);
+
+  [2025, 2026].forEach((year) => {
+    svg
+      .append("text")
+      .attr("x", year === 2025 ? width * 0.28 : width * 0.72)
+      .attr("y", height - 18)
+      .attr("text-anchor", "middle")
+      .attr("class", "chart-note")
+      .text(year);
+  });
+
+  const groups = svg
+    .append("g")
+    .selectAll("g")
+    .data(rows)
+    .join("g")
+    .attr("class", "signal-node")
+    .attr("transform", (d) => `translate(${d.x},${d.y})`)
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, d.ai_context_group, `${d.sessions} AI-related session-context signals in ${d.conference_year}.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      activeContext = d.ai_context_group;
+      selectedLink = null;
+      selectedTime = null;
+      setExplorerLens({ year: d.conference_year, context: d.ai_context_group, query: "", link: null });
+      drawContextChart(storyData);
+      drawContextNetwork(storyData);
+    });
+
+  groups
+    .append("circle")
+    .attr("r", 0)
+    .attr("fill", (d) => COLORS.contexts[d.ai_context_group])
+    .attr("opacity", 0.9)
+    .transition()
+    .duration(700)
+    .delay((_, index) => index * 45)
+    .attr("r", (d) => radius(d.sessions));
+
+  groups
+    .append("text")
+    .attr("text-anchor", "middle")
+    .attr("class", "network-node-label")
+    .attr("y", 4)
+    .text((d) => d.sessions);
+
+  groups
+    .append("text")
+    .attr("x", (d) => (d.conference_year === 2025 ? -radius(d.sessions) - 10 : radius(d.sessions) + 10))
+    .attr("y", 4)
+    .attr("text-anchor", (d) => (d.conference_year === 2025 ? "end" : "start"))
+    .attr("class", "network-node-label")
+    .text((d) => d.ai_context_group.replace("/methods", "").replace("/training", ""));
 }
 
 function drawHeadlineChart(data) {
@@ -191,6 +294,7 @@ function drawHeadlineChart(data) {
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
     .on("click", (_, d) => {
+      selectedTime = null;
       setExplorerLens({
         year: d.year,
         context: "All",
@@ -223,6 +327,91 @@ function drawHeadlineChart(data) {
       .attr("font-weight", 700)
       .text(metric);
   });
+}
+
+function drawRhythmChart(data) {
+  const width = 980;
+  const height = 500;
+  const margin = { top: 48, right: 36, bottom: 58, left: 132 };
+  const svg = makeSvg("#rhythm-chart", width, height);
+  const rows = data.rhythm_summary;
+  const dates = [...new Set(rows.map((d) => `${d.year}|${d.date_label}|${d.date}`))].sort((a, b) => {
+    const [, , dateA] = a.split("|");
+    const [, , dateB] = b.split("|");
+    return dateA.localeCompare(dateB);
+  });
+  const hours = d3.range(d3.min(rows, (d) => d.hour) || 7, (d3.max(rows, (d) => d.hour) || 18) + 1);
+  const y = d3.scaleBand().domain(dates).range([margin.top, height - margin.bottom]).padding(0.16);
+  const x = d3.scaleBand().domain(hours).range([margin.left, width - margin.right]).padding(0.12);
+  const color = d3.scaleSequential().domain([0, d3.max(rows, (d) => d.sessions) || 1]).interpolator(d3.interpolatePuBuGn);
+  const rowMap = new Map(rows.map((d) => [`${d.year}|${d.date_label}|${d.date}|${d.hour}`, d]));
+
+  svg
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height - margin.bottom})`)
+    .call(d3.axisBottom(x).tickFormat((d) => `${d}:00`).tickSizeOuter(0));
+
+  svg
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(${margin.left},0)`)
+    .call(
+      d3.axisLeft(y).tickFormat((d) => {
+        const [year, label] = d.split("|");
+        return `${year} ${label.replace("Thursday, ", "Thu ").replace("Friday, ", "Fri ").replace("Saturday, ", "Sat ").replace("Wednesday, ", "Wed ")}`;
+      }),
+    )
+    .call((g) => g.select(".domain").remove());
+
+  const cells = dates.flatMap((dateKey) =>
+    hours.map((hour) => {
+      const row = rowMap.get(`${dateKey}|${hour}`);
+      const [year, dateLabel, date] = dateKey.split("|");
+      return {
+        year: Number(year),
+        dateLabel,
+        date,
+        hour,
+        sessions: row ? row.sessions : 0,
+      };
+    }),
+  );
+
+  svg
+    .append("g")
+    .selectAll("rect")
+    .data(cells)
+    .join("rect")
+    .attr("class", "rhythm-cell")
+    .attr("x", (d) => x(d.hour))
+    .attr("y", (d) => y(`${d.year}|${d.dateLabel}|${d.date}`))
+    .attr("width", x.bandwidth())
+    .attr("height", y.bandwidth())
+    .attr("rx", 5)
+    .attr("fill", (d) => (d.sessions ? color(d.sessions) : "#eef3f6"))
+    .attr("opacity", (d) => (d.sessions ? 0.95 : 0.55))
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, `${d.year} ${d.dateLabel}, ${d.hour}:00`, `${d.sessions} AI-related sessions.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      selectedTime = { year: d.year, date: d.date, dateLabel: d.dateLabel, hour: d.hour };
+      selectedLink = null;
+      setExplorerLens({ year: d.year, context: "All", query: "", link: null });
+    });
+
+  svg
+    .append("g")
+    .selectAll("text")
+    .data(cells.filter((d) => d.sessions > 0))
+    .join("text")
+    .attr("class", "bar-label")
+    .attr("text-anchor", "middle")
+    .attr("x", (d) => x(d.hour) + x.bandwidth() / 2)
+    .attr("y", (d) => y(`${d.year}|${d.dateLabel}|${d.date}`) + y.bandwidth() / 2 + 4)
+    .text((d) => d.sessions);
 }
 
 function drawContextChart(data) {
@@ -651,6 +840,11 @@ function filteredSessions(data) {
     const matchesContext = context === "All" || groups.includes(context);
     const matchesLink =
       !selectedLink || (groups.includes(selectedLink.source) && groups.includes(selectedLink.target));
+    const matchesTime =
+      !selectedTime ||
+      (session.year === selectedTime.year &&
+        session.date === selectedTime.date &&
+        Number(String(session.start_time || "").slice(0, 2)) === selectedTime.hour);
     const haystack = [
       session.title,
       session.tracks,
@@ -658,11 +852,13 @@ function filteredSessions(data) {
       session.context,
       session.description,
       session.location,
+      session.date,
+      session.start_time,
     ]
       .join(" ")
       .toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
-    return matchesYear && matchesContext && matchesLink && matchesQuery;
+    return matchesYear && matchesContext && matchesLink && matchesTime && matchesQuery;
   });
 }
 
@@ -674,6 +870,7 @@ function renderActiveLens(sessions) {
   if (year !== "All") pieces.push(year);
   if (context !== "All") pieces.push(context);
   if (selectedLink) pieces.push(`${selectedLink.source} + ${selectedLink.target}`);
+  if (selectedTime) pieces.push(`${selectedTime.dateLabel} at ${selectedTime.hour}:00`);
   if (query) pieces.push(`"${query}"`);
   document.querySelector("#active-lens-title").textContent =
     pieces.length > 0 ? pieces.join(" / ") : "All AI-related sessions";
@@ -723,6 +920,7 @@ function wireSessionExplorer(data) {
   ["#session-search", "#session-year", "#session-context"].forEach((selector) => {
     document.querySelector(selector).addEventListener("input", () => {
       selectedLink = null;
+      selectedTime = null;
       renderSessionExplorer(data);
       drawContextNetwork(data);
     });
@@ -747,6 +945,8 @@ async function init() {
     storyData = await response.json();
     setHeroStats(storyData);
     drawHeadlineChart(storyData);
+    drawHeroSignalField(storyData);
+    drawRhythmChart(storyData);
     drawContextChart(storyData);
     drawContextNetwork(storyData);
     drawTrackChart(storyData);

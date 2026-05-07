@@ -254,6 +254,28 @@ def summarize_formats(df: pd.DataFrame) -> list[dict[str, object]]:
     return counts.groupby("conference_year").head(5).to_dict(orient="records")
 
 
+def summarize_rhythm(df: pd.DataFrame) -> list[dict[str, object]]:
+    ai_df = df[df["is_ai_related"]].copy()
+    ai_df["hour"] = pd.to_numeric(ai_df["start_time"].astype(str).str.slice(0, 2), errors="coerce")
+    ai_df = ai_df[ai_df["hour"].notna()]
+    counts = (
+        ai_df.groupby(["conference_year", "date_label", "date", "hour"])["session_id"]
+        .nunique()
+        .reset_index(name="sessions")
+        .sort_values(["conference_year", "date", "hour"])
+    )
+    return [
+        {
+            "year": int(row["conference_year"]),
+            "date_label": row["date_label"],
+            "date": row["date"],
+            "hour": int(row["hour"]),
+            "sessions": int(row["sessions"]),
+        }
+        for _, row in counts.iterrows()
+    ]
+
+
 def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
     ai_df = df[df["is_ai_related"]].copy()
     ai_df = ai_df.sort_values(["conference_year", "primary_ai_context_group", "title"])
@@ -266,6 +288,7 @@ def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
             "tracks": row["normalized_tracks"],
             "session_format": row["normalized_session_format"],
             "date": clean_text(row.get("date", "")),
+            "start_time": clean_text(row.get("start_time", "")),
             "location": clean_text(row.get("location", "")),
             "visible_ai_signal": bool(row.get("has_visible_ai_signal", False)),
             "description": clean_text(row.get("description", ""))[:240],
@@ -346,6 +369,7 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
         "context_network": build_context_network(df),
         "track_summary": summarize_tracks(df),
         "format_summary": summarize_formats(df),
+        "rhythm_summary": summarize_rhythm(df),
         "session_explorer": session_explorer_rows(df),
     }
     return story_sessions, payload
