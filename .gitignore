@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+.env
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+
+# Never commit authenticated browser state or one-off private captures.
+auth/
+captures/
+data/raw/2026/private_api_captures/
+
+# Keep generated outputs reproducible from scripts.
+app/generated/
