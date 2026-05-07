@@ -622,6 +622,12 @@ select:focus {
 
   .hero-signal-field {
     min-height: 280px;
+    overflow-x: auto;
+  }
+
+  .hero-signal-field svg {
+    width: 780px;
+    max-width: none;
   }
 
   .network-chart {

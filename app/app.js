@@ -1,6 +1,9 @@
 const COLORS = {
   language: "#255c99",
   visible: "#16817a",
+  2022: "#7c3f58",
+  2023: "#46678a",
+  2024: "#16817a",
   2025: "#5a7f2e",
   2026: "#c75b47",
   contexts: {
@@ -29,6 +32,14 @@ let storyData;
 
 function percent(value) {
   return `${Math.round(value * 100)}%`;
+}
+
+function getYears(data) {
+  return data.ai_summary.map((d) => d.year).sort((a, b) => a - b);
+}
+
+function yearColor(year) {
+  return COLORS[year] || "#6b7280";
 }
 
 function formatDelta(current, previous) {
@@ -105,75 +116,93 @@ function resetExploration() {
 }
 
 function setHeroStats(data) {
-  const [y2025, y2026] = data.ai_summary;
+  const years = getYears(data);
+  const first = data.ai_summary.find((d) => d.year === years[0]);
+  const last = data.ai_summary.find((d) => d.year === years[years.length - 1]);
   document.querySelector("#ai-language-stat").textContent =
-    `${percent(y2025.ai_share)} -> ${percent(y2026.ai_share)}`;
+    `${percent(first.ai_share)} -> ${percent(last.ai_share)}`;
   document.querySelector("#ai-language-detail").textContent =
-    `${y2025.ai_related_sessions} of ${y2025.total_sessions} sessions in 2025; ` +
-    `${y2026.ai_related_sessions} of ${y2026.total_sessions} in 2026.`;
+    `${first.ai_related_sessions} of ${first.total_sessions} sessions in ${first.year}; ` +
+    `${last.ai_related_sessions} of ${last.total_sessions} in ${last.year}.`;
   document.querySelector("#visible-ai-stat").textContent =
-    `${percent(y2025.visible_ai_share)} -> ${percent(y2026.visible_ai_share)}`;
+    `${percent(first.visible_ai_share)} -> ${percent(last.visible_ai_share)}`;
   document.querySelector("#visible-ai-detail").textContent =
     `Visible title, track, and format signals changed by ` +
-    `${formatDelta(y2026.visible_ai_share, y2025.visible_ai_share)}.`;
+    `${formatDelta(last.visible_ai_share, first.visible_ai_share)}.`;
 
-  const selection2025 = data.context_summary.find(
-    (d) => d.conference_year === 2025 && d.ai_context_group === "Selection/assessment/methods",
+  const selectionFirst = data.context_summary.find(
+    (d) => d.conference_year === first.year && d.ai_context_group === "Selection/assessment/methods",
   );
-  const selection2026 = data.context_summary.find(
-    (d) => d.conference_year === 2026 && d.ai_context_group === "Selection/assessment/methods",
+  const selectionLast = data.context_summary.find(
+    (d) => d.conference_year === last.year && d.ai_context_group === "Selection/assessment/methods",
   );
   document.querySelector("#context-stat").textContent =
-    `${percent(selection2025.share)} -> ${percent(selection2026.share)}`;
+    `${percent(selectionFirst.share)} -> ${percent(selectionLast.share)}`;
 }
 
 function drawHeroSignalField(data) {
   const width = 1080;
   const height = 360;
-  const margin = { top: 42, right: 42, bottom: 48, left: 42 };
+  const margin = { top: 42, right: 42, bottom: 48, left: 28 };
   const svg = makeSvg("#hero-signal-field", width, height);
+  const years = getYears(data);
+  const x = d3.scalePoint().domain(years).range([margin.left + 190, width - margin.right - 80]);
+  const y = d3
+    .scalePoint()
+    .domain(CONTEXT_ORDER)
+    .range([margin.top + 18, height - margin.bottom - 34]);
   const rows = data.context_summary.map((d) => ({
     ...d,
-    x: d.conference_year === 2025 ? width * 0.28 : width * 0.72,
-    y: margin.top + CONTEXT_ORDER.indexOf(d.ai_context_group) * 55,
+    x: x(d.conference_year),
+    y: y(d.ai_context_group),
   }));
-  const byKey = new Map(rows.map((d) => [`${d.conference_year}-${d.ai_context_group}`, d]));
   const radius = d3
     .scaleSqrt()
     .domain([0, d3.max(rows, (d) => d.sessions) || 1])
-    .range([8, 34]);
+    .range([6, 28]);
 
   svg
     .append("text")
     .attr("x", margin.left)
     .attr("y", 24)
     .attr("class", "chart-note")
-    .text("AI-related session contexts, 2025 to 2026");
+    .text(`${years[0]} to ${years[years.length - 1]} AI-related session contexts`);
 
-  const linkRows = CONTEXT_ORDER.map((context) => ({
+  const line = d3
+    .line()
+    .x((d) => d.x)
+    .y((d) => d.y)
+    .curve(d3.curveCatmullRom.alpha(0.45));
+  const contextLines = CONTEXT_ORDER.map((context) => ({
     context,
-    source: byKey.get(`2025-${context}`),
-    target: byKey.get(`2026-${context}`),
-  })).filter((d) => d.source && d.target);
+    rows: rows.filter((d) => d.ai_context_group === context).sort((a, b) => a.conference_year - b.conference_year),
+  })).filter((d) => d.rows.length > 1);
 
   svg
     .append("g")
     .selectAll("path")
-    .data(linkRows)
+    .data(contextLines)
     .join("path")
-    .attr("d", (d) => {
-      const mid = (d.source.x + d.target.x) / 2;
-      return `M${d.source.x},${d.source.y} C${mid},${d.source.y} ${mid},${d.target.y} ${d.target.x},${d.target.y}`;
-    })
+    .attr("d", (d) => line(d.rows))
     .attr("fill", "none")
     .attr("stroke", (d) => COLORS.contexts[d.context])
     .attr("stroke-width", 2)
     .attr("opacity", 0.28);
 
-  [2025, 2026].forEach((year) => {
+  svg
+    .append("g")
+    .selectAll("text")
+    .data(CONTEXT_ORDER)
+    .join("text")
+    .attr("x", margin.left)
+    .attr("y", (d) => y(d) + 4)
+    .attr("class", "network-node-label")
+    .text((d) => d.replace("/methods", "").replace("/training", ""));
+
+  years.forEach((year) => {
     svg
       .append("text")
-      .attr("x", year === 2025 ? width * 0.28 : width * 0.72)
+      .attr("x", x(year))
       .attr("y", height - 18)
       .attr("text-anchor", "middle")
       .attr("class", "chart-note")
@@ -217,14 +246,6 @@ function drawHeroSignalField(data) {
     .attr("class", "network-node-label")
     .attr("y", 4)
     .text((d) => d.sessions);
-
-  groups
-    .append("text")
-    .attr("x", (d) => (d.conference_year === 2025 ? -radius(d.sessions) - 10 : radius(d.sessions) + 10))
-    .attr("y", 4)
-    .attr("text-anchor", (d) => (d.conference_year === 2025 ? "end" : "start"))
-    .attr("class", "network-node-label")
-    .text((d) => d.ai_context_group.replace("/methods", "").replace("/training", ""));
 }
 
 function drawHeadlineChart(data) {
@@ -331,15 +352,15 @@ function drawHeadlineChart(data) {
 
 function drawRhythmChart(data) {
   const width = 980;
-  const height = 500;
   const margin = { top: 48, right: 36, bottom: 58, left: 132 };
-  const svg = makeSvg("#rhythm-chart", width, height);
   const rows = data.rhythm_summary;
   const dates = [...new Set(rows.map((d) => `${d.year}|${d.date_label}|${d.date}`))].sort((a, b) => {
     const [, , dateA] = a.split("|");
     const [, , dateB] = b.split("|");
     return dateA.localeCompare(dateB);
   });
+  const height = Math.max(500, dates.length * 34 + margin.top + margin.bottom);
+  const svg = makeSvg("#rhythm-chart", width, height);
   const hours = d3.range(d3.min(rows, (d) => d.hour) || 7, (d3.max(rows, (d) => d.hour) || 18) + 1);
   const y = d3.scaleBand().domain(dates).range([margin.top, height - margin.bottom]).padding(0.16);
   const x = d3.scaleBand().domain(hours).range([margin.left, width - margin.right]).padding(0.12);
@@ -419,8 +440,9 @@ function drawContextChart(data) {
   const height = 520;
   const margin = { top: 30, right: 84, bottom: 54, left: 218 };
   const svg = makeSvg("#context-chart", width, height);
+  const years = getYears(data);
   const rows = CONTEXT_ORDER.flatMap((context) =>
-    [2025, 2026].map((year) => {
+    years.map((year) => {
       const found = data.context_summary.find(
         (d) => d.conference_year === year && d.ai_context_group === context,
       );
@@ -435,7 +457,7 @@ function drawContextChart(data) {
   );
 
   const y0 = d3.scaleBand().domain(CONTEXT_ORDER).range([margin.top, height - margin.bottom]).padding(0.24);
-  const y1 = d3.scaleBand().domain([2025, 2026]).range([0, y0.bandwidth()]).padding(0.12);
+  const y1 = d3.scaleBand().domain(years).range([0, y0.bandwidth()]).padding(0.12);
   const maxValue = d3.max(rows, (d) => d.value) || 1;
   const x = d3
     .scaleLinear()
@@ -484,7 +506,7 @@ function drawContextChart(data) {
     .attr("width", (d) => Math.max(0, x(d.value) - x(0)))
     .attr("height", y1.bandwidth())
     .attr("rx", 4)
-    .attr("fill", (d) => (d.year === 2025 ? COLORS[2025] : COLORS[2026]))
+    .attr("fill", (d) => yearColor(d.year))
     .attr("opacity", (d) => (activeContext === "All" || activeContext === d.context ? 1 : 0.34))
     .style("cursor", "pointer")
     .on("mouseenter", (event, d) => {
@@ -514,9 +536,9 @@ function drawContextChart(data) {
     .text((d) => (activeMetric === "share" ? percent(d.share) : d.sessions));
 
   const legend = svg.append("g").attr("transform", `translate(${margin.left},${height - 18})`);
-  [2025, 2026].forEach((year, index) => {
+  years.forEach((year, index) => {
     const item = legend.append("g").attr("transform", `translate(${index * 92},0)`);
-    item.append("rect").attr("width", 14).attr("height", 14).attr("rx", 3).attr("fill", COLORS[year]);
+    item.append("rect").attr("width", 14).attr("height", 14).attr("rx", 3).attr("fill", yearColor(year));
     item
       .append("text")
       .attr("x", 22)
@@ -678,17 +700,19 @@ function drawTrackChart(data) {
   const height = 560;
   const margin = { top: 28, right: 54, bottom: 46, left: 270 };
   const svg = makeSvg("#track-chart", width, height);
+  const years = getYears(data);
+  const latestYear = years[years.length - 1];
   const rows = data.track_summary
-    .filter((d) => d.conference_year === 2026)
+    .filter((d) => d.conference_year === latestYear)
     .slice(0, 8)
     .map((d) => {
-      const previous = data.track_summary.find(
-        (item) => item.conference_year === 2025 && item.track === d.track,
-      );
       return {
         track: d.track,
-        sessions2026: d.sessions,
-        sessions2025: previous ? previous.sessions : 0,
+        latestSessions: d.sessions,
+        values: years.map((year) => {
+          const found = data.track_summary.find((item) => item.conference_year === year && item.track === d.track);
+          return { year, sessions: found ? found.sessions : 0 };
+        }),
       };
     });
 
@@ -699,7 +723,7 @@ function drawTrackChart(data) {
     .padding(0.24);
   const x = d3
     .scaleLinear()
-    .domain([0, d3.max(rows, (d) => d.sessions2026) || 1])
+    .domain([0, d3.max(rows.flatMap((d) => d.values), (d) => d.sessions) || 1])
     .nice()
     .range([margin.left, width - margin.right]);
 
@@ -728,8 +752,8 @@ function drawTrackChart(data) {
     .selectAll("line")
     .data(rows)
     .join("line")
-    .attr("x1", (d) => x(d.sessions2025))
-    .attr("x2", (d) => x(d.sessions2026))
+    .attr("x1", (d) => x(d3.min(d.values, (item) => item.sessions) || 0))
+    .attr("x2", (d) => x(d3.max(d.values, (item) => item.sessions) || 0))
     .attr("y1", (d) => y(d.track) + y.bandwidth() / 2)
     .attr("y2", (d) => y(d.track) + y.bandwidth() / 2)
     .attr("stroke", "#b7c3ce")
@@ -737,27 +761,27 @@ function drawTrackChart(data) {
     .attr("stroke-linecap", "round")
     .attr("opacity", 0.75);
 
-  [2025, 2026].forEach((year) => {
-    svg
-      .append("g")
-      .selectAll("circle")
-      .data(rows)
-      .join("circle")
-      .attr("cx", (d) => x(year === 2025 ? d.sessions2025 : d.sessions2026))
-      .attr("cy", (d) => y(d.track) + y.bandwidth() / 2)
-      .attr("r", 7)
-      .attr("fill", COLORS[year])
-      .style("cursor", "pointer")
-      .on("mouseenter", (event, d) => {
-        const sessions = year === 2025 ? d.sessions2025 : d.sessions2026;
-        showTooltip(event, `${year}: ${d.track}`, `${sessions} AI-related sessions. Click to search this track.`);
-      })
-      .on("mousemove", moveTooltip)
-      .on("mouseleave", hideTooltip)
-      .on("click", (_, d) => {
-        setExplorerLens({ year, context: "All", query: d.track, link: null });
-      });
-  });
+  const trackPoints = rows.flatMap((row) => row.values.map((value) => ({ ...value, track: row.track })));
+  svg
+    .append("g")
+    .selectAll("circle")
+    .data(trackPoints)
+    .join("circle")
+    .attr("cx", (d) => x(d.sessions))
+    .attr("cy", (d) => y(d.track) + y.bandwidth() / 2)
+    .attr("r", 6.5)
+    .attr("fill", (d) => yearColor(d.year))
+    .attr("stroke", "#fbfaf6")
+    .attr("stroke-width", 1.5)
+    .style("cursor", "pointer")
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, `${d.year}: ${d.track}`, `${d.sessions} AI-related sessions. Click to search this track.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      setExplorerLens({ year: d.year, context: "All", query: d.track, link: null });
+    });
 
   svg
     .append("g")
@@ -765,14 +789,14 @@ function drawTrackChart(data) {
     .data(rows)
     .join("text")
     .attr("class", "bar-label")
-    .attr("x", (d) => x(d.sessions2026) + 12)
+    .attr("x", (d) => x(d.latestSessions) + 12)
     .attr("y", (d) => y(d.track) + y.bandwidth() / 2 + 4)
-    .text((d) => d.sessions2026);
+    .text((d) => d.latestSessions);
 
   const legend = svg.append("g").attr("transform", `translate(${margin.left},${height - 14})`);
-  [2025, 2026].forEach((year, index) => {
+  years.forEach((year, index) => {
     const item = legend.append("g").attr("transform", `translate(${index * 92},0)`);
-    item.append("circle").attr("cx", 7).attr("cy", 7).attr("r", 7).attr("fill", COLORS[year]);
+    item.append("circle").attr("cx", 7).attr("cy", 7).attr("r", 7).attr("fill", yearColor(year));
     item
       .append("text")
       .attr("x", 22)
@@ -785,7 +809,7 @@ function drawTrackChart(data) {
 }
 
 function renderFormatSummary(data) {
-  const years = [2025, 2026];
+  const years = getYears(data);
   const articles = d3.select("#format-summary").selectAll("article").data(years);
   const entered = articles.enter().append("article");
   entered.append("h3");
@@ -819,6 +843,7 @@ function wireNetworkButtons() {
 
 function populateSessionContextOptions(data) {
   const select = document.querySelector("#session-context");
+  select.innerHTML = '<option value="All">All contexts</option>';
   const contexts = [...new Set(data.session_explorer.map((d) => d.context))].sort(
     (a, b) => CONTEXT_ORDER.indexOf(a) - CONTEXT_ORDER.indexOf(b),
   );
@@ -826,6 +851,17 @@ function populateSessionContextOptions(data) {
     const option = document.createElement("option");
     option.value = context;
     option.textContent = context;
+    select.appendChild(option);
+  });
+}
+
+function populateSessionYearOptions(data) {
+  const select = document.querySelector("#session-year");
+  select.innerHTML = '<option value="All">All years</option>';
+  [...getYears(data)].reverse().forEach((year) => {
+    const option = document.createElement("option");
+    option.value = String(year);
+    option.textContent = year;
     select.appendChild(option);
   });
 }
@@ -916,6 +952,7 @@ function renderSessionExplorer(data) {
 }
 
 function wireSessionExplorer(data) {
+  populateSessionYearOptions(data);
   populateSessionContextOptions(data);
   ["#session-search", "#session-year", "#session-context"].forEach((selector) => {
     document.querySelector(selector).addEventListener("input", () => {

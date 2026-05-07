@@ -69,8 +69,35 @@ def common_from_2026_public(path: Path) -> pd.DataFrame:
     )
 
 
+def common_from_archive(path: Path) -> pd.DataFrame:
+    df = pd.read_csv(path)
+    return pd.DataFrame(
+        {
+            "conference_year": df["conference_year"],
+            "session_id": df["session_id"],
+            "display_session_id": df["display_session_id"],
+            "title": df["title"],
+            "date": df["date"],
+            "date_label": df["date_label"],
+            "start_time": df["start_time"],
+            "end_time": df["end_time"],
+            "location": df["location"],
+            "tracks": df["tracks"],
+            "speakers": df["speakers"],
+            "speaker_affiliations": df["speaker_affiliations"],
+            "description": df["description"],
+            "session_format": df["session_format"],
+            "adds": pd.NA,
+            "likes": pd.NA,
+            "comments": pd.NA,
+            "source": df["source"],
+        }
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--archive-years", nargs="*", default=[2022, 2023, 2024], type=int)
     parser.add_argument("--sessions-2025", default="data/processed/sessions_2025.csv", type=Path)
     parser.add_argument("--sessions-2026", type=Path)
     parser.add_argument("--output", default="data/processed/sessions_comparison.csv", type=Path)
@@ -81,10 +108,14 @@ def main() -> None:
         enriched = Path("data/processed/sessions_2026_enriched.csv")
         sessions_2026 = enriched if enriched.exists() else Path("data/processed/sessions_2026_public.csv")
 
-    comparison = pd.concat(
-        [common_from_2025(args.sessions_2025), common_from_2026_public(sessions_2026)],
-        ignore_index=True,
-    )
+    frames = []
+    for year in args.archive_years:
+        archive_path = Path(f"data/processed/sessions_{year}_archive.csv")
+        if archive_path.exists():
+            frames.append(common_from_archive(archive_path))
+
+    frames.extend([common_from_2025(args.sessions_2025), common_from_2026_public(sessions_2026)])
+    comparison = pd.concat(frames, ignore_index=True)
     comparison = comparison.sort_values(["conference_year", "date", "start_time", "title"], na_position="last")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     comparison.to_csv(args.output, index=False)

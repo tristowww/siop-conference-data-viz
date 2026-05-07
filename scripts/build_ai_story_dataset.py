@@ -12,7 +12,8 @@ import pandas as pd
 
 AI_PATTERN = re.compile(
     r"\b(?:ai|a\.i\.|artificial intelligence|machine learning|automation|automated|"
-    r"algorithmic|algorithm|algorithms|generative ai|chatgpt|llm|large language model|technology)\b",
+    r"algorithmic|algorithm|algorithms|generative ai|chatgpt|gpt|llm|large language model|"
+    r"deep learning|natural language processing|nlp|technology)\b",
     re.IGNORECASE,
 )
 
@@ -95,7 +96,7 @@ def classify_context(text: str) -> str:
 
 def primary_context(row: pd.Series) -> str:
     combined_text = " ".join(
-        clean_text(row.get(column, "")) for column in ["tracks", "title", "session_format"]
+        clean_text(row.get(column, "")) for column in ["tracks", "title", "session_format", "description"]
     )
     context = classify_context(combined_text)
     if context == "Explicit tech/AI":
@@ -110,36 +111,25 @@ def context_rows(df: pd.DataFrame) -> pd.DataFrame:
     rows = []
     ai_sessions = df[df["is_ai_related"]]
     for _, row in ai_sessions.iterrows():
-        tracks = split_tracks(row.get("tracks", ""))
-        if not tracks:
+        for group in context_set(row):
             rows.append(
                 {
                     "conference_year": int(row["conference_year"]),
-                    "ai_context_group": "Other/special",
+                    "ai_context_group": group,
                     "session_id": row["session_id"],
                 }
             )
-            continue
-        seen_groups = set()
-        for track in tracks:
-            group = classify_context(track)
-            if group not in seen_groups:
-                rows.append(
-                    {
-                        "conference_year": int(row["conference_year"]),
-                        "ai_context_group": group,
-                        "session_id": row["session_id"],
-                    }
-                )
-                seen_groups.add(group)
     return pd.DataFrame(rows)
 
 
 def context_set(row: pd.Series) -> set[str]:
     groups = {classify_context(track) for track in split_tracks(row.get("tracks", ""))}
     groups.discard("")
+    primary = clean_text(row.get("primary_ai_context_group", ""))
+    if primary:
+        groups.add(primary)
     if not groups:
-        groups.add(row.get("primary_ai_context_group", "Other/special"))
+        groups.add("Other/special")
     if clean_text(row.get("has_visible_ai_signal", "")).lower() == "true" and not groups:
         groups.add("Explicit tech/AI")
     return groups

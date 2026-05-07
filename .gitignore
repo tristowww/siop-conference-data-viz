@@ -13,3 +13,4 @@ data/raw/2026/private_api_captures/
 
 # Keep generated outputs reproducible from scripts.
 app/generated/
+artifacts/
