@@ -135,6 +135,16 @@ def context_rows(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def context_set(row: pd.Series) -> set[str]:
+    groups = {classify_context(track) for track in split_tracks(row.get("tracks", ""))}
+    groups.discard("")
+    if not groups:
+        groups.add(row.get("primary_ai_context_group", "Other/special"))
+    if clean_text(row.get("has_visible_ai_signal", "")).lower() == "true" and not groups:
+        groups.add("Explicit tech/AI")
+    return groups
+
+
 def summarize_ai(df: pd.DataFrame) -> list[dict[str, object]]:
     summary = []
     for year, group in df.groupby("conference_year", sort=True):
@@ -167,6 +177,45 @@ def summarize_contexts(context_df: pd.DataFrame) -> list[dict[str, object]]:
     counts["sort_order"] = counts["ai_context_group"].map({name: index for index, name in enumerate(CONTEXT_ORDER)})
     counts = counts.sort_values(["sort_order", "conference_year"])
     return counts.drop(columns=["sort_order"]).to_dict(orient="records")
+
+
+def build_context_network(df: pd.DataFrame) -> dict[str, list[dict[str, object]]]:
+    ai_df = df[df["is_ai_related"]].copy()
+    node_counts: dict[tuple[int, str], set[str]] = {}
+    link_counts: dict[tuple[int, str, str], set[str]] = {}
+
+    for _, row in ai_df.iterrows():
+        year = int(row["conference_year"])
+        session_id = clean_text(row["session_id"]) or clean_text(row["title"])
+        groups = sorted(context_set(row), key=lambda group: CONTEXT_ORDER.index(group))
+        for group in groups:
+            node_counts.setdefault((year, group), set()).add(session_id)
+        for index, source in enumerate(groups):
+            for target in groups[index + 1 :]:
+                link_counts.setdefault((year, source, target), set()).add(session_id)
+
+    nodes = [
+        {
+            "year": year,
+            "id": group,
+            "sessions": len(session_ids),
+            "sort_order": CONTEXT_ORDER.index(group),
+        }
+        for (year, group), session_ids in node_counts.items()
+    ]
+    links = [
+        {
+            "year": year,
+            "source": source,
+            "target": target,
+            "sessions": len(session_ids),
+        }
+        for (year, source, target), session_ids in link_counts.items()
+    ]
+    return {
+        "nodes": sorted(nodes, key=lambda item: (item["year"], item["sort_order"])),
+        "links": sorted(links, key=lambda item: (item["year"], item["source"], item["target"])),
+    }
 
 
 def summarize_tracks(df: pd.DataFrame) -> list[dict[str, object]]:
@@ -203,6 +252,25 @@ def summarize_formats(df: pd.DataFrame) -> list[dict[str, object]]:
         .sort_values(["conference_year", "sessions", "session_format"], ascending=[True, False, True])
     )
     return counts.groupby("conference_year").head(5).to_dict(orient="records")
+
+
+def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
+    ai_df = df[df["is_ai_related"]].copy()
+    ai_df = ai_df.sort_values(["conference_year", "primary_ai_context_group", "title"])
+    return [
+        {
+            "year": int(row["conference_year"]),
+            "title": row["title"],
+            "context": row["primary_ai_context_group"],
+            "tracks": row["normalized_tracks"],
+            "session_format": row["normalized_session_format"],
+            "date": clean_text(row.get("date", "")),
+            "location": clean_text(row.get("location", "")),
+            "visible_ai_signal": bool(row.get("has_visible_ai_signal", False)),
+            "description": clean_text(row.get("description", ""))[:240],
+        }
+        for _, row in ai_df.iterrows()
+    ]
 
 
 def selected_examples(df: pd.DataFrame) -> list[dict[str, object]]:
@@ -305,8 +373,10 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
         },
         "ai_summary": summarize_ai(df),
         "context_summary": summarize_contexts(contexts),
+        "context_network": build_context_network(df),
         "track_summary": summarize_tracks(df),
         "format_summary": summarize_formats(df),
+        "session_explorer": session_explorer_rows(df),
         "examples": selected_examples(df),
     }
     return story_sessions, payload

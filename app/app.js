@@ -22,6 +22,7 @@ const CONTEXT_ORDER = [
 
 let activeMetric = "sessions";
 let activeContext = "All";
+let activeNetworkYear = 2026;
 let storyData;
 
 function percent(value) {
@@ -40,6 +41,23 @@ function makeSvg(target, width, height) {
     .append("svg")
     .attr("viewBox", `0 0 ${width} ${height}`)
     .attr("aria-hidden", "true");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function highlightTerm(text, query) {
+  const safe = escapeHtml(text);
+  const trimmed = query.trim();
+  if (!trimmed) return safe;
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return safe.replace(new RegExp(`(${escaped})`, "ig"), "<mark>$1</mark>");
 }
 
 function setHeroStats(data) {
@@ -258,6 +276,127 @@ function drawContextChart(data) {
   });
 }
 
+function drawContextNetwork(data) {
+  const width = 980;
+  const height = 520;
+  const center = { x: width / 2, y: height / 2 + 12 };
+  const radius = 164;
+  const svg = makeSvg("#context-network", width, height);
+  const nodes = data.context_network.nodes.filter((d) => d.year === activeNetworkYear);
+  const links = data.context_network.links.filter((d) => d.year === activeNetworkYear);
+  const nodeById = new Map(nodes.map((node, index) => {
+    const angle = -Math.PI / 2 + (index / Math.max(1, nodes.length)) * Math.PI * 2;
+    return [
+      node.id,
+      {
+        ...node,
+        x: center.x + Math.cos(angle) * radius,
+        y: center.y + Math.sin(angle) * radius,
+      },
+    ];
+  }));
+  const maxSessions = d3.max(nodes, (d) => d.sessions) || 1;
+  const size = d3.scaleSqrt().domain([0, maxSessions]).range([18, 54]);
+  const linkWidth = d3
+    .scaleLinear()
+    .domain([0, d3.max(links, (d) => d.sessions) || 1])
+    .range([1.4, 8]);
+
+  svg
+    .append("text")
+    .attr("x", 26)
+    .attr("y", 34)
+    .attr("class", "chart-note")
+    .text(`${activeNetworkYear} AI context adjacency`);
+
+  svg
+    .append("g")
+    .selectAll("line")
+    .data(links)
+    .join("line")
+    .attr("x1", (d) => nodeById.get(d.source).x)
+    .attr("y1", (d) => nodeById.get(d.source).y)
+    .attr("x2", (d) => nodeById.get(d.target).x)
+    .attr("y2", (d) => nodeById.get(d.target).y)
+    .attr("stroke", "#aebbc7")
+    .attr("stroke-width", (d) => linkWidth(d.sessions))
+    .attr("stroke-linecap", "round")
+    .attr("opacity", 0.72);
+
+  svg
+    .append("g")
+    .selectAll("text")
+    .data(links.filter((d) => d.sessions >= 2))
+    .join("text")
+    .attr("class", "network-link-label")
+    .attr("text-anchor", "middle")
+    .attr("x", (d) => (nodeById.get(d.source).x + nodeById.get(d.target).x) / 2)
+    .attr("y", (d) => (nodeById.get(d.source).y + nodeById.get(d.target).y) / 2 - 6)
+    .text((d) => d.sessions);
+
+  const nodeGroup = svg
+    .append("g")
+    .selectAll("g")
+    .data(nodes)
+    .join("g")
+    .attr("transform", (d) => {
+      const node = nodeById.get(d.id);
+      return `translate(${node.x},${node.y})`;
+    });
+
+  nodeGroup
+    .append("circle")
+    .attr("r", (d) => size(d.sessions))
+    .attr("fill", (d) => COLORS.contexts[d.id])
+    .attr("opacity", 0.94);
+
+  nodeGroup
+    .append("text")
+    .attr("class", "network-node-label")
+    .attr("text-anchor", "middle")
+    .attr("y", 4)
+    .text((d) => d.sessions);
+
+  nodeGroup
+    .append("text")
+    .attr("class", "network-node-label")
+    .attr("text-anchor", "middle")
+    .attr("y", (d) => size(d.sessions) + 18)
+    .text((d) => d.id.replace("/methods", "").replace("/training", ""));
+
+  renderNetworkInsights(data, nodes, links);
+}
+
+function renderNetworkInsights(data, nodes, links) {
+  const strongest = [...links].sort((a, b) => b.sessions - a.sessions)[0];
+  const biggest = [...nodes].sort((a, b) => b.sessions - a.sessions)[0];
+  const bridgeCount = links.reduce((total, link) => total + link.sessions, 0);
+  const insights = [
+    {
+      title: "Largest node",
+      copy: biggest ? `${biggest.id} carries ${biggest.sessions} AI-related sessions in this map.` : "No nodes loaded.",
+    },
+    {
+      title: "Strongest adjacency",
+      copy: strongest
+        ? `${strongest.source} and ${strongest.target} co-occur in ${strongest.sessions} sessions.`
+        : "No cross-context links for this year.",
+    },
+    {
+      title: "Cross-context sessions",
+      copy: `${bridgeCount} session-context links show where AI topics sit across more than one program neighborhood.`,
+    },
+  ];
+
+  const cards = d3.select("#network-insights").selectAll("article").data(insights);
+  const entered = cards.enter().append("article");
+  entered.append("h3");
+  entered.append("p");
+  entered.merge(cards).select("h3").text((d) => d.title);
+  entered.merge(cards).select("p").text((d) => d.copy);
+  cards.exit().remove();
+}
+
 function drawTrackChart(data) {
   const width = 980;
   const height = 560;
@@ -380,10 +519,92 @@ function renderFormatSummary(data) {
   });
 }
 
+function wireNetworkButtons() {
+  document.querySelectorAll(".network-year").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeNetworkYear = Number(button.dataset.year);
+      document.querySelectorAll(".network-year").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+      drawContextNetwork(storyData);
+    });
+  });
+}
+
 function updateFilterButtons() {
   d3.selectAll("#example-filters button").classed("active", function () {
     return this.dataset.context === activeContext;
   });
+}
+
+function populateSessionContextOptions(data) {
+  const select = document.querySelector("#session-context");
+  const contexts = [...new Set(data.session_explorer.map((d) => d.context))].sort(
+    (a, b) => CONTEXT_ORDER.indexOf(a) - CONTEXT_ORDER.indexOf(b),
+  );
+  contexts.forEach((context) => {
+    const option = document.createElement("option");
+    option.value = context;
+    option.textContent = context;
+    select.appendChild(option);
+  });
+}
+
+function filteredSessions(data) {
+  const query = document.querySelector("#session-search").value.toLowerCase().trim();
+  const year = document.querySelector("#session-year").value;
+  const context = document.querySelector("#session-context").value;
+  return data.session_explorer.filter((session) => {
+    const matchesYear = year === "All" || String(session.year) === year;
+    const matchesContext = context === "All" || session.context === context;
+    const haystack = [
+      session.title,
+      session.tracks,
+      session.session_format,
+      session.context,
+      session.description,
+      session.location,
+    ]
+      .join(" ")
+      .toLowerCase();
+    const matchesQuery = !query || haystack.includes(query);
+    return matchesYear && matchesContext && matchesQuery;
+  });
+}
+
+function renderSessionExplorer(data) {
+  const query = document.querySelector("#session-search").value;
+  const sessions = filteredSessions(data);
+  const visible = sessions.slice(0, 24);
+  document.querySelector("#session-count").textContent =
+    `${sessions.length}/${data.session_explorer.length} talks visible`;
+
+  const cards = d3.select("#session-list").selectAll(".session-card").data(visible, (d) => `${d.year}-${d.title}`);
+  const entered = cards.enter().append("article").attr("class", "session-card");
+  entered.append("div").attr("class", "example-meta");
+  entered.append("h3");
+  entered.append("p").attr("class", "session-tracks");
+  entered.append("p").attr("class", "session-description");
+
+  const merged = entered.merge(cards);
+  merged.select(".example-meta").html("");
+  merged.each(function (d) {
+    const meta = d3.select(this).select(".example-meta");
+    [d.year, d.context, d.session_format, d.visible_ai_signal ? "visible AI signal" : "abstract signal"].forEach(
+      (value) => meta.append("span").attr("class", "pill").text(value),
+    );
+  });
+  merged.select("h3").html((d) => highlightTerm(d.title, query));
+  merged.select(".session-tracks").html((d) => highlightTerm(d.tracks, query));
+  merged.select(".session-description").html((d) => highlightTerm(d.description || d.location, query));
+  cards.exit().remove();
+}
+
+function wireSessionExplorer(data) {
+  populateSessionContextOptions(data);
+  ["#session-search", "#session-year", "#session-context"].forEach((selector) => {
+    document.querySelector(selector).addEventListener("input", () => renderSessionExplorer(data));
+  });
+  renderSessionExplorer(data);
 }
 
 function renderFilters(data) {
@@ -447,11 +668,14 @@ async function init() {
     setHeroStats(storyData);
     drawHeadlineChart(storyData);
     drawContextChart(storyData);
+    drawContextNetwork(storyData);
     drawTrackChart(storyData);
     renderFormatSummary(storyData);
     renderFilters(storyData);
     renderExamples(storyData);
     wireMetricButtons();
+    wireNetworkButtons();
+    wireSessionExplorer(storyData);
   } catch (error) {
     document.body.insertAdjacentHTML(
       "afterbegin",

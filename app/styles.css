@@ -165,6 +165,10 @@ p {
   min-height: 500px;
 }
 
+.network-chart {
+  min-height: 520px;
+}
+
 .chart svg {
   display: block;
   width: 100%;
@@ -302,6 +306,115 @@ button.active {
   color: var(--ink);
 }
 
+.network-insights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.network-insights article,
+.session-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 18px;
+}
+
+.network-insights h3,
+.session-card h3 {
+  margin: 0 0 8px;
+  font-size: 1.02rem;
+  line-height: 1.25;
+}
+
+.network-insights p,
+.session-card p {
+  margin-bottom: 0;
+  font-size: 0.93rem;
+}
+
+.network-node-label {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.network-link-label {
+  fill: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.explorer-controls {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) minmax(120px, 180px) minmax(180px, 260px);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.explorer-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+input,
+select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  padding: 10px 12px;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--blue);
+  outline: 2px solid rgba(37, 92, 153, 0.18);
+}
+
+.visible-count {
+  margin: 8px 0 16px;
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.session-list {
+  display: grid;
+  gap: 10px;
+  max-height: 720px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.session-card {
+  box-shadow: none;
+}
+
+.session-card .example-meta {
+  margin-bottom: 10px;
+}
+
+.session-card mark {
+  border-radius: 4px;
+  background: rgba(193, 132, 31, 0.22);
+  color: inherit;
+  padding: 0 2px;
+}
+
+.session-card .session-description {
+  margin-top: 8px;
+}
+
 .example-card {
   padding: 18px;
 }
@@ -381,5 +494,14 @@ button.active {
   .chart,
   .chart.tall {
     min-height: 420px;
+  }
+
+  .network-chart {
+    min-height: 460px;
+  }
+
+  .network-insights,
+  .explorer-controls {
+    grid-template-columns: 1fr;
   }
 }
