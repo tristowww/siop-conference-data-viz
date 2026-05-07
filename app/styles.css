@@ -122,6 +122,8 @@ p {
 .error-banner,
 .insight-grid article,
 .compare-grid article,
+.side-thesis,
+.side-matrix article,
 .format-strip article {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -227,7 +229,8 @@ p {
 }
 
 .insight-grid,
-.compare-grid {
+.compare-grid,
+.side-matrix {
   display: grid;
   gap: 14px;
 }
@@ -240,25 +243,50 @@ p {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.side-matrix {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 14px;
+}
+
 .insight-grid article,
 .compare-grid article,
+.side-matrix article,
 .format-strip article {
   padding: 20px;
 }
 
 .insight-grid h3,
-.compare-grid h3 {
+.compare-grid h3,
+.side-matrix h3 {
   margin: 12px 0 10px;
   font-size: 1.18rem;
   line-height: 1.2;
 }
 
 .insight-grid p,
-.compare-grid p {
+.compare-grid p,
+.side-matrix p,
+.side-thesis p {
   margin-bottom: 0;
 }
 
-.compare-label {
+.side-thesis {
+  margin-top: 14px;
+  padding: 24px;
+}
+
+.side-thesis p {
+  max-width: 920px;
+  color: var(--ink);
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+}
+
+.side-thesis strong {
+  color: var(--blue);
+}
+
+.compare-label,
+.matrix-label {
   display: inline-flex;
   min-height: 28px;
   align-items: center;
@@ -268,6 +296,10 @@ p {
   font-size: 0.78rem;
   font-weight: 800;
   padding: 4px 9px;
+}
+
+.matrix-label {
+  color: var(--teal);
 }
 
 .axis text {
@@ -564,6 +596,7 @@ select:focus {
   .section-heading,
   .insight-grid,
   .compare-grid,
+  .side-matrix,
   .format-strip {
     grid-template-columns: 1fr;
   }
