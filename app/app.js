@@ -23,6 +23,7 @@ const CONTEXT_ORDER = [
 let activeMetric = "sessions";
 let activeContext = "All";
 let activeNetworkYear = 2026;
+let selectedLink = null;
 let storyData;
 
 function percent(value) {
@@ -43,6 +44,26 @@ function makeSvg(target, width, height) {
     .attr("aria-hidden", "true");
 }
 
+function tooltip() {
+  return d3.select("#tooltip");
+}
+
+function showTooltip(event, title, body) {
+  tooltip()
+    .classed("visible", true)
+    .style("left", `${event.clientX}px`)
+    .style("top", `${event.clientY}px`)
+    .html(`<strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span>`);
+}
+
+function moveTooltip(event) {
+  tooltip().style("left", `${event.clientX}px`).style("top", `${event.clientY}px`);
+}
+
+function hideTooltip() {
+  tooltip().classed("visible", false);
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -58,6 +79,28 @@ function highlightTerm(text, query) {
   if (!trimmed) return safe;
   const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return safe.replace(new RegExp(`(${escaped})`, "ig"), "<mark>$1</mark>");
+}
+
+function setExplorerLens({ year = null, context = null, query = null, link = undefined } = {}) {
+  if (year !== null) document.querySelector("#session-year").value = String(year);
+  if (context !== null) document.querySelector("#session-context").value = context;
+  if (query !== null) document.querySelector("#session-search").value = query;
+  if (link !== undefined) selectedLink = link;
+  renderSessionExplorer(storyData);
+}
+
+function resetExploration() {
+  activeContext = "All";
+  selectedLink = null;
+  document.querySelector("#session-year").value = "All";
+  document.querySelector("#session-context").value = "All";
+  document.querySelector("#session-search").value = "";
+  renderExamples(storyData);
+  drawContextChart(storyData);
+  drawContextNetwork(storyData);
+  drawTrackChart(storyData);
+  updateFilterButtons();
+  renderSessionExplorer(storyData);
 }
 
 function setHeroStats(data) {
@@ -143,7 +186,21 @@ function drawHeadlineChart(data) {
     .attr("width", x1.bandwidth())
     .attr("height", (d) => y(0) - y(d.value))
     .attr("rx", 4)
-    .attr("fill", (d) => d.color);
+    .attr("fill", (d) => d.color)
+    .style("cursor", "pointer")
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, d.metric, `${d.count} sessions in ${d.year}, ${percent(d.value)} of that year's program.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      setExplorerLens({
+        year: d.year,
+        context: "All",
+        query: d.metric === "Visible AI signal" ? "AI" : "",
+        link: null,
+      });
+    });
 
   svg
     .append("g")
@@ -244,11 +301,22 @@ function drawContextChart(data) {
     .attr("fill", (d) => (d.year === 2025 ? COLORS[2025] : COLORS[2026]))
     .attr("opacity", (d) => (activeContext === "All" || activeContext === d.context ? 1 : 0.34))
     .style("cursor", "pointer")
+    .on("mouseenter", (event, d) => {
+      showTooltip(
+        event,
+        `${d.year}: ${d.context}`,
+        activeMetric === "share" ? `${percent(d.share)} of AI-related context links.` : `${d.sessions} sessions.`,
+      );
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
     .on("click", (_, d) => {
       activeContext = d.context;
+      selectedLink = null;
       renderExamples(storyData);
       drawContextChart(storyData);
       updateFilterButtons();
+      setExplorerLens({ year: d.year, context: d.context, query: "", link: null });
     });
 
   svg
@@ -321,7 +389,18 @@ function drawContextNetwork(data) {
     .attr("stroke", "#aebbc7")
     .attr("stroke-width", (d) => linkWidth(d.sessions))
     .attr("stroke-linecap", "round")
-    .attr("opacity", 0.72);
+    .attr("opacity", (d) => (selectedLink && selectedLink.source === d.source && selectedLink.target === d.target ? 1 : 0.72))
+    .style("cursor", "pointer")
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, `${d.source} + ${d.target}`, `${d.sessions} sessions connect these contexts.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      selectedLink = { source: d.source, target: d.target };
+      setExplorerLens({ year: activeNetworkYear, context: "All", query: "", link: selectedLink });
+      drawContextNetwork(storyData);
+    });
 
   svg
     .append("g")
@@ -348,7 +427,22 @@ function drawContextNetwork(data) {
     .append("circle")
     .attr("r", (d) => size(d.sessions))
     .attr("fill", (d) => COLORS.contexts[d.id])
-    .attr("opacity", 0.94);
+    .attr("opacity", (d) => (activeContext === "All" || activeContext === d.id ? 0.94 : 0.44))
+    .style("cursor", "pointer")
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, d.id, `${d.sessions} AI-related sessions in ${activeNetworkYear}. Click to filter talks.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      activeContext = d.id;
+      selectedLink = null;
+      renderExamples(storyData);
+      updateFilterButtons();
+      setExplorerLens({ year: activeNetworkYear, context: d.id, query: "", link: null });
+      drawContextChart(storyData);
+      drawContextNetwork(storyData);
+    });
 
   nodeGroup
     .append("text")
@@ -458,7 +552,8 @@ function drawTrackChart(data) {
     .attr("y2", (d) => y(d.track) + y.bandwidth() / 2)
     .attr("stroke", "#b7c3ce")
     .attr("stroke-width", 3)
-    .attr("stroke-linecap", "round");
+    .attr("stroke-linecap", "round")
+    .attr("opacity", 0.75);
 
   [2025, 2026].forEach((year) => {
     svg
@@ -469,7 +564,17 @@ function drawTrackChart(data) {
       .attr("cx", (d) => x(year === 2025 ? d.sessions2025 : d.sessions2026))
       .attr("cy", (d) => y(d.track) + y.bandwidth() / 2)
       .attr("r", 7)
-      .attr("fill", COLORS[year]);
+      .attr("fill", COLORS[year])
+      .style("cursor", "pointer")
+      .on("mouseenter", (event, d) => {
+        const sessions = year === 2025 ? d.sessions2025 : d.sessions2026;
+        showTooltip(event, `${year}: ${d.track}`, `${sessions} AI-related sessions. Click to search this track.`);
+      })
+      .on("mousemove", moveTooltip)
+      .on("mouseleave", hideTooltip)
+      .on("click", (_, d) => {
+        setExplorerLens({ year, context: "All", query: d.track, link: null });
+      });
   });
 
   svg
@@ -555,7 +660,10 @@ function filteredSessions(data) {
   const context = document.querySelector("#session-context").value;
   return data.session_explorer.filter((session) => {
     const matchesYear = year === "All" || String(session.year) === year;
-    const matchesContext = context === "All" || session.context === context;
+    const groups = session.context_groups || [session.context];
+    const matchesContext = context === "All" || groups.includes(context);
+    const matchesLink =
+      !selectedLink || (groups.includes(selectedLink.source) && groups.includes(selectedLink.target));
     const haystack = [
       session.title,
       session.tracks,
@@ -567,17 +675,34 @@ function filteredSessions(data) {
       .join(" ")
       .toLowerCase();
     const matchesQuery = !query || haystack.includes(query);
-    return matchesYear && matchesContext && matchesQuery;
+    return matchesYear && matchesContext && matchesLink && matchesQuery;
   });
+}
+
+function renderActiveLens(sessions) {
+  const year = document.querySelector("#session-year").value;
+  const context = document.querySelector("#session-context").value;
+  const query = document.querySelector("#session-search").value.trim();
+  const pieces = [];
+  if (year !== "All") pieces.push(year);
+  if (context !== "All") pieces.push(context);
+  if (selectedLink) pieces.push(`${selectedLink.source} + ${selectedLink.target}`);
+  if (query) pieces.push(`"${query}"`);
+  document.querySelector("#active-lens-title").textContent =
+    pieces.length > 0 ? pieces.join(" / ") : "All AI-related sessions";
+  document.querySelector("#active-lens-detail").textContent =
+    `${sessions.length} talks visible. Click a chart mark, network node, or reset to change the lens.`;
 }
 
 function renderSessionExplorer(data) {
   const query = document.querySelector("#session-search").value;
   const sessions = filteredSessions(data);
   const visible = sessions.slice(0, 24);
+  renderActiveLens(sessions);
   document.querySelector("#session-count").textContent =
     `${sessions.length}/${data.session_explorer.length} talks visible`;
 
+  d3.select("#session-list").selectAll(".empty-state").remove();
   const cards = d3.select("#session-list").selectAll(".session-card").data(visible, (d) => `${d.year}-${d.title}`);
   const entered = cards.enter().append("article").attr("class", "session-card");
   entered.append("div").attr("class", "example-meta");
@@ -597,12 +722,23 @@ function renderSessionExplorer(data) {
   merged.select(".session-tracks").html((d) => highlightTerm(d.tracks, query));
   merged.select(".session-description").html((d) => highlightTerm(d.description || d.location, query));
   cards.exit().remove();
+
+  if (visible.length === 0) {
+    d3.select("#session-list")
+      .append("div")
+      .attr("class", "empty-state")
+      .text("No sessions match this lens yet. Try clearing search or resetting exploration.");
+  }
 }
 
 function wireSessionExplorer(data) {
   populateSessionContextOptions(data);
   ["#session-search", "#session-year", "#session-context"].forEach((selector) => {
-    document.querySelector(selector).addEventListener("input", () => renderSessionExplorer(data));
+    document.querySelector(selector).addEventListener("input", () => {
+      selectedLink = null;
+      renderSessionExplorer(data);
+      drawContextNetwork(data);
+    });
   });
   renderSessionExplorer(data);
 }
@@ -676,6 +812,7 @@ async function init() {
     wireMetricButtons();
     wireNetworkButtons();
     wireSessionExplorer(storyData);
+    document.querySelector("#reset-exploration").addEventListener("click", resetExploration);
   } catch (error) {
     document.body.insertAdjacentHTML(
       "afterbegin",

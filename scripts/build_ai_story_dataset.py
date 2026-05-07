@@ -262,6 +262,7 @@ def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
             "year": int(row["conference_year"]),
             "title": row["title"],
             "context": row["primary_ai_context_group"],
+            "context_groups": sorted(context_set(row), key=lambda group: CONTEXT_ORDER.index(group)),
             "tracks": row["normalized_tracks"],
             "session_format": row["normalized_session_format"],
             "date": clean_text(row.get("date", "")),

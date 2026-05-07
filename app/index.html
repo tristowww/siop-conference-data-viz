@@ -35,6 +35,14 @@
             <span>Selection/methods is a smaller share of AI-related track contexts in 2026.</span>
           </div>
         </div>
+        <div class="exploration-lens" aria-live="polite">
+          <div>
+            <span class="stat-label">Active exploration lens</span>
+            <strong id="active-lens-title">All AI-related sessions</strong>
+            <span id="active-lens-detail">Click charts, network nodes, or filters to narrow the session browser.</span>
+          </div>
+          <button id="reset-exploration" type="button">Reset exploration</button>
+        </div>
       </section>
 
       <section class="section-band intro-band" aria-labelledby="takeaways-title">
@@ -245,5 +253,6 @@
         </p>
       </section>
     </main>
+    <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
   </body>
 </html>
