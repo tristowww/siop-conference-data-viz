@@ -13,6 +13,7 @@ engagement signals where available.
 - 2025 Whova-style workbook added in `data/raw/2025/`.
 - 2025 normalized session CSV generated in `data/processed/sessions_2025.csv`.
 - 2026 public Whova embed scrape workflow added.
+- 2026 public Whova agenda API workflow added for richer public session metadata.
 
 ## Data workflow
 
@@ -21,9 +22,9 @@ data/raw/2025/siop2025sessions_updated.xlsx
   -> scripts/normalize_sessions.py
   -> data/processed/sessions_2025.csv
 
-2026 public Whova embed scrape
-  -> scripts/normalize_sessions.py
-  -> data/processed/sessions_2026.csv
+2026 public Whova agenda API
+  -> scripts/fetch_whova_public_agenda.py
+  -> data/processed/sessions_2026_enriched.csv
 
 data/processed/sessions_*.csv
   -> app visualization
@@ -48,6 +49,12 @@ Scrape the public Whova agenda embed:
 
 ```bash
 python scripts/scrape_public_whova.py --output data/processed/sessions_2026_public.csv
+```
+
+Fetch the richer public Whova agenda API data:
+
+```bash
+python scripts/fetch_whova_public_agenda.py --output data/processed/sessions_2026_enriched.csv
 ```
 
 Build the year-over-year comparison table:

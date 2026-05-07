@@ -31,6 +31,8 @@ def common_from_2025(path: Path) -> pd.DataFrame:
             "location": df["location"],
             "tracks": df["tracks"],
             "speakers": df["speakers"],
+            "speaker_affiliations": "",
+            "description": "",
             "session_format": df["session_format"],
             "adds": df["adds"],
             "likes": df["likes"],
@@ -42,24 +44,27 @@ def common_from_2025(path: Path) -> pd.DataFrame:
 
 def common_from_2026_public(path: Path) -> pd.DataFrame:
     df = pd.read_csv(path)
+    is_enriched = "date" in df.columns and "description" in df.columns
     return pd.DataFrame(
         {
             "conference_year": df["conference_year"],
-            "session_id": "",
+            "session_id": df["session_id"] if "session_id" in df else "",
             "display_session_id": df["display_session_id"],
             "title": df["title"],
-            "date": df["date_label"].map(DATE_LABELS_2026).fillna(""),
+            "date": df["date"] if is_enriched else df["date_label"].map(DATE_LABELS_2026).fillna(""),
             "date_label": df["date_label"],
             "start_time": df["start_time"],
             "end_time": df["end_time"],
             "location": df["location"],
             "tracks": df["tracks"],
             "speakers": df["speakers"],
-            "session_format": "",
+            "speaker_affiliations": df["speaker_affiliations"] if "speaker_affiliations" in df else "",
+            "description": df["description"] if "description" in df else "",
+            "session_format": df["session_format"] if "session_format" in df else "",
             "adds": pd.NA,
             "likes": pd.NA,
             "comments": pd.NA,
-            "source": "2026 public SIOP Whova embed",
+            "source": "2026 public SIOP Whova agenda API" if is_enriched else "2026 public SIOP Whova embed",
         }
     )
 
@@ -67,12 +72,17 @@ def common_from_2026_public(path: Path) -> pd.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sessions-2025", default="data/processed/sessions_2025.csv", type=Path)
-    parser.add_argument("--sessions-2026", default="data/processed/sessions_2026_public.csv", type=Path)
+    parser.add_argument("--sessions-2026", type=Path)
     parser.add_argument("--output", default="data/processed/sessions_comparison.csv", type=Path)
     args = parser.parse_args()
 
+    sessions_2026 = args.sessions_2026
+    if sessions_2026 is None:
+        enriched = Path("data/processed/sessions_2026_enriched.csv")
+        sessions_2026 = enriched if enriched.exists() else Path("data/processed/sessions_2026_public.csv")
+
     comparison = pd.concat(
-        [common_from_2025(args.sessions_2025), common_from_2026_public(args.sessions_2026)],
+        [common_from_2025(args.sessions_2025), common_from_2026_public(sessions_2026)],
         ignore_index=True,
     )
     comparison = comparison.sort_values(["conference_year", "date", "start_time", "title"], na_position="last")
