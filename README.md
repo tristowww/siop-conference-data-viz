@@ -12,7 +12,7 @@ engagement signals where available.
 
 - 2025 Whova-style workbook added in `data/raw/2025/`.
 - 2025 normalized session CSV generated in `data/processed/sessions_2025.csv`.
-- 2026 Whova scrape workflow scaffolded, but not run yet.
+- 2026 public Whova embed scrape workflow added.
 
 ## Data workflow
 
@@ -21,7 +21,7 @@ data/raw/2025/siop2025sessions_updated.xlsx
   -> scripts/normalize_sessions.py
   -> data/processed/sessions_2025.csv
 
-2026 Whova app/API capture
+2026 public Whova embed scrape
   -> scripts/normalize_sessions.py
   -> data/processed/sessions_2026.csv
 
@@ -44,7 +44,19 @@ Normalize the 2025 workbook:
 python scripts/normalize_sessions.py --input data/raw/2025/siop2025sessions_updated.xlsx --year 2025 --output data/processed/sessions_2025.csv
 ```
 
-Start the assisted Whova capture workflow:
+Scrape the public Whova agenda embed:
+
+```bash
+python scripts/scrape_public_whova.py --output data/processed/sessions_2026_public.csv
+```
+
+Build the year-over-year comparison table:
+
+```bash
+python scripts/build_comparison_dataset.py
+```
+
+Start the assisted authenticated Whova capture workflow only if the public embed is not enough:
 
 ```bash
 python scripts/capture_whova.py --url "PASTE_WHOVA_EVENT_URL_HERE" --out data/raw/2026/private_api_captures

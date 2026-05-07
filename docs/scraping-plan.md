@@ -19,6 +19,18 @@ profile details that are not necessary for the public-facing visualization.
 
 ## Best path
 
+SIOP's public schedule page embeds Whova's public agenda widget. Use this first because it avoids
+authenticated attendee areas and is focused on public program metadata.
+
+```bash
+python scripts/scrape_public_whova.py --output data/processed/sessions_2026_public.csv
+```
+
+Then review the fields against `data/processed/sessions_2025.csv`. If the public embed lacks a
+needed field, use the authenticated fallback below.
+
+## Authenticated fallback
+
 1. Open the 2026 SIOP Whova event with normal authorized access.
 2. Run `scripts/capture_whova.py` with the Whova URL.
 3. Log in manually in the launched browser.
@@ -29,9 +41,9 @@ profile details that are not necessary for the public-facing visualization.
 
 ## Why this approach
 
-The 2025 workbook appears to be a flattened Whova export. The 2026 app likely loads session data
-through JSON API responses after authentication. Capturing those responses after normal login is
-more reliable than scraping rendered text from the page and avoids brittle HTML selectors.
+The 2025 workbook appears to be a flattened Whova export. The 2026 public schedule is embedded
+through Whova, so rendered public program HTML may be enough for the comparison. Capturing JSON
+responses after normal login is available only as a fallback.
 
 ## Before making anything public
 
