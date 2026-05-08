@@ -280,6 +280,7 @@ def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
             "date": clean_text(row.get("date", "")),
             "start_time": clean_text(row.get("start_time", "")),
             "location": clean_text(row.get("location", "")),
+            "speakers": clean_text(row.get("speakers", ""))[:260],
             "visible_ai_signal": bool(row.get("has_visible_ai_signal", False)),
             "description": clean_text(row.get("description", ""))[:240],
         }

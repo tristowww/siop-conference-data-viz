@@ -1405,6 +1405,7 @@ function renderSessionExplorer(data) {
   const entered = cards.enter().append("article").attr("class", "session-card");
   entered.append("div").attr("class", "example-meta");
   entered.append("h3");
+  entered.append("p").attr("class", "session-authors");
   entered.append("p").attr("class", "session-tracks");
   entered.append("p").attr("class", "session-description");
 
@@ -1417,6 +1418,9 @@ function renderSessionExplorer(data) {
     );
   });
   merged.select("h3").html((d) => highlightTerm(d.title, query));
+  merged
+    .select(".session-authors")
+    .html((d) => highlightTerm(d.speakers ? `Authors: ${d.speakers}` : "Authors not listed in this source", query));
   merged.select(".session-tracks").html((d) => highlightTerm(sessionDescriptor(d), query));
   merged.select(".session-description").html((d) => highlightTerm(d.description || d.location, query));
   cards.exit().remove();

@@ -41,6 +41,12 @@ TIME_RE = re.compile(
 )
 DATE_RE = re.compile(r"\b(?P<month>Apr|May)\.?\s+(?P<day>\d{1,2})\b", re.IGNORECASE)
 LOCATION_RE = re.compile(r"(?:Location:\s*)?(?P<location>(?:Hyatt|Swissotel|Hynes|Exhibit|The |Virtual|VIRTUAL)[^\n]{3,120})")
+AUTHOR_STOP_RE = re.compile(
+    r"\(\s*20\d{2}[^)]{0,100}\)\.?|"
+    r"\(\s*(?:Apr|April)[^)]*20\d{2}[^)]*\)\.|"
+    r"\[\s*(?:Poster|Symposium|Panel|Panel Discussion|Alternative|Master Tutorial|Ignite|Debate)",
+    re.IGNORECASE,
+)
 
 COMMON_COLUMNS = [
     "conference_year",
@@ -107,11 +113,34 @@ def parse_location(block: str) -> str:
     return ""
 
 
+def parse_authors(block: str, title: str) -> str:
+    match = re.search(r"\bAuthors?:\s*(?P<authors>.+)", clean_text(block), re.IGNORECASE)
+    if not match:
+        return ""
+    author_text = match.group("authors")
+    title_index = author_text.lower().find(clean_text(title).lower())
+    if title_index > 0:
+        author_text = author_text[:title_index]
+    stop = AUTHOR_STOP_RE.search(author_text)
+    if stop:
+        author_text = author_text[: stop.start()]
+    author_text = re.sub(r"\bSociety for Industrial.*$", "", author_text, flags=re.IGNORECASE)
+    author_text = re.sub(r"\s*\[[^\]]*$", "", author_text)
+    author_text = clean_text(author_text).strip(" .;,")
+    return author_text[:320]
+
+
 def parse_description(block: str) -> str:
     cleaned = clean_text(block)
     cleaned = TIME_RE.sub("", cleaned)
     cleaned = DATE_RE.sub("", cleaned)
     cleaned = re.sub(r"^Location:\s*[^.]{3,140}", "", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(
+        r"\bAuthors?:\s*.+?(?:\(\s*(?:2022|2023|2024)\s*\)\.|\[[^\]]+\]\.)",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
     cleaned = re.sub(r"\b(?:Authors?|Speakers?|Sponsor):\s*", "", cleaned, flags=re.IGNORECASE)
     cleaned = re.sub(r"\b(T Speakers|Conference Career Center|EVENTS AND RECEPTIONS)\b.*", "", cleaned)
     return cleaned[:1200].strip()
@@ -144,7 +173,7 @@ def parse_records(year: int, text: str) -> list[dict[str, object]]:
             "end_time": clean_text(time_match.group("end")) if time_match else "",
             "location": parse_location(block),
             "tracks": "",
-            "speakers": "",
+            "speakers": parse_authors(block, title),
             "speaker_affiliations": "",
             "description": parse_description(block),
             "session_format": clean_text(match.group("format")),
@@ -157,7 +186,7 @@ def parse_records(year: int, text: str) -> list[dict[str, object]]:
         if session_id in seen:
             existing = records[seen[session_id]]
             if len(str(record["description"])) > len(str(existing["description"])):
-                for key in ["description", "location", "date", "date_label", "start_time", "end_time"]:
+                for key in ["description", "location", "date", "date_label", "start_time", "end_time", "speakers"]:
                     existing[key] = record[key]
             if len(str(record["title"])) > len(str(existing["title"])):
                 existing["title"] = record["title"]

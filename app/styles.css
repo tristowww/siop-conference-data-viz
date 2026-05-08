@@ -743,6 +743,13 @@ select:focus {
   margin-top: 8px;
 }
 
+.session-authors {
+  margin-bottom: 6px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
 .example-meta {
   display: flex;
   flex-wrap: wrap;
