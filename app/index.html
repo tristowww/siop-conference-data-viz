@@ -18,12 +18,16 @@
           years. It also appears in a wider mix of use-case contexts, including training, coaching,
           leadership, culture, employee experience, and accessibility.
         </p>
-        <div
-          id="hero-signal-field"
-          class="hero-signal-field"
-          role="img"
-          aria-label="Data-driven AI signal field by year and context"
-        ></div>
+        <div class="signal-stage" aria-label="Interactive AI signal console">
+          <div
+            id="hero-signal-field"
+            class="hero-signal-field"
+            role="img"
+            aria-label="Data-driven AI signal field by year and context"
+          ></div>
+          <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
+          <div id="focus-insights" class="focus-insights" aria-label="Focused year insights"></div>
+        </div>
         <div class="hero-grid" aria-label="Key findings">
           <div>
             <span class="stat-label">AI-language sessions</span>
@@ -89,6 +93,23 @@
             </p>
           </article>
         </div>
+      </section>
+
+      <section class="section-band signal-river-band" aria-labelledby="signal-river-title">
+        <div class="section-heading">
+          <p class="eyebrow">Signal river</p>
+          <h2 id="signal-river-title">The AI story widens, narrows, then surges.</h2>
+          <p>
+            This stream view follows use-case context counts across the five-year set. Hover or
+            click a band to move from the aggregate story into the session browser.
+          </p>
+        </div>
+        <div
+          id="signal-river-chart"
+          class="chart signal-river-chart"
+          role="img"
+          aria-label="Stacked stream of AI-related contexts by year"
+        ></div>
       </section>
 
       <section class="section-band" aria-labelledby="headline-chart-title">

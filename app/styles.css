@@ -24,8 +24,15 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
+    linear-gradient(90deg, rgba(37, 92, 153, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(22, 129, 122, 0.03) 1px, transparent 1px),
     linear-gradient(180deg, #f7fbfc 0, var(--bg) 28rem),
     var(--bg);
+  background-size:
+    72px 72px,
+    72px 72px,
+    auto,
+    auto;
   color: var(--ink);
 }
 
@@ -85,10 +92,15 @@ p {
   font-size: clamp(1.05rem, 1.5vw, 1.32rem);
 }
 
+.signal-stage {
+  width: min(1080px, 100%);
+  border-block: 1px solid var(--line);
+  padding: 10px 0 0;
+}
+
 .hero-signal-field {
   width: min(1080px, 100%);
   min-height: 360px;
-  border-block: 1px solid var(--line);
   overflow: hidden;
   padding: 4px 0;
 }
@@ -108,6 +120,77 @@ p {
 
 .signal-node:hover {
   filter: drop-shadow(0 6px 12px rgba(23, 32, 42, 0.25));
+}
+
+.signal-node.is-focus circle {
+  animation: signal-pulse 1.7s ease-in-out infinite;
+}
+
+.signal-thread {
+  stroke-dasharray: 8 10;
+  animation: signal-flow 16s linear infinite;
+}
+
+.year-scrubber {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 0 14px;
+}
+
+.focus-insights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding-bottom: 16px;
+}
+
+.focus-insights article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 16px;
+}
+
+.focus-insights strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: clamp(1.35rem, 2.4vw, 2.25rem);
+  line-height: 1;
+}
+
+.focus-insights p {
+  margin-bottom: 0;
+  font-size: 0.92rem;
+}
+
+.signal-river-chart {
+  min-height: 520px;
+}
+
+.river-band {
+  cursor: pointer;
+  mix-blend-mode: multiply;
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+
+.river-band:hover {
+  filter: saturate(1.25) drop-shadow(0 8px 14px rgba(23, 32, 42, 0.16));
+}
+
+.focus-line {
+  stroke: var(--ink);
+  stroke-width: 2;
+  stroke-dasharray: 5 7;
+  opacity: 0.8;
+}
+
+.river-year-hit {
+  cursor: pointer;
+  stroke: #fff;
+  stroke-width: 2;
 }
 
 .hero-grid {
@@ -580,6 +663,23 @@ select:focus {
   padding: 16px;
 }
 
+@keyframes signal-flow {
+  to {
+    stroke-dashoffset: -220;
+  }
+}
+
+@keyframes signal-pulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(37, 92, 153, 0));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 12px rgba(37, 92, 153, 0.42));
+  }
+}
+
 @media (max-width: 820px) {
   main {
     width: min(100% - 24px, 680px);
@@ -597,7 +697,8 @@ select:focus {
   .insight-grid,
   .compare-grid,
   .side-matrix,
-  .format-strip {
+  .format-strip,
+  .focus-insights {
     grid-template-columns: 1fr;
   }
 
@@ -621,13 +722,21 @@ select:focus {
   }
 
   .hero-signal-field {
+    width: 780px;
     min-height: 280px;
-    overflow-x: auto;
   }
 
   .hero-signal-field svg {
     width: 780px;
     max-width: none;
+  }
+
+  .signal-stage {
+    overflow-x: auto;
+  }
+
+  .focus-insights {
+    min-width: 780px;
   }
 
   .network-chart {

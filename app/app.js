@@ -26,6 +26,7 @@ const CONTEXT_ORDER = [
 let activeMetric = "sessions";
 let activeContext = "All";
 let activeNetworkYear = 2026;
+let activeFocusYear = 2026;
 let selectedLink = null;
 let selectedTime = null;
 let storyData;
@@ -40,6 +41,15 @@ function getYears(data) {
 
 function yearColor(year) {
   return COLORS[year] || "#6b7280";
+}
+
+function shortContext(context) {
+  return String(context)
+    .replace("Explicit tech/AI", "Explicit tech")
+    .replace("Selection/assessment/methods", "Selection")
+    .replace("Org/development/training", "Org/development")
+    .replace("DEI/accessibility", "DEI/access")
+    .replace("Other/special", "Other");
 }
 
 function formatDelta(current, previous) {
@@ -105,9 +115,14 @@ function resetExploration() {
   activeContext = "All";
   selectedLink = null;
   selectedTime = null;
+  activeFocusYear = getYears(storyData).at(-1);
+  activeNetworkYear = activeFocusYear;
   document.querySelector("#session-year").value = "All";
   document.querySelector("#session-context").value = "All";
   document.querySelector("#session-search").value = "";
+  syncYearControls();
+  drawHeroSignalField(storyData);
+  drawSignalRiver(storyData);
   drawContextChart(storyData);
   drawContextNetwork(storyData);
   drawTrackChart(storyData);
@@ -115,8 +130,31 @@ function resetExploration() {
   renderSessionExplorer(storyData);
 }
 
+function focusYear(year, { updateExplorer = false } = {}) {
+  activeFocusYear = Number(year);
+  activeNetworkYear = Number(year);
+  selectedLink = null;
+  selectedTime = null;
+  syncYearControls();
+  drawHeroSignalField(storyData);
+  drawSignalRiver(storyData);
+  drawContextNetwork(storyData);
+  renderFocusInsights(storyData);
+  if (updateExplorer) {
+    setExplorerLens({ year, context: "All", query: "", link: null });
+  }
+}
+
+function syncYearControls() {
+  document.querySelectorAll(".focus-year, .network-year").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
+  });
+}
+
 function setHeroStats(data) {
   const years = getYears(data);
+  activeFocusYear = years[years.length - 1];
+  activeNetworkYear = activeFocusYear;
   const first = data.ai_summary.find((d) => d.year === years[0]);
   const last = data.ai_summary.find((d) => d.year === years[years.length - 1]);
   document.querySelector("#ai-language-stat").textContent =
@@ -183,11 +221,12 @@ function drawHeroSignalField(data) {
     .selectAll("path")
     .data(contextLines)
     .join("path")
+    .attr("class", "signal-thread")
     .attr("d", (d) => line(d.rows))
     .attr("fill", "none")
     .attr("stroke", (d) => COLORS.contexts[d.context])
-    .attr("stroke-width", 2)
-    .attr("opacity", 0.28);
+    .attr("stroke-width", (d) => (activeContext === "All" || activeContext === d.context ? 2.6 : 1.4))
+    .attr("opacity", (d) => (activeContext === "All" || activeContext === d.context ? 0.42 : 0.14));
 
   svg
     .append("g")
@@ -197,7 +236,7 @@ function drawHeroSignalField(data) {
     .attr("x", margin.left)
     .attr("y", (d) => y(d) + 4)
     .attr("class", "network-node-label")
-    .text((d) => d.replace("/methods", "").replace("/training", ""));
+    .text((d) => shortContext(d));
 
   years.forEach((year) => {
     svg
@@ -214,7 +253,7 @@ function drawHeroSignalField(data) {
     .selectAll("g")
     .data(rows)
     .join("g")
-    .attr("class", "signal-node")
+    .attr("class", (d) => `signal-node${d.conference_year === activeFocusYear ? " is-focus" : ""}`)
     .attr("transform", (d) => `translate(${d.x},${d.y})`)
     .on("mouseenter", (event, d) => {
       showTooltip(event, d.ai_context_group, `${d.sessions} AI-related session-context signals in ${d.conference_year}.`);
@@ -225,16 +264,18 @@ function drawHeroSignalField(data) {
       activeContext = d.ai_context_group;
       selectedLink = null;
       selectedTime = null;
+      focusYear(d.conference_year);
       setExplorerLens({ year: d.conference_year, context: d.ai_context_group, query: "", link: null });
       drawContextChart(storyData);
-      drawContextNetwork(storyData);
     });
 
   groups
     .append("circle")
     .attr("r", 0)
     .attr("fill", (d) => COLORS.contexts[d.ai_context_group])
-    .attr("opacity", 0.9)
+    .attr("opacity", (d) => (d.conference_year === activeFocusYear ? 0.98 : 0.62))
+    .attr("stroke", (d) => (d.conference_year === activeFocusYear ? "#17202a" : "#ffffff"))
+    .attr("stroke-width", (d) => (d.conference_year === activeFocusYear ? 2.5 : 1.2))
     .transition()
     .duration(700)
     .delay((_, index) => index * 45)
@@ -347,6 +388,106 @@ function drawHeadlineChart(data) {
       .attr("font-size", 13)
       .attr("font-weight", 700)
       .text(metric);
+  });
+}
+
+function drawSignalRiver(data) {
+  const width = 1040;
+  const height = 520;
+  const margin = { top: 42, right: 184, bottom: 68, left: 54 };
+  const svg = makeSvg("#signal-river-chart", width, height);
+  const years = getYears(data);
+  const rows = years.map((year) => {
+    const row = { year };
+    CONTEXT_ORDER.forEach((context) => {
+      const found = data.context_summary.find(
+        (item) => item.conference_year === year && item.ai_context_group === context,
+      );
+      row[context] = found ? found.sessions : 0;
+    });
+    return row;
+  });
+  const stack = d3.stack().keys(CONTEXT_ORDER).offset(d3.stackOffsetWiggle).order(d3.stackOrderInsideOut);
+  const series = stack(rows);
+  const x = d3.scalePoint().domain(years).range([margin.left, width - margin.right]).padding(0.3);
+  const yExtent = d3.extent(series.flat(2));
+  const y = d3.scaleLinear().domain(yExtent).nice().range([height - margin.bottom, margin.top]);
+  const area = d3
+    .area()
+    .x((d) => x(d.data.year))
+    .y0((d) => y(d[0]))
+    .y1((d) => y(d[1]))
+    .curve(d3.curveCatmullRom.alpha(0.5));
+
+  svg
+    .append("g")
+    .selectAll("path")
+    .data(series)
+    .join("path")
+    .attr("class", "river-band")
+    .attr("d", area)
+    .attr("fill", (d) => COLORS.contexts[d.key])
+    .attr("opacity", (d) => (activeContext === "All" || activeContext === d.key ? 0.82 : 0.22))
+    .on("mouseenter", (event, d) => showTooltip(event, d.key, "Click to focus this use-case context."))
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      activeContext = d.key;
+      drawSignalRiver(storyData);
+      drawContextChart(storyData);
+      setExplorerLens({ year: activeFocusYear, context: d.key, query: "", link: null });
+    });
+
+  const focusX = x(activeFocusYear);
+  svg
+    .append("line")
+    .attr("class", "focus-line")
+    .attr("x1", focusX)
+    .attr("x2", focusX)
+    .attr("y1", margin.top - 12)
+    .attr("y2", height - margin.bottom + 12);
+
+  svg
+    .append("g")
+    .selectAll("circle")
+    .data(rows)
+    .join("circle")
+    .attr("class", "river-year-hit")
+    .attr("cx", (d) => x(d.year))
+    .attr("cy", height - margin.bottom + 26)
+    .attr("r", (d) => (d.year === activeFocusYear ? 11 : 7))
+    .attr("fill", (d) => yearColor(d.year))
+    .on("mouseenter", (event, d) => showTooltip(event, d.year, "Click to focus this conference year."))
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => focusYear(d.year, { updateExplorer: true }));
+
+  svg
+    .append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height - margin.bottom + 44})`)
+    .call(d3.axisBottom(x).tickSize(0).tickPadding(8))
+    .call((g) => g.select(".domain").remove());
+
+  const latestYear = years[years.length - 1];
+  const latestRow = rows.find((row) => row.year === latestYear);
+  const legendRows = CONTEXT_ORDER.map((context) => ({ context, value: latestRow[context] }));
+  const legend = svg.append("g").attr("transform", `translate(${width - margin.right + 8},${margin.top})`);
+  legendRows.forEach((item, index) => {
+    const group = legend.append("g").attr("transform", `translate(0,${index * 42})`);
+    group.append("rect").attr("width", 13).attr("height", 13).attr("rx", 3).attr("fill", COLORS.contexts[item.context]);
+    group
+      .append("text")
+      .attr("x", 20)
+      .attr("y", 12)
+      .attr("class", "network-node-label")
+      .text(shortContext(item.context));
+    group
+      .append("text")
+      .attr("x", 20)
+      .attr("y", 28)
+      .attr("class", "network-link-label")
+      .text(`${item.value} in ${latestYear}`);
   });
 }
 
@@ -695,6 +836,43 @@ function renderNetworkInsights(data, nodes, links) {
   cards.exit().remove();
 }
 
+function renderFocusInsights(data) {
+  const yearSummary = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const contextRows = data.context_summary.filter((item) => item.conference_year === activeFocusYear);
+  const topContext = [...contextRows].sort((a, b) => b.sessions - a.sessions)[0];
+  const networkLinks = data.context_network.links.filter((item) => item.year === activeFocusYear);
+  const strongestLink = [...networkLinks].sort((a, b) => b.sessions - a.sessions)[0];
+  const cards = [
+    {
+      label: "Focused year",
+      value: activeFocusYear,
+      copy: yearSummary
+        ? `${yearSummary.ai_related_sessions} AI-related sessions, ${percent(yearSummary.ai_share)} of the parsed program.`
+        : "No summary available.",
+    },
+    {
+      label: "Dominant context",
+      value: topContext ? shortContext(topContext.ai_context_group) : "n/a",
+      copy: topContext ? `${topContext.sessions} AI-related context signals in this year.` : "No context signals found.",
+    },
+    {
+      label: "Strongest bridge",
+      value: strongestLink ? `${strongestLink.source.split("/")[0]} + ${strongestLink.target.split("/")[0]}` : "n/a",
+      copy: strongestLink ? `${strongestLink.sessions} sessions connect those use-case neighborhoods.` : "No bridges found.",
+    },
+  ];
+
+  const articles = d3.select("#focus-insights").selectAll("article").data(cards);
+  const entered = articles.enter().append("article");
+  entered.append("span").attr("class", "stat-label");
+  entered.append("strong");
+  entered.append("p");
+  entered.merge(articles).select(".stat-label").text((d) => d.label);
+  entered.merge(articles).select("strong").text((d) => d.value);
+  entered.merge(articles).select("p").text((d) => d.copy);
+  articles.exit().remove();
+}
+
 function drawTrackChart(data) {
   const width = 980;
   const height = 560;
@@ -830,13 +1008,25 @@ function renderFormatSummary(data) {
   });
 }
 
+function wireYearScrubber(data) {
+  const scrubber = document.querySelector("#year-scrubber");
+  scrubber.innerHTML = "";
+  [...getYears(data)].reverse().forEach((year) => {
+    const button = document.createElement("button");
+    button.className = "focus-year";
+    button.type = "button";
+    button.dataset.year = String(year);
+    button.textContent = year;
+    button.addEventListener("click", () => focusYear(year, { updateExplorer: true }));
+    scrubber.appendChild(button);
+  });
+  syncYearControls();
+}
+
 function wireNetworkButtons() {
   document.querySelectorAll(".network-year").forEach((button) => {
     button.addEventListener("click", () => {
-      activeNetworkYear = Number(button.dataset.year);
-      document.querySelectorAll(".network-year").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      drawContextNetwork(storyData);
+      focusYear(button.dataset.year, { updateExplorer: true });
     });
   });
 }
@@ -958,6 +1148,14 @@ function wireSessionExplorer(data) {
     document.querySelector(selector).addEventListener("input", () => {
       selectedLink = null;
       selectedTime = null;
+      if (selector === "#session-year" && document.querySelector("#session-year").value !== "All") {
+        activeFocusYear = Number(document.querySelector("#session-year").value);
+        activeNetworkYear = activeFocusYear;
+        syncYearControls();
+        drawHeroSignalField(data);
+        drawSignalRiver(data);
+        renderFocusInsights(data);
+      }
       renderSessionExplorer(data);
       drawContextNetwork(data);
     });
@@ -983,12 +1181,15 @@ async function init() {
     setHeroStats(storyData);
     drawHeadlineChart(storyData);
     drawHeroSignalField(storyData);
+    drawSignalRiver(storyData);
     drawRhythmChart(storyData);
     drawContextChart(storyData);
     drawContextNetwork(storyData);
     drawTrackChart(storyData);
     renderFormatSummary(storyData);
+    renderFocusInsights(storyData);
     wireMetricButtons();
+    wireYearScrubber(storyData);
     wireNetworkButtons();
     wireSessionExplorer(storyData);
     document.querySelector("#reset-exploration").addEventListener("click", resetExploration);
