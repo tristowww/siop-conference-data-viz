@@ -32,6 +32,9 @@
               <span id="replay-progress"></span>
             </div>
           </div>
+          <p id="story-caption" class="story-caption">
+            Focus a year to see how the AI conversation changes across the story.
+          </p>
           <div id="focus-insights" class="focus-insights" aria-label="Focused year insights"></div>
         </div>
         <div class="hero-grid" aria-label="Key findings">
@@ -55,7 +58,7 @@
           <div>
             <span class="stat-label">Active exploration lens</span>
             <strong id="active-lens-title">All AI-related sessions</strong>
-            <span id="active-lens-detail">Click charts, network nodes, or filters to narrow the session browser.</span>
+            <span id="active-lens-detail">Click the river, compass, year replay, or filters to narrow the session browser.</span>
           </div>
           <button id="reset-exploration" type="button">Reset exploration</button>
         </div>
@@ -116,36 +119,7 @@
           role="img"
           aria-label="Stacked stream of AI-related contexts by year"
         ></div>
-      </section>
-
-      <section class="section-band" aria-labelledby="headline-chart-title">
-        <div class="section-heading">
-          <p class="eyebrow">Headline signal</p>
-          <h2 id="headline-chart-title">AI is more visible in the program.</h2>
-          <p>
-            The stricter measure looks only at title, track, and format labels. The broader measure
-            also includes public session descriptions, which captures sessions where AI is part of
-            the abstract rather than the headline.
-          </p>
-        </div>
-        <div id="headline-chart" class="chart" role="img" aria-label="AI session share by year"></div>
-      </section>
-
-      <section class="section-band rhythm-band" aria-labelledby="rhythm-title">
-        <div class="section-heading">
-          <p class="eyebrow">Program rhythm</p>
-          <h2 id="rhythm-title">AI sessions have a conference cadence.</h2>
-          <p>
-            This grid maps AI-related sessions by conference day and start hour. Darker cells mark
-            heavier pockets of AI programming, making the shift feel temporal as well as topical.
-          </p>
-        </div>
-        <div
-          id="rhythm-chart"
-          class="chart rhythm-chart"
-          role="img"
-          aria-label="AI-related sessions by day and hour"
-        ></div>
+        <div id="river-insights" class="river-insights" aria-label="Signal river interpretation"></div>
       </section>
 
       <section class="section-band" aria-labelledby="side-title">
@@ -230,73 +204,6 @@
             </p>
           </article>
         </div>
-      </section>
-
-      <section class="section-band alt" aria-labelledby="context-chart-title">
-        <div class="section-heading">
-          <p class="eyebrow">Use-case context</p>
-          <h2 id="context-chart-title">The AI conversation is not only selection and assessment.</h2>
-          <p>
-            Public program text suggests an expanding emphasis: selection and methods remain central,
-            while org-side, development, training, DEI, and special-session contexts also carry
-            meaningful parts of the AI conversation.
-          </p>
-        </div>
-        <div class="toolbar" aria-label="Chart metric">
-          <button class="metric-toggle active" type="button" data-metric="sessions">Count</button>
-          <button class="metric-toggle" type="button" data-metric="share">Share</button>
-        </div>
-        <div
-          id="context-chart"
-          class="chart tall"
-          role="img"
-          aria-label="AI-related sessions by use-case context"
-        ></div>
-      </section>
-
-      <section class="section-band network-band" aria-labelledby="network-title">
-        <div class="section-heading">
-          <p class="eyebrow">Network-inspired view</p>
-          <h2 id="network-title">AI use cases connect across program neighborhoods.</h2>
-          <p>
-            Inspired by the SIOP network explorer, this map treats use-case contexts as nodes and
-            links them when the same AI-related session carries multiple context signals. It is a
-            lightweight topic-adjacency view rather than a presenter collaboration network.
-          </p>
-        </div>
-        <div class="toolbar" aria-label="Network year">
-          <button class="network-year active" type="button" data-year="2026">2026</button>
-          <button class="network-year" type="button" data-year="2025">2025</button>
-          <button class="network-year" type="button" data-year="2024">2024</button>
-          <button class="network-year" type="button" data-year="2023">2023</button>
-          <button class="network-year" type="button" data-year="2022">2022</button>
-        </div>
-        <div
-          id="context-network"
-          class="chart network-chart"
-          role="img"
-          aria-label="AI use-case context network"
-        ></div>
-        <div id="network-insights" class="network-insights" aria-label="Network interpretation"></div>
-      </section>
-
-      <section class="section-band" aria-labelledby="track-chart-title">
-        <div class="section-heading">
-          <p class="eyebrow">Track signal</p>
-          <h2 id="track-chart-title">The AI signal spreads across familiar program homes.</h2>
-          <p>
-            The explicit technology track is the most visible 2026 container, but AI-related
-            sessions also appear in selection, methods, training, career development, leadership,
-            DEI, and special-session tracks.
-          </p>
-        </div>
-        <div
-          id="track-chart"
-          class="chart tall"
-          role="img"
-          aria-label="Top AI-related tracks by year"
-        ></div>
-        <div id="format-summary" class="format-strip" aria-label="Top AI-related session formats"></div>
       </section>
 
       <section class="section-band alt" aria-labelledby="session-explorer-title">

@@ -127,10 +127,8 @@ function resetExploration() {
   drawHeroSignalField(storyData);
   drawSignalRiver(storyData);
   drawUseCaseCompass(storyData);
-  drawContextChart(storyData);
-  drawContextNetwork(storyData);
-  drawTrackChart(storyData);
-  drawRhythmChart(storyData);
+  renderStoryCaption(storyData);
+  renderRiverInsights(storyData);
   renderSessionExplorer(storyData);
 }
 
@@ -142,9 +140,10 @@ function focusYear(year, { updateExplorer = false } = {}) {
   syncYearControls();
   drawHeroSignalField(storyData);
   drawSignalRiver(storyData);
-  drawContextNetwork(storyData);
   drawUseCaseCompass(storyData);
   renderFocusInsights(storyData);
+  renderStoryCaption(storyData);
+  renderRiverInsights(storyData);
   if (updateExplorer) {
     setExplorerLens({ year, context: "All", query: "", link: null });
   }
@@ -154,8 +153,8 @@ function focusContext(context) {
   activeContext = context;
   drawUseCaseCompass(storyData);
   drawSignalRiver(storyData);
-  drawContextChart(storyData);
-  drawContextNetwork(storyData);
+  renderStoryCaption(storyData);
+  renderRiverInsights(storyData);
   setExplorerLens({ year: activeFocusYear, context, query: "", link: null });
 }
 
@@ -1034,6 +1033,77 @@ function renderFocusInsights(data) {
   articles.exit().remove();
 }
 
+function getContextRowsForYear(data, year) {
+  return CONTEXT_ORDER.map((context) => {
+    const found = data.context_summary.find(
+      (item) => item.conference_year === year && item.ai_context_group === context,
+    );
+    return {
+      context,
+      sessions: found ? found.sessions : 0,
+      share: found ? found.share : 0,
+    };
+  });
+}
+
+function renderStoryCaption(data) {
+  const years = getYears(data);
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const previousYear = years[years.indexOf(activeFocusYear) - 1];
+  const previous = data.ai_summary.find((item) => item.year === previousYear);
+  const contextRows = getContextRowsForYear(data, activeFocusYear);
+  const topContext = [...contextRows].sort((a, b) => b.sessions - a.sessions)[0];
+  const delta = previous ? current.ai_related_sessions - previous.ai_related_sessions : null;
+  const deltaText =
+    delta === null
+      ? "This is the baseline year for the story."
+      : `${delta >= 0 ? "+" : ""}${delta} AI-related sessions versus ${previousYear}.`;
+  document.querySelector("#story-caption").textContent =
+    `${activeFocusYear}: ${current.ai_related_sessions} AI-related sessions. ` +
+    `${deltaText} ${shortContext(topContext.context)} is the strongest context signal.`;
+}
+
+function renderRiverInsights(data) {
+  const years = getYears(data);
+  const first = data.ai_summary.find((item) => item.year === years[0]);
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const currentContexts = getContextRowsForYear(data, activeFocusYear);
+  const topContext = [...currentContexts].sort((a, b) => b.sessions - a.sessions)[0];
+  const org = currentContexts.find((item) => item.context === "Org/development/training");
+  const selection = currentContexts.find((item) => item.context === "Selection/assessment/methods");
+  const balance = org && selection ? org.sessions - selection.sessions : 0;
+  const cards = [
+    {
+      label: "Volume arc",
+      value: `${percent(first.ai_share)} -> ${percent(current.ai_share)}`,
+      copy: `AI-related sessions are ${percent(current.ai_share)} of the ${activeFocusYear} parsed program.`,
+    },
+    {
+      label: "Strongest band",
+      value: shortContext(topContext.context),
+      copy: `${topContext.sessions} AI-related context signals sit in this band for ${activeFocusYear}.`,
+    },
+    {
+      label: "O-side balance",
+      value: balance >= 0 ? `+${balance}` : String(balance),
+      copy:
+        balance >= 0
+          ? "Org/development signals exceed selection signals in the focused year."
+          : "Selection signals still exceed org/development signals in the focused year.",
+    },
+  ];
+
+  const articles = d3.select("#river-insights").selectAll("article").data(cards);
+  const entered = articles.enter().append("article");
+  entered.append("span").attr("class", "stat-label");
+  entered.append("strong");
+  entered.append("p");
+  entered.merge(articles).select(".stat-label").text((d) => d.label);
+  entered.merge(articles).select("strong").text((d) => d.value);
+  entered.merge(articles).select("p").text((d) => d.copy);
+  articles.exit().remove();
+}
+
 function drawTrackChart(data) {
   const width = 980;
   const height = 560;
@@ -1305,7 +1375,7 @@ function renderActiveLens(sessions) {
   document.querySelector("#active-lens-title").textContent =
     pieces.length > 0 ? pieces.join(" / ") : "All AI-related sessions";
   document.querySelector("#active-lens-detail").textContent =
-    `${sessions.length} talks visible. Click a chart mark, network node, or reset to change the lens.`;
+    `${sessions.length} talks visible. Click the river, compass, year replay, or reset to change the lens.`;
 }
 
 function renderSessionExplorer(data) {
@@ -1359,9 +1429,11 @@ function wireSessionExplorer(data) {
         drawHeroSignalField(data);
         drawSignalRiver(data);
         renderFocusInsights(data);
+        renderStoryCaption(data);
+        renderRiverInsights(data);
+        drawUseCaseCompass(data);
       }
       renderSessionExplorer(data);
-      drawContextNetwork(data);
     });
   });
   renderSessionExplorer(data);
@@ -1383,16 +1455,12 @@ async function init() {
     const response = await fetch("data/siop_ai_story.json");
     storyData = await response.json();
     setHeroStats(storyData);
-    drawHeadlineChart(storyData);
     drawHeroSignalField(storyData);
     drawSignalRiver(storyData);
     drawUseCaseCompass(storyData);
-    drawRhythmChart(storyData);
-    drawContextChart(storyData);
-    drawContextNetwork(storyData);
-    drawTrackChart(storyData);
-    renderFormatSummary(storyData);
     renderFocusInsights(storyData);
+    renderStoryCaption(storyData);
+    renderRiverInsights(storyData);
     wireMetricButtons();
     wireYearScrubber(storyData);
     wireReplayControls(storyData);

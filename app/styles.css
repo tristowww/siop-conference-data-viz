@@ -162,6 +162,15 @@ p {
   transition: width 420ms ease;
 }
 
+.story-caption {
+  max-width: 780px;
+  margin: 0 0 16px;
+  border-left: 4px solid var(--blue);
+  color: var(--ink);
+  font-weight: 750;
+  padding: 4px 0 4px 12px;
+}
+
 .focus-insights {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -190,6 +199,33 @@ p {
 
 .signal-river-chart {
   min-height: 520px;
+}
+
+.river-insights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.river-insights article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.river-insights strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: clamp(1.4rem, 2.5vw, 2.35rem);
+  line-height: 1;
+}
+
+.river-insights p {
+  margin-bottom: 0;
+  font-size: 0.94rem;
 }
 
 .river-band {
@@ -760,7 +796,8 @@ select:focus {
   .compare-grid,
   .side-matrix,
   .format-strip,
-  .focus-insights {
+  .focus-insights,
+  .river-insights {
     grid-template-columns: 1fr;
   }
 
