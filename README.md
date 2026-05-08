@@ -18,6 +18,8 @@ where available.
 - Static D3 portfolio app now reads a five-year AI-shift story dataset.
 - Archived-program author names are parsed from both local session blocks and global citation lines
   when the OCR includes a reliable title match; schedule-only rows may still have blank authors.
+- The public app does not currently include talk-level browsing; missing author names are queued in
+  `data/processed/siop_ai_missing_authors.csv` for a focused recovery pass before that feature returns.
 
 ## Data workflow
 
@@ -37,7 +39,7 @@ data/raw/{2022,2023,2024}/archive_*_djvu.txt
 data/processed/sessions_*_archive.csv + 2025/2026 processed files
   -> scripts/build_comparison_dataset.py
   -> scripts/build_ai_story_dataset.py
-  -> app visualization
+  -> app visualization + data/processed/siop_ai_missing_authors.csv
 ```
 
 ## Scraping guardrails

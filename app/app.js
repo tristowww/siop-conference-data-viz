@@ -120,11 +120,19 @@ function sessionDescriptor(session) {
 }
 
 function setExplorerLens({ year = null, context = null, query = null, link = undefined } = {}) {
-  if (year !== null) document.querySelector("#session-year").value = String(year);
-  if (context !== null) document.querySelector("#session-context").value = context;
-  if (query !== null) document.querySelector("#session-search").value = query;
+  const yearSelect = document.querySelector("#session-year");
+  const contextSelect = document.querySelector("#session-context");
+  const searchInput = document.querySelector("#session-search");
+  if (year !== null && year !== "All") {
+    activeFocusYear = Number(year);
+    activeNetworkYear = activeFocusYear;
+  }
+  if (context !== null) activeContext = context;
+  if (yearSelect && year !== null) yearSelect.value = String(year);
+  if (contextSelect && context !== null) contextSelect.value = context;
+  if (searchInput && query !== null) searchInput.value = query;
   if (link !== undefined) selectedLink = link;
-  renderSessionExplorer(storyData);
+  renderActiveLens(storyData);
 }
 
 function resetExploration() {
@@ -134,16 +142,19 @@ function resetExploration() {
   selectedTime = null;
   activeFocusYear = getYears(storyData).at(-1);
   activeNetworkYear = activeFocusYear;
-  document.querySelector("#session-year").value = "All";
-  document.querySelector("#session-context").value = "All";
-  document.querySelector("#session-search").value = "";
+  const yearSelect = document.querySelector("#session-year");
+  const contextSelect = document.querySelector("#session-context");
+  const searchInput = document.querySelector("#session-search");
+  if (yearSelect) yearSelect.value = "All";
+  if (contextSelect) contextSelect.value = "All";
+  if (searchInput) searchInput.value = "";
   syncYearControls();
   drawHeroSignalField(storyData);
   drawSignalRiver(storyData);
   drawUseCaseCompass(storyData);
   renderStoryCaption(storyData);
   renderRiverInsights(storyData);
-  renderSessionExplorer(storyData);
+  renderActiveLens(storyData);
 }
 
 function focusYear(year, { updateExplorer = false } = {}) {
@@ -299,7 +310,6 @@ function drawHeroSignalField(data) {
       selectedTime = null;
       focusYear(d.conference_year);
       setExplorerLens({ year: d.conference_year, context: d.ai_context_group, query: "", link: null });
-      drawContextChart(storyData);
     });
 
   groups
@@ -1376,20 +1386,30 @@ function filteredSessions(data) {
   });
 }
 
-function renderActiveLens(sessions) {
-  const year = document.querySelector("#session-year").value;
-  const context = document.querySelector("#session-context").value;
-  const query = document.querySelector("#session-search").value.trim();
+function renderActiveLens(data = storyData) {
+  if (!data) return;
   const pieces = [];
-  if (year !== "All") pieces.push(year);
-  if (context !== "All") pieces.push(context);
+  if (activeFocusYear) pieces.push(activeFocusYear);
+  if (activeContext !== "All") pieces.push(activeContext);
   if (selectedLink) pieces.push(`${selectedLink.source} + ${selectedLink.target}`);
   if (selectedTime) pieces.push(`${selectedTime.dateLabel} at ${selectedTime.hour}:00`);
-  if (query) pieces.push(`"${query}"`);
+  const sessions = data.session_explorer.filter((session) => {
+    const groups = session.context_groups || [session.context];
+    const matchesYear = !activeFocusYear || session.year === activeFocusYear;
+    const matchesContext = activeContext === "All" || groups.includes(activeContext);
+    const matchesLink =
+      !selectedLink || (groups.includes(selectedLink.source) && groups.includes(selectedLink.target));
+    const matchesTime =
+      !selectedTime ||
+      (session.year === selectedTime.year &&
+        session.date === selectedTime.date &&
+        Number(String(session.start_time || "").slice(0, 2)) === selectedTime.hour);
+    return matchesYear && matchesContext && matchesLink && matchesTime;
+  });
   document.querySelector("#active-lens-title").textContent =
     pieces.length > 0 ? pieces.join(" / ") : "All AI-related sessions";
   document.querySelector("#active-lens-detail").textContent =
-    `${sessions.length} talks visible. Use the river, compass, year replay, or filters to change the lens.`;
+    `${sessions.length} AI-related sessions in this view. Use the visuals to compare volume, context, and the I-side/O-side shape of the story.`;
 }
 
 function renderSessionExplorer(data) {
@@ -1440,6 +1460,10 @@ function renderSessionExplorer(data) {
 }
 
 function wireSessionExplorer(data) {
+  if (!document.querySelector("#session-list")) {
+    renderActiveLens(data);
+    return;
+  }
   populateSessionYearOptions(data);
   populateSessionContextOptions(data);
   ["#session-search", "#session-year", "#session-context"].forEach((selector) => {

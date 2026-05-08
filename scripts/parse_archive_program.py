@@ -83,6 +83,7 @@ def clean_text(value: object) -> str:
 def clean_title(value: str) -> str:
     title = clean_text(value)
     title = re.sub(r"^[^A-Za-z0-9]+", "", title)
+    title = re.sub(r"^(?:Q\s+\^\s+|Q\s+|\^\s+)+", "", title)
     title = re.sub(r"\s*\bAuthors?:.*$", "", title, flags=re.IGNORECASE)
     return title.strip(" -")
 

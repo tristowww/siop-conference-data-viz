@@ -11,6 +11,11 @@
         "2025": 509,
         "2026": 552
       }
+    },
+    "author_coverage": {
+      "ai_related_sessions": 593,
+      "with_parsed_authors": 541,
+      "missing_parsed_authors": 52
     }
   },
   "ai_summary": [
@@ -895,7 +900,7 @@
   "session_explorer": [
     {
       "year": 2022,
-      "title": "Q Conceptualization of Loyalty and Blind Loyalty Within Technology Companies",
+      "title": "Conceptualization of Loyalty and Blind Loyalty Within Technology Companies",
       "context": "DEI/accessibility",
       "context_groups": [
         "DEI/accessibility"
@@ -908,6 +913,22 @@
       "speakers": "",
       "visible_ai_signal": true,
       "description": "\u00a9 , 9 Exhibit Hall 4B Position 34 SIOP LGBTQIA- Reception \u00a9 , 9 Sheraton - Willow A Women's Inclusion Network Reception \u00a9 , 9 Sheraton - Willow B Sat, , 2022 8:00 AM"
+    },
+    {
+      "year": 2022,
+      "title": "Need for Cognition and Human-Automation Interaction Performance",
+      "context": "Explicit tech/AI",
+      "context_groups": [
+        "Explicit tech/AI"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-20",
+      "start_time": "4:00 PM",
+      "location": "The Thursday Room Position 27",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 The Thursday Room Position 27"
     },
     {
       "year": 2022,
@@ -943,39 +964,7 @@
     },
     {
       "year": 2022,
-      "title": "Q Need for Cognition and Human-Automation Interaction Performance",
-      "context": "Explicit tech/AI",
-      "context_groups": [
-        "Explicit tech/AI"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-20",
-      "start_time": "4:00 PM",
-      "location": "The Thursday Room Position 27",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 The Thursday Room Position 27"
-    },
-    {
-      "year": 2022,
-      "title": "Q The Role of Emotions and Technology Use in the Psychological Impact of COVID-19",
-      "context": "Explicit tech/AI",
-      "context_groups": [
-        "Explicit tech/AI"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-20",
-      "start_time": "8:00 AM",
-      "location": "The Thursday Room C4 Position 22",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 The Thursday Room C4 Position 22"
-    },
-    {
-      "year": 2022,
-      "title": "Q ^ Qualitative Investigation of Fear and Acceptance of AI at Work",
+      "title": "Qualitative Investigation of Fear and Acceptance of AI at Work",
       "context": "Explicit tech/AI",
       "context_groups": [
         "Explicit tech/AI"
@@ -988,6 +977,22 @@
       "speakers": "",
       "visible_ai_signal": true,
       "description": "\u00a9 , 9 The Thursday Room D1 Position 28"
+    },
+    {
+      "year": 2022,
+      "title": "The Role of Emotions and Technology Use in the Psychological Impact of COVID-19",
+      "context": "Explicit tech/AI",
+      "context_groups": [
+        "Explicit tech/AI"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-20",
+      "start_time": "8:00 AM",
+      "location": "The Thursday Room C4 Position 22",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 The Thursday Room C4 Position 22"
     },
     {
       "year": 2022,
@@ -1519,54 +1524,6 @@
     },
     {
       "year": 2022,
-      "title": "Q Simple Rules Outperform Machine Learning in the Third Annual SIOP ML Competition",
-      "context": "Org/development/training",
-      "context_groups": [
-        "Org/development/training"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-20",
-      "start_time": "8:00 AM",
-      "location": "The Thursday Room B2 Position 11",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 The Thursday Room B2 Position 11"
-    },
-    {
-      "year": 2022,
-      "title": "Q Supervisory Feedback Processing at Work: A Systematic Review and Meta- Analysis",
-      "context": "Org/development/training",
-      "context_groups": [
-        "Org/development/training"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-20",
-      "start_time": "10:30 AM",
-      "location": "The Thursday Room Position 33",
-      "speakers": "",
-      "visible_ai_signal": false,
-      "description": "\u00a9 , 9 The Thursday Room Position 33 @ Leader Curiosity Displays and Team Performance: Do Female Leaders Have an Advantage? \u00a9 , 9 The Thursday Room Position 34 Virtual Poster Topic Networking: Occupational Health/Safety/Stress & Strain/Aging"
-    },
-    {
-      "year": 2022,
-      "title": "Q ^ Systematic Review of Servant Leadership Outcomes Categorized by Measure",
-      "context": "Org/development/training",
-      "context_groups": [
-        "Org/development/training"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-29",
-      "start_time": "12:00 PM",
-      "location": "Exhibit Hall 4B Position 34",
-      "speakers": "",
-      "visible_ai_signal": false,
-      "description": "\u00a9 , 9 Exhibit Hall 4B Position 34 Live Demo of Medallia Employee Experience (Sponsored by Medallia) \u00a9 , 9 Room 604 (SPONSORED) Tech... Every single day, employees run into obstacles that get in the way of them performing their best work. Ev"
-    },
-    {
-      "year": 2022,
       "title": "Recent Advances in Insufficient Effort Responding Research",
       "context": "Org/development/training",
       "context_groups": [
@@ -1612,6 +1569,54 @@
       "speakers": "Brown, A. (Chair), Bidwell, L., Brown, M., Mondragon, N., & Sun T",
       "visible_ai_signal": true,
       "description": "\u00a9 , 9 Ballroom 6C Virtual & Stream.. Robot or Not: Is AI the future of HR? [Debate]. Society for Industrial and Organizational Psychology Conference, Seattle, WA, United States. From robot recruiters to conversational bots and automated car"
+    },
+    {
+      "year": 2022,
+      "title": "Simple Rules Outperform Machine Learning in the Third Annual SIOP ML Competition",
+      "context": "Org/development/training",
+      "context_groups": [
+        "Org/development/training"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-20",
+      "start_time": "8:00 AM",
+      "location": "The Thursday Room B2 Position 11",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 The Thursday Room B2 Position 11"
+    },
+    {
+      "year": 2022,
+      "title": "Supervisory Feedback Processing at Work: A Systematic Review and Meta- Analysis",
+      "context": "Org/development/training",
+      "context_groups": [
+        "Org/development/training"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-20",
+      "start_time": "10:30 AM",
+      "location": "The Thursday Room Position 33",
+      "speakers": "",
+      "visible_ai_signal": false,
+      "description": "\u00a9 , 9 The Thursday Room Position 33 @ Leader Curiosity Displays and Team Performance: Do Female Leaders Have an Advantage? \u00a9 , 9 The Thursday Room Position 34 Virtual Poster Topic Networking: Occupational Health/Safety/Stress & Strain/Aging"
+    },
+    {
+      "year": 2022,
+      "title": "Systematic Review of Servant Leadership Outcomes Categorized by Measure",
+      "context": "Org/development/training",
+      "context_groups": [
+        "Org/development/training"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-29",
+      "start_time": "12:00 PM",
+      "location": "Exhibit Hall 4B Position 34",
+      "speakers": "",
+      "visible_ai_signal": false,
+      "description": "\u00a9 , 9 Exhibit Hall 4B Position 34 Live Demo of Medallia Employee Experience (Sponsored by Medallia) \u00a9 , 9 Room 604 (SPONSORED) Tech... Every single day, employees run into obstacles that get in the way of them performing their best work. Ev"
     },
     {
       "year": 2022,
@@ -1759,6 +1764,22 @@
     },
     {
       "year": 2022,
+      "title": "AI in Hiring and Applicant Attraction",
+      "context": "Selection/assessment/methods",
+      "context_groups": [
+        "Selection/assessment/methods"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-20",
+      "start_time": "9:00 AM",
+      "location": "The Friday Room B6 Position 15",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 The Friday Room B6 Position 15"
+    },
+    {
+      "year": 2022,
       "title": "Applicant Reactions to Artificial Intelligence Selection",
       "context": "Selection/assessment/methods",
       "context_groups": [
@@ -1900,6 +1921,22 @@
       "speakers": "Page, R.C. (Co-Chair), Page. N.D. (Co-Chair), Hakel, M., Cascio, W. F., Macey, W. H., Murphy, K. R., Ones, D. S., De Meuse, & K. P., Eichinger",
       "visible_ai_signal": false,
       "description": "\u00a9 , 9 Zoom 3 Technology & Methods Virtual & Streaming Fads, Fashions, and Folderol in I/O Psychology: Sci-ence vs. Practice [IGNITE] Society for Industrial and Organizational Psychology Annual Conference, Seattle, WA, United States. This IG"
+    },
+    {
+      "year": 2022,
+      "title": "How Do Recruitment and Hiring Take Place on Social Media?",
+      "context": "Selection/assessment/methods",
+      "context_groups": [
+        "Selection/assessment/methods"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2022-04-28",
+      "start_time": "8:00 AM",
+      "location": "Exhibit Hall 4B Position 25",
+      "speakers": "",
+      "visible_ai_signal": false,
+      "description": "\u00a9 , 9 Exhibit Hall 4B Position 25 @ Disclosing the Use of AI in Hiring: An Exploration of Applicant Reactions and 9:00 AM"
     },
     {
       "year": 2022,
@@ -2140,38 +2177,6 @@
       "speakers": "Zhou, S. (Co-Chair), McChesney, J. E. (Co-Chair), & Hoff, K. A. (Co-Chair)",
       "visible_ai_signal": false,
       "description": "\u00a9 , 9 Room 613-614 Technology & Met... Putting the O*NET into good use: A critical evaluation of the use and misuse of O*NET [Symposium]. Society for Industrial and Organizational Psychology Annual Conference, Seattle, WA, United States. Ho"
-    },
-    {
-      "year": 2022,
-      "title": "Q AI in Hiring and Applicant Attraction",
-      "context": "Selection/assessment/methods",
-      "context_groups": [
-        "Selection/assessment/methods"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-20",
-      "start_time": "9:00 AM",
-      "location": "The Friday Room B6 Position 15",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 The Friday Room B6 Position 15"
-    },
-    {
-      "year": 2022,
-      "title": "Q How Do Recruitment and Hiring Take Place on Social Media?",
-      "context": "Selection/assessment/methods",
-      "context_groups": [
-        "Selection/assessment/methods"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2022-04-28",
-      "start_time": "8:00 AM",
-      "location": "Exhibit Hall 4B Position 25",
-      "speakers": "",
-      "visible_ai_signal": false,
-      "description": "\u00a9 , 9 Exhibit Hall 4B Position 25 @ Disclosing the Use of AI in Hiring: An Exploration of Applicant Reactions and 9:00 AM"
     },
     {
       "year": 2022,
@@ -2543,6 +2548,22 @@
     },
     {
       "year": 2023,
+      "title": "Comparison of Machine Learning and Empirical-Keying Methods for Biodata Instruments",
+      "context": "Org/development/training",
+      "context_groups": [
+        "Org/development/training"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2023-04-22",
+      "start_time": "2:00 PM",
+      "location": "Hynes-Exhibit Hall - Poster Position 12",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 12"
+    },
+    {
+      "year": 2023,
       "title": "Data-Driven Leadership Development: Exploring Post-Pandemic Challenges With AI",
       "context": "Org/development/training",
       "context_groups": [
@@ -2815,38 +2836,6 @@
     },
     {
       "year": 2023,
-      "title": "Q Using Machine Learning to Predict Occupational Accident Rates From O*NET Data",
-      "context": "Org/development/training",
-      "context_groups": [
-        "Org/development/training"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2023-04-20",
-      "start_time": "2:00 PM",
-      "location": "Hynes-Exhibit Hall - Poster Position 15",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 15"
-    },
-    {
-      "year": 2023,
-      "title": "Q ^ Comparison of Machine Learning and Empirical-Keying Methods for Biodata Instruments",
-      "context": "Org/development/training",
-      "context_groups": [
-        "Org/development/training"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2023-04-22",
-      "start_time": "2:00 PM",
-      "location": "Hynes-Exhibit Hall - Poster Position 12",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 12"
-    },
-    {
-      "year": 2023,
       "title": "Research Incubator: Double-Edged Sword of Virtual Work for Women\u2019s Career Equality",
       "context": "Org/development/training",
       "context_groups": [
@@ -2911,7 +2900,23 @@
     },
     {
       "year": 2023,
-      "title": "Q Advice From Algorithms: An Integrative Conceptual Review and Practical Implications",
+      "title": "Using Machine Learning to Predict Occupational Accident Rates From O*NET Data",
+      "context": "Org/development/training",
+      "context_groups": [
+        "Org/development/training"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2023-04-20",
+      "start_time": "2:00 PM",
+      "location": "Hynes-Exhibit Hall - Poster Position 15",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 15"
+    },
+    {
+      "year": 2023,
+      "title": "Advice From Algorithms: An Integrative Conceptual Review and Practical Implications",
       "context": "Other/special",
       "context_groups": [
         "Other/special"
@@ -3000,6 +3005,22 @@
       "session_format": "Poster",
       "date": "2023-04-21",
       "start_time": "10:30 AM",
+      "location": "Hynes-Exhibit Hall - Poster Position 5",
+      "speakers": "",
+      "visible_ai_signal": true,
+      "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 5"
+    },
+    {
+      "year": 2023,
+      "title": "Assessment and Selection of Applicants With Disabilities: Implications of Automation",
+      "context": "Selection/assessment/methods",
+      "context_groups": [
+        "Selection/assessment/methods"
+      ],
+      "tracks": "Untracked",
+      "session_format": "Poster",
+      "date": "2023-04-21",
+      "start_time": "9:00 AM",
       "location": "Hynes-Exhibit Hall - Poster Position 5",
       "speakers": "",
       "visible_ai_signal": true,
@@ -3356,22 +3377,6 @@
       "speakers": "",
       "visible_ai_signal": false,
       "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 30 @ Machine Learning and Hiring: An Integrative Approach for Personnel"
-    },
-    {
-      "year": 2023,
-      "title": "Q Assessment and Selection of Applicants With Disabilities: Implications of Automation",
-      "context": "Selection/assessment/methods",
-      "context_groups": [
-        "Selection/assessment/methods"
-      ],
-      "tracks": "Untracked",
-      "session_format": "Poster",
-      "date": "2023-04-21",
-      "start_time": "9:00 AM",
-      "location": "Hynes-Exhibit Hall - Poster Position 5",
-      "speakers": "",
-      "visible_ai_signal": true,
-      "description": "\u00a9 , 9 Hynes-Exhibit Hall - Poster Position 5"
     },
     {
       "year": 2023,

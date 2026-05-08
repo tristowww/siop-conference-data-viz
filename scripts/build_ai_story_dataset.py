@@ -288,7 +288,34 @@ def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
     ]
 
 
-def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
+def missing_author_rows(df: pd.DataFrame) -> pd.DataFrame:
+    ai_df = df[df["is_ai_related"]].copy()
+    missing = ai_df[ai_df["speakers"].map(clean_text).eq("")].copy()
+    missing = missing.sort_values(["conference_year", "primary_ai_context_group", "title"])
+    rows = []
+    for _, row in missing.iterrows():
+        rows.append(
+            {
+                "conference_year": int(row["conference_year"]),
+                "session_id": clean_text(row.get("session_id", "")),
+                "title": clean_text(row.get("title", "")),
+                "session_format": clean_text(row.get("normalized_session_format", "")),
+                "date": clean_text(row.get("date", "")),
+                "start_time": clean_text(row.get("start_time", "")),
+                "location": clean_text(row.get("location", "")),
+                "ai_context_group": clean_text(row.get("primary_ai_context_group", "")),
+                "source": clean_text(row.get("source", "")),
+                "description_excerpt": clean_text(row.get("description", ""))[:320],
+                "author_recovery_status": "needs_source",
+                "author_source_url": "",
+                "recovered_speakers": "",
+                "notes": "",
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object], pd.DataFrame]:
     df = pd.read_csv(input_path)
     df["visible_text_for_classification"] = (
         df["title"].fillna("")
@@ -340,6 +367,9 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
     )
 
     contexts = context_rows(df)
+    author_missing = missing_author_rows(df)
+    ai_sessions = df[df["is_ai_related"]]
+    author_count = int(ai_sessions["speakers"].map(clean_text).ne("").sum())
     payload = {
         "summary": {
             "title": "SIOP AI shift",
@@ -354,6 +384,11 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
                     str(year): int(count) for year, count in df["conference_year"].value_counts().sort_index().items()
                 },
             },
+            "author_coverage": {
+                "ai_related_sessions": int(len(ai_sessions)),
+                "with_parsed_authors": author_count,
+                "missing_parsed_authors": int(len(author_missing)),
+            },
         },
         "ai_summary": summarize_ai(df),
         "context_summary": summarize_contexts(contexts),
@@ -363,7 +398,7 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object]]:
         "rhythm_summary": summarize_rhythm(df),
         "session_explorer": session_explorer_rows(df),
     }
-    return story_sessions, payload
+    return story_sessions, payload, author_missing
 
 
 def main() -> None:
@@ -371,14 +406,18 @@ def main() -> None:
     parser.add_argument("--input", default="data/processed/sessions_comparison.csv", type=Path)
     parser.add_argument("--sessions-output", default="data/processed/siop_ai_story_sessions.csv", type=Path)
     parser.add_argument("--json-output", default="app/data/siop_ai_story.json", type=Path)
+    parser.add_argument("--missing-authors-output", default="data/processed/siop_ai_missing_authors.csv", type=Path)
     args = parser.parse_args()
 
-    story_sessions, payload = build_story(args.input)
+    story_sessions, payload, author_missing = build_story(args.input)
     args.sessions_output.parent.mkdir(parents=True, exist_ok=True)
     args.json_output.parent.mkdir(parents=True, exist_ok=True)
+    args.missing_authors_output.parent.mkdir(parents=True, exist_ok=True)
     story_sessions.to_csv(args.sessions_output, index=False)
+    author_missing.to_csv(args.missing_authors_output, index=False)
     args.json_output.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     print(f"Wrote {len(story_sessions):,} rows to {args.sessions_output}")
+    print(f"Wrote {len(author_missing):,} missing-author rows to {args.missing_authors_output}")
     print(f"Wrote story JSON to {args.json_output}")
     print(
         "AI-related sessions: "

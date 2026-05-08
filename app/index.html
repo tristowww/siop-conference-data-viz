@@ -56,11 +56,11 @@
         </div>
         <div class="exploration-lens" aria-live="polite">
           <div>
-            <span class="stat-label">Active exploration lens</span>
+            <span class="stat-label">Focused view</span>
             <strong id="active-lens-title">All AI-related sessions</strong>
-            <span id="active-lens-detail">Use the river, compass, year replay, or filters to narrow the session browser.</span>
+            <span id="active-lens-detail">Use the river, compass, or year replay to focus the aggregate story.</span>
           </div>
-          <button id="reset-exploration" type="button">Clear filters</button>
+          <button id="reset-exploration" type="button">Reset view</button>
         </div>
       </section>
 
@@ -110,7 +110,7 @@
           <h2 id="signal-river-title">The AI story widens, narrows, then surges.</h2>
           <p>
             This stream view follows use-case context counts across the five-year set. Hover or
-            click a band to move from the aggregate story into the session browser.
+            click a band to focus the aggregate story on that use-case context.
           </p>
         </div>
         <div
@@ -204,47 +204,6 @@
             </p>
           </article>
         </div>
-      </section>
-
-      <section class="section-band alt" aria-labelledby="session-explorer-title">
-        <div class="section-heading">
-          <p class="eyebrow">Explore talks</p>
-          <h2 id="session-explorer-title">Search the AI-related session set.</h2>
-          <p>
-            Use this like a compact session browser: filter by year or context, then scan the titles
-            and descriptions behind the story.
-          </p>
-        </div>
-        <div class="explorer-controls">
-          <label>
-            <span>Search sessions</span>
-            <input id="session-search" type="search" placeholder="Try training, selection, coaching, LLM..." />
-          </label>
-          <label>
-            <span>Year</span>
-            <select id="session-year">
-              <option value="All">All years</option>
-              <option value="2026">2026</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-            </select>
-          </label>
-          <label>
-            <span>Context</span>
-            <select id="session-context">
-              <option value="All">All contexts</option>
-            </select>
-          </label>
-        </div>
-        <p class="archive-note">
-          Note: 2022-2024 sessions come from archived program OCR, which includes titles, formats,
-          times, abstracts, and many author lines, but not Whova-style track labels.
-        </p>
-        <p id="author-coverage" class="archive-note"></p>
-        <p id="session-count" class="visible-count">0 talks visible</p>
-        <div id="session-list" class="session-list" aria-live="polite"></div>
       </section>
 
     </main>
