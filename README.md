@@ -16,6 +16,8 @@ where available.
 - 2026 public Whova agenda API workflow added for richer public session metadata.
 - 2022, 2023, and 2024 archived SIOP program OCR files parsed from Internet Archive text exports.
 - Static D3 portfolio app now reads a five-year AI-shift story dataset.
+- Archived-program author names are parsed from both local session blocks and global citation lines
+  when the OCR includes a reliable title match; schedule-only rows may still have blank authors.
 
 ## Data workflow
 

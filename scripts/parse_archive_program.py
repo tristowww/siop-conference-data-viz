@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import difflib
 import re
 from datetime import datetime
 from pathlib import Path
@@ -86,6 +87,14 @@ def clean_title(value: str) -> str:
     return title.strip(" -")
 
 
+def normalize_title_key(value: str) -> str:
+    text = clean_title(value).lower()
+    text = re.sub(r"\bchat\s*gpt\b", "chatgpt", text)
+    text = re.sub(r"\bai\b|\bal\b", "ai", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 def parse_date(year: int, block: str) -> tuple[str, str]:
     match = DATE_RE.search(block)
     if not match:
@@ -130,6 +139,55 @@ def parse_authors(block: str, title: str) -> str:
     return author_text[:320]
 
 
+def parse_author_citation(entry: str) -> tuple[str, str]:
+    text = clean_text(re.sub(r"^Authors?:\s*", "", entry, flags=re.IGNORECASE))
+    stop = AUTHOR_STOP_RE.search(text)
+    if not stop:
+        return "", ""
+    authors = clean_text(text[: stop.start()]).strip(" .;,")
+    title_part = text[stop.end() :]
+    title_part = re.split(
+        r"\[\s*(?:Poster|Symposium|Panel|Panel Discussion|Alternative|Master Tutorial|Ignite|Debate)[^\]]*\]",
+        title_part,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )[0]
+    title_part = re.split(r"\bSociety for Industrial\b", title_part, maxsplit=1, flags=re.IGNORECASE)[0]
+    return clean_title(title_part), authors[:320]
+
+
+def extract_author_index(text: str) -> dict[str, str]:
+    lines = text.splitlines()
+    index: dict[str, str] = {}
+    for line_index, line in enumerate(lines):
+        if not re.match(r"\s*Authors?:\s*", line, re.IGNORECASE):
+            continue
+        parts = [line]
+        for continuation in lines[line_index + 1 : line_index + 8]:
+            if not continuation.strip():
+                break
+            if re.match(r"\s*(?:Abstract|T Speakers|Speakers|Sponsor|Session|Room):\s*", continuation, re.IGNORECASE):
+                break
+            parts.append(continuation)
+            if re.search(r"\[[^\]]+\]\.|\bSociety for Industrial\b", continuation, re.IGNORECASE):
+                break
+        title, authors = parse_author_citation(" ".join(parts))
+        title_key = normalize_title_key(title)
+        if title_key and authors and title_key not in index:
+            index[title_key] = authors
+    return index
+
+
+def match_indexed_authors(title: str, author_index: dict[str, str]) -> str:
+    title_key = normalize_title_key(title)
+    if not title_key:
+        return ""
+    if title_key in author_index:
+        return author_index[title_key]
+    matches = difflib.get_close_matches(title_key, author_index.keys(), n=1, cutoff=0.9)
+    return author_index[matches[0]] if matches else ""
+
+
 def parse_description(block: str) -> str:
     cleaned = clean_text(block)
     cleaned = TIME_RE.sub("", cleaned)
@@ -150,6 +208,7 @@ def parse_records(year: int, text: str) -> list[dict[str, object]]:
     matches = list(SESSION_RE.finditer(text))
     records: list[dict[str, object]] = []
     seen: dict[str, int] = {}
+    author_index = extract_author_index(text)
 
     for index, match in enumerate(matches):
         start = match.end()
@@ -186,14 +245,22 @@ def parse_records(year: int, text: str) -> list[dict[str, object]]:
         if session_id in seen:
             existing = records[seen[session_id]]
             if len(str(record["description"])) > len(str(existing["description"])):
-                for key in ["description", "location", "date", "date_label", "start_time", "end_time", "speakers"]:
+                for key in ["description", "location", "date", "date_label", "start_time", "end_time"]:
                     existing[key] = record[key]
+                if record["speakers"]:
+                    existing["speakers"] = record["speakers"]
+            elif record["speakers"] and not existing["speakers"]:
+                existing["speakers"] = record["speakers"]
             if len(str(record["title"])) > len(str(existing["title"])):
                 existing["title"] = record["title"]
             continue
 
         seen[session_id] = len(records)
         records.append(record)
+
+    for record in records:
+        if not record["speakers"]:
+            record["speakers"] = match_indexed_authors(str(record["title"]), author_index)
 
     return records
 
