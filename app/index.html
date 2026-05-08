@@ -4,13 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260508-author-recovery" />
+    <link rel="stylesheet" href="styles.css?v=20260508-story-controls" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260508-author-recovery" defer></script>
+    <script src="app.js?v=20260508-story-controls" defer></script>
   </head>
   <body>
+    <nav class="story-progress" aria-label="Story progress">
+      <a href="#visibility-step" data-step="visibility-step">Visibility</a>
+      <a href="#shift-step" data-step="shift-step">Use-case shift</a>
+      <a href="#meaning-step" data-step="meaning-step">Why it matters</a>
+    </nav>
     <main>
-      <section class="hero" aria-labelledby="page-title">
+      <section id="visibility-step" class="hero story-step" aria-labelledby="page-title">
         <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
         <h1 id="page-title">AI is becoming a broader I-O conversation.</h1>
         <p class="hero-copy">
@@ -26,6 +31,7 @@
             aria-label="Data-driven AI signal field by year and context"
           ></div>
           <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
+          <div id="baseline-current" class="baseline-current" aria-label="Compare baseline and current year"></div>
           <div class="replay-controls" aria-label="Replay the year sequence">
             <button id="replay-years" class="replay-button" type="button">Play year replay</button>
             <div class="replay-track" aria-hidden="true">
@@ -62,9 +68,13 @@
           </div>
           <button id="reset-exploration" type="button">Reset view</button>
         </div>
+        <div class="story-takeaway" aria-live="polite">
+          <span class="stat-label">Story takeaway</span>
+          <strong id="dynamic-takeaway">Focus a year or context to read the shift.</strong>
+        </div>
       </section>
 
-      <section class="section-band intro-band" aria-labelledby="takeaways-title">
+      <section class="section-band intro-band story-step" aria-labelledby="takeaways-title">
         <div class="section-heading">
           <p class="eyebrow">Reading the shift</p>
           <h2 id="takeaways-title">The interesting part is not just volume.</h2>
@@ -104,7 +114,7 @@
         </div>
       </section>
 
-      <section class="section-band signal-river-band" aria-labelledby="signal-river-title">
+      <section id="shift-step" class="section-band signal-river-band story-step" aria-labelledby="signal-river-title">
         <div class="section-heading">
           <p class="eyebrow">Signal river</p>
           <h2 id="signal-river-title">The AI story widens, narrows, then surges.</h2>
@@ -113,6 +123,13 @@
             click a band to focus the aggregate story on that use-case context.
           </p>
         </div>
+        <div class="view-toggle" aria-label="Choose signal view">
+          <button class="river-mode active" type="button" data-mode="contexts">Five context bands</button>
+          <button class="river-mode" type="button" data-mode="sides">I-side vs O-side</button>
+        </div>
+        <p id="river-mode-note" class="microcopy">
+          Five-band mode shows where AI language appears in the program. Click a band to focus the story.
+        </p>
         <div
           id="signal-river-chart"
           class="chart signal-river-chart"
@@ -122,7 +139,7 @@
         <div id="river-insights" class="river-insights" aria-label="Signal river interpretation"></div>
       </section>
 
-      <section class="section-band" aria-labelledby="side-title">
+      <section id="meaning-step" class="section-band story-step" aria-labelledby="side-title">
         <div class="section-heading">
           <p class="eyebrow">I-side and O-side</p>
           <h2 id="side-title">Why the context shift matters.</h2>

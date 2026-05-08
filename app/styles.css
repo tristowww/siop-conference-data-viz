@@ -42,6 +42,41 @@ main {
   padding: 42px 0 64px;
 }
 
+.story-progress {
+  position: fixed;
+  top: 50%;
+  left: 18px;
+  z-index: 10;
+  display: grid;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+
+.story-progress a {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 28px rgba(23, 32, 42, 0.08);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  padding: 8px 10px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.story-progress a.active {
+  border-color: var(--blue);
+  background: var(--blue);
+  color: #fff;
+  transform: translateX(4px);
+}
+
 .hero {
   min-height: 92vh;
   display: grid;
@@ -138,6 +173,18 @@ p {
   padding: 0 0 10px;
 }
 
+.baseline-current,
+.view-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.baseline-current {
+  padding-bottom: 10px;
+}
+
 .replay-controls {
   display: grid;
   grid-template-columns: auto minmax(160px, 1fr);
@@ -228,6 +275,13 @@ p {
   font-size: 0.94rem;
 }
 
+.microcopy {
+  max-width: 760px;
+  margin: -16px 0 18px;
+  color: var(--muted);
+  font-size: 0.96rem;
+}
+
 .river-band {
   cursor: pointer;
   mix-blend-mode: multiply;
@@ -251,6 +305,17 @@ p {
   cursor: pointer;
   stroke: #fff;
   stroke-width: 2;
+}
+
+.side-lane-line {
+  fill: none;
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.76;
+}
+
+.side-lane-node {
+  cursor: pointer;
 }
 
 .hero-grid {
@@ -297,6 +362,21 @@ p {
 
 .exploration-lens span:last-child {
   color: var(--muted);
+}
+
+.story-takeaway {
+  max-width: 1020px;
+  border-left: 5px solid var(--teal);
+  border-radius: 8px;
+  background: #eef7f4;
+  padding: 20px 24px;
+}
+
+.story-takeaway strong {
+  display: block;
+  color: var(--ink);
+  font-size: clamp(1.25rem, 2.2vw, 2rem);
+  line-height: 1.18;
 }
 
 .stat-label {
@@ -817,6 +897,25 @@ select:focus {
   .focus-insights,
   .river-insights {
     grid-template-columns: 1fr;
+  }
+
+  .story-progress {
+    top: auto;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    display: flex;
+    justify-content: center;
+    transform: none;
+  }
+
+  .story-progress a {
+    font-size: 0.68rem;
+    padding: 7px 8px;
+  }
+
+  .story-progress a.active {
+    transform: none;
   }
 
   .exploration-lens {
