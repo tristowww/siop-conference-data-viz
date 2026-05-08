@@ -29,6 +29,8 @@ let activeNetworkYear = 2026;
 let activeFocusYear = 2026;
 let selectedLink = null;
 let selectedTime = null;
+let replayTimer = null;
+let replayIndex = 0;
 let storyData;
 
 function percent(value) {
@@ -112,6 +114,7 @@ function setExplorerLens({ year = null, context = null, query = null, link = und
 }
 
 function resetExploration() {
+  stopReplay();
   activeContext = "All";
   selectedLink = null;
   selectedTime = null;
@@ -123,6 +126,7 @@ function resetExploration() {
   syncYearControls();
   drawHeroSignalField(storyData);
   drawSignalRiver(storyData);
+  drawUseCaseCompass(storyData);
   drawContextChart(storyData);
   drawContextNetwork(storyData);
   drawTrackChart(storyData);
@@ -139,16 +143,32 @@ function focusYear(year, { updateExplorer = false } = {}) {
   drawHeroSignalField(storyData);
   drawSignalRiver(storyData);
   drawContextNetwork(storyData);
+  drawUseCaseCompass(storyData);
   renderFocusInsights(storyData);
   if (updateExplorer) {
     setExplorerLens({ year, context: "All", query: "", link: null });
   }
 }
 
+function focusContext(context) {
+  activeContext = context;
+  drawUseCaseCompass(storyData);
+  drawSignalRiver(storyData);
+  drawContextChart(storyData);
+  drawContextNetwork(storyData);
+  setExplorerLens({ year: activeFocusYear, context, query: "", link: null });
+}
+
 function syncYearControls() {
   document.querySelectorAll(".focus-year, .network-year").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
   });
+  const years = getYears(storyData || { ai_summary: [] });
+  const progress = document.querySelector("#replay-progress");
+  if (progress && years.length > 1) {
+    const index = Math.max(0, years.indexOf(activeFocusYear));
+    progress.style.width = `${(index / (years.length - 1)) * 100}%`;
+  }
 }
 
 function setHeroStats(data) {
@@ -432,10 +452,7 @@ function drawSignalRiver(data) {
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
     .on("click", (_, d) => {
-      activeContext = d.key;
-      drawSignalRiver(storyData);
-      drawContextChart(storyData);
-      setExplorerLens({ year: activeFocusYear, context: d.key, query: "", link: null });
+      focusContext(d.key);
     });
 
   const focusX = x(activeFocusYear);
@@ -574,6 +591,150 @@ function drawRhythmChart(data) {
     .attr("x", (d) => x(d.hour) + x.bandwidth() / 2)
     .attr("y", (d) => y(`${d.year}|${d.dateLabel}|${d.date}`) + y.bandwidth() / 2 + 4)
     .text((d) => d.sessions);
+}
+
+function compassCoordinates(context) {
+  const coordinates = {
+    "Explicit tech/AI": { x: 0.35, y: 0.42, label: "tools and methods" },
+    "Selection/assessment/methods": { x: 0.2, y: 0.24, label: "selection and assessment" },
+    "Org/development/training": { x: 0.78, y: 0.78, label: "training and org development" },
+    "DEI/accessibility": { x: 0.66, y: 0.58, label: "access and equity" },
+    "Other/special": { x: 0.58, y: 0.36, label: "special and cross-cutting" },
+  };
+  return coordinates[context] || { x: 0.5, y: 0.5, label: shortContext(context) };
+}
+
+function drawUseCaseCompass(data) {
+  const width = 980;
+  const height = 560;
+  const margin = { top: 76, right: 62, bottom: 76, left: 76 };
+  const svg = makeSvg("#use-case-compass", width, height);
+  const rows = CONTEXT_ORDER.map((context) => {
+    const found = data.context_summary.find(
+      (item) => item.conference_year === activeFocusYear && item.ai_context_group === context,
+    );
+    return {
+      conference_year: activeFocusYear,
+      ai_context_group: context,
+      sessions: found ? found.sessions : 0,
+      share: found ? found.share : 0,
+      ...compassCoordinates(context),
+    };
+  });
+  const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
+  const y = d3.scaleLinear().domain([0, 1]).range([height - margin.bottom, margin.top]);
+  const size = d3
+    .scaleSqrt()
+    .domain([0, d3.max(rows, (d) => d.sessions) || 1])
+    .range([14, 56]);
+
+  svg
+    .append("rect")
+    .attr("x", margin.left)
+    .attr("y", margin.top)
+    .attr("width", width - margin.left - margin.right)
+    .attr("height", height - margin.top - margin.bottom)
+    .attr("rx", 8)
+    .attr("fill", "#f9fbfc")
+    .attr("stroke", "#dce3ea");
+
+  svg
+    .append("line")
+    .attr("class", "compass-axis-line")
+    .attr("x1", x(0.5))
+    .attr("x2", x(0.5))
+    .attr("y1", margin.top)
+    .attr("y2", height - margin.bottom);
+  svg
+    .append("line")
+    .attr("class", "compass-axis-line")
+    .attr("x1", margin.left)
+    .attr("x2", width - margin.right)
+    .attr("y1", y(0.5))
+    .attr("y2", y(0.5));
+
+  const quadrantLabels = [
+    { text: "Individual + deterministic", x: 0.03, y: 0.08, anchor: "start" },
+    { text: "Org + deterministic", x: 0.97, y: 0.08, anchor: "end" },
+    { text: "Individual + judgment-rich", x: 0.03, y: 0.94, anchor: "start" },
+    { text: "Org + judgment-rich", x: 0.97, y: 0.94, anchor: "end" },
+  ];
+
+  svg
+    .append("g")
+    .selectAll("text")
+    .data(quadrantLabels)
+    .join("text")
+    .attr("class", "compass-quadrant-label")
+    .attr("x", (d) => x(d.x))
+    .attr("y", (d) => y(d.y))
+    .attr("text-anchor", (d) => d.anchor)
+    .text((d) => d.text);
+
+  svg
+    .append("text")
+    .attr("class", "chart-note")
+    .attr("x", width / 2)
+    .attr("y", height - 22)
+    .attr("text-anchor", "middle")
+    .text("Individual-focused use cases -> organization-focused use cases");
+
+  svg
+    .append("text")
+    .attr("class", "chart-note")
+    .attr("x", 24)
+    .attr("y", height / 2)
+    .attr("text-anchor", "middle")
+    .attr("transform", `rotate(-90,24,${height / 2})`)
+    .text("Deterministic -> judgment-rich");
+
+  const nodes = svg
+    .append("g")
+    .selectAll("g")
+    .data(rows)
+    .join("g")
+    .attr("class", "compass-node")
+    .attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`)
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, d.ai_context_group, `${d.sessions} AI-related context signals in ${activeFocusYear}.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (_, d) => {
+      focusContext(d.ai_context_group);
+    });
+
+  nodes
+    .append("circle")
+    .attr("r", 0)
+    .attr("fill", (d) => COLORS.contexts[d.ai_context_group])
+    .attr("opacity", (d) => (activeContext === "All" || activeContext === d.ai_context_group ? 0.88 : 0.22))
+    .attr("stroke", "#ffffff")
+    .attr("stroke-width", 2)
+    .transition()
+    .duration(650)
+    .attr("r", (d) => size(d.sessions));
+
+  nodes
+    .append("text")
+    .attr("class", "network-node-label")
+    .attr("text-anchor", "middle")
+    .attr("y", 4)
+    .text((d) => d.sessions);
+
+  nodes
+    .append("text")
+    .attr("class", "compass-node-label")
+    .attr("text-anchor", "middle")
+    .attr("y", (d) => (d.y < 0.32 ? -size(d.sessions) - 12 : size(d.sessions) + 18))
+    .text((d) => shortContext(d.ai_context_group));
+
+  svg
+    .append("text")
+    .attr("class", "chart-note")
+    .attr("x", margin.left)
+    .attr("y", 34)
+    .text(`${activeFocusYear} AI use-case compass`);
 }
 
 function drawContextChart(data) {
@@ -1023,6 +1184,49 @@ function wireYearScrubber(data) {
   syncYearControls();
 }
 
+function stopReplay() {
+  if (replayTimer) {
+    window.clearInterval(replayTimer);
+    replayTimer = null;
+  }
+  const button = document.querySelector("#replay-years");
+  if (button) {
+    button.classList.remove("active");
+    button.textContent = "Play year replay";
+  }
+}
+
+function startReplay(data) {
+  const years = getYears(data);
+  replayIndex = 0;
+  const button = document.querySelector("#replay-years");
+  button.classList.add("active");
+  button.textContent = "Pause replay";
+
+  const advance = () => {
+    const year = years[replayIndex % years.length];
+    focusYear(year, { updateExplorer: true });
+    replayIndex += 1;
+    if (replayIndex >= years.length) {
+      stopReplay();
+    }
+  };
+
+  advance();
+  replayTimer = window.setInterval(advance, 1400);
+}
+
+function wireReplayControls(data) {
+  const button = document.querySelector("#replay-years");
+  button.addEventListener("click", () => {
+    if (replayTimer) {
+      stopReplay();
+    } else {
+      startReplay(data);
+    }
+  });
+}
+
 function wireNetworkButtons() {
   document.querySelectorAll(".network-year").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1182,6 +1386,7 @@ async function init() {
     drawHeadlineChart(storyData);
     drawHeroSignalField(storyData);
     drawSignalRiver(storyData);
+    drawUseCaseCompass(storyData);
     drawRhythmChart(storyData);
     drawContextChart(storyData);
     drawContextNetwork(storyData);
@@ -1190,6 +1395,7 @@ async function init() {
     renderFocusInsights(storyData);
     wireMetricButtons();
     wireYearScrubber(storyData);
+    wireReplayControls(storyData);
     wireNetworkButtons();
     wireSessionExplorer(storyData);
     document.querySelector("#reset-exploration").addEventListener("click", resetExploration);

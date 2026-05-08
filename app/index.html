@@ -26,6 +26,12 @@
             aria-label="Data-driven AI signal field by year and context"
           ></div>
           <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
+          <div class="replay-controls" aria-label="Replay the year sequence">
+            <button id="replay-years" class="replay-button" type="button">Play year replay</button>
+            <div class="replay-track" aria-hidden="true">
+              <span id="replay-progress"></span>
+            </div>
+          </div>
           <div id="focus-insights" class="focus-insights" aria-label="Focused year insights"></div>
         </div>
         <div class="hero-grid" aria-label="Key findings">
@@ -179,6 +185,12 @@
             conversation, but expanding into how people learn, coordinate, lead, and experience work.
           </p>
         </div>
+        <div
+          id="use-case-compass"
+          class="chart compass-chart"
+          role="img"
+          aria-label="AI use-case compass from deterministic to judgment-rich and individual to organizational"
+        ></div>
         <div class="side-matrix" aria-label="I-side and O-side AI comparison">
           <article>
             <span class="matrix-label">Risk questions</span>

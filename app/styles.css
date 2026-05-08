@@ -135,7 +135,31 @@ p {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  padding: 0 0 10px;
+}
+
+.replay-controls {
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr);
+  gap: 12px;
+  align-items: center;
   padding: 0 0 14px;
+}
+
+.replay-track {
+  height: 10px;
+  border-radius: 999px;
+  background: #e6edf2;
+  overflow: hidden;
+}
+
+.replay-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--blue), var(--teal), var(--coral));
+  transition: width 420ms ease;
 }
 
 .focus-insights {
@@ -366,6 +390,44 @@ p {
 
 .side-thesis strong {
   color: var(--blue);
+}
+
+.compass-chart {
+  min-height: 560px;
+  margin-top: 14px;
+}
+
+.compass-axis-line {
+  stroke: #c8d3dc;
+  stroke-width: 1.4;
+  stroke-dasharray: 5 8;
+}
+
+.compass-quadrant-label,
+.compass-node-label {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.compass-quadrant-label {
+  fill: var(--muted);
+  text-transform: uppercase;
+}
+
+.compass-node {
+  cursor: pointer;
+}
+
+.compass-node circle {
+  transition:
+    opacity 180ms ease,
+    filter 180ms ease;
+}
+
+.compass-node:hover circle {
+  filter: drop-shadow(0 8px 14px rgba(23, 32, 42, 0.18));
 }
 
 .compare-label,
@@ -736,6 +798,10 @@ select:focus {
   }
 
   .focus-insights {
+    min-width: 780px;
+  }
+
+  .replay-controls {
     min-width: 780px;
   }
 
