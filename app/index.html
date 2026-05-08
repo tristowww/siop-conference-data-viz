@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260508-reset-story" />
+    <link rel="stylesheet" href="styles.css?v=20260508-toggle-note" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260508-reset-story" defer></script>
+    <script src="app.js?v=20260508-toggle-note" defer></script>
   </head>
   <body>
     <main>
@@ -125,13 +125,13 @@
             click a band to focus the aggregate story on that use-case context.
           </p>
         </div>
+        <p id="river-mode-note" class="microcopy">
+          Five-band mode shows where AI language appears in the program. Click a band to focus the story.
+        </p>
         <div class="view-toggle" aria-label="Choose signal view">
           <button class="river-mode active" type="button" data-mode="contexts">Five context bands</button>
           <button class="river-mode" type="button" data-mode="sides">I-side vs O-side</button>
         </div>
-        <p id="river-mode-note" class="microcopy">
-          Five-band mode shows where AI language appears in the program. Click a band to focus the story.
-        </p>
         <div
           id="signal-river-chart"
           class="chart signal-river-chart"
