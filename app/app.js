@@ -29,6 +29,49 @@ const CONTEXT_ORDER = [
 
 const SIDE_ORDER = ["I-side selection/assessment", "O-side org/development"];
 
+const STORY_BEATS = [
+  {
+    id: "baseline",
+    step: "1. Baseline",
+    title: "Start before the surge",
+    copy: "2022 shows AI as present, but not yet dominant.",
+    year: 2022,
+    riverMode: "contexts",
+    context: "All",
+    side: "All",
+  },
+  {
+    id: "rise",
+    step: "2. Visibility",
+    title: "Watch AI become louder",
+    copy: "2024 is the bridge into a bigger signal.",
+    year: 2024,
+    riverMode: "contexts",
+    context: "All",
+    side: "All",
+  },
+  {
+    id: "context",
+    step: "3. Use-case mix",
+    title: "Focus the org-side band",
+    copy: "2026 highlights training, leadership, and work context.",
+    year: 2026,
+    riverMode: "contexts",
+    context: "Org/development/training",
+    side: "All",
+  },
+  {
+    id: "meaning",
+    step: "4. Meaning",
+    title: "Compare I-side and O-side",
+    copy: "The story becomes about what AI is being used for.",
+    year: 2026,
+    riverMode: "sides",
+    context: "All",
+    side: "O-side org/development",
+  },
+];
+
 let activeMetric = "sessions";
 let activeContext = "All";
 let activeSide = "All";
@@ -113,6 +156,14 @@ function makeSvg(target, width, height) {
     .attr("aria-hidden", "true");
 }
 
+function appendCallout(svg, { x, y, width = 268, title, copy }) {
+  const group = svg.append("g").attr("class", "chart-callout").attr("transform", `translate(${x},${y})`);
+  group.append("rect").attr("width", width).attr("height", 74).attr("rx", 14);
+  group.append("text").attr("x", 16).attr("y", 27).text(title);
+  group.append("text").attr("class", "callout-copy").attr("x", 16).attr("y", 50).text(copy);
+  return group;
+}
+
 function tooltip() {
   return d3.select("#tooltip");
 }
@@ -186,6 +237,7 @@ function resetExploration() {
   stopReplay();
   activeContext = "All";
   activeSide = "All";
+  riverMode = "contexts";
   selectedLink = null;
   selectedTime = null;
   activeFocusYear = getYears(storyData).at(-1);
@@ -196,6 +248,7 @@ function resetExploration() {
   if (yearSelect) yearSelect.value = "All";
   if (contextSelect) contextSelect.value = "All";
   if (searchInput) searchInput.value = "";
+  syncRiverModeControls();
   syncYearControls();
   drawHeroSignalField(storyData);
   drawSignalRiver(storyData);
@@ -227,6 +280,8 @@ function focusYear(year, { updateExplorer = false } = {}) {
 function focusContext(context) {
   activeContext = context;
   activeSide = "All";
+  riverMode = "contexts";
+  syncRiverModeControls();
   drawUseCaseCompass(storyData);
   drawSignalRiver(storyData);
   renderStoryCaption(storyData);
@@ -238,6 +293,8 @@ function focusContext(context) {
 function focusSide(side) {
   activeSide = side;
   activeContext = "All";
+  riverMode = "sides";
+  syncRiverModeControls();
   selectedLink = null;
   selectedTime = null;
   drawSignalRiver(storyData);
@@ -257,6 +314,81 @@ function syncYearControls() {
     const index = Math.max(0, years.indexOf(activeFocusYear));
     progress.style.width = `${(index / (years.length - 1)) * 100}%`;
   }
+  syncStoryBeatControls();
+}
+
+function riverModeCopy(mode) {
+  return mode === "sides"
+    ? "Two-lane mode simplifies the story into I-side selection/assessment versus O-side people-context AI."
+    : "Five-band mode shows where AI language appears in the program. Click a band to focus the story.";
+}
+
+function syncRiverModeControls() {
+  document.querySelectorAll(".river-mode").forEach((button) => {
+    button.classList.toggle("active", button.dataset.mode === riverMode);
+  });
+  const note = document.querySelector("#river-mode-note");
+  if (note) note.textContent = riverModeCopy(riverMode);
+}
+
+function syncStoryBeatControls() {
+  document.querySelectorAll(".story-beat").forEach((button) => {
+    const beat = STORY_BEATS.find((item) => item.id === button.dataset.beat);
+    const matches =
+      beat &&
+      beat.year === activeFocusYear &&
+      beat.riverMode === riverMode &&
+      beat.context === activeContext &&
+      beat.side === activeSide;
+    button.classList.toggle("active", Boolean(matches));
+  });
+}
+
+function storyBeatTarget(beat) {
+  if (beat.id === "meaning") return "#meaning-step";
+  if (beat.id === "baseline") return "#visibility-step";
+  return "#shift-step";
+}
+
+function applyStoryBeat(beatId) {
+  const beat = STORY_BEATS.find((item) => item.id === beatId);
+  if (!beat) return;
+  stopReplay();
+  activeFocusYear = beat.year;
+  activeNetworkYear = beat.year;
+  activeContext = beat.context;
+  activeSide = beat.side;
+  riverMode = beat.riverMode;
+  selectedLink = null;
+  selectedTime = null;
+  syncRiverModeControls();
+  syncYearControls();
+  drawHeroSignalField(storyData);
+  drawSignalRiver(storyData);
+  drawUseCaseCompass(storyData);
+  renderFocusInsights(storyData);
+  renderStoryCaption(storyData);
+  renderRiverInsights(storyData);
+  renderActiveLens(storyData);
+  renderDynamicTakeaway(storyData);
+  const target = document.querySelector(storyBeatTarget(beat));
+  if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderStoryBeatControls() {
+  const container = document.querySelector("#story-beat-controls");
+  if (!container) return;
+  container.innerHTML = "";
+  STORY_BEATS.forEach((beat) => {
+    const button = document.createElement("button");
+    button.className = "story-beat";
+    button.type = "button";
+    button.dataset.beat = beat.id;
+    button.innerHTML = `<span>${escapeHtml(beat.step)}</span><strong>${escapeHtml(beat.title)}</strong><span>${escapeHtml(beat.copy)}</span>`;
+    button.addEventListener("click", () => applyStoryBeat(beat.id));
+    container.appendChild(button);
+  });
+  syncStoryBeatControls();
 }
 
 function setHeroStats(data) {
@@ -557,6 +689,28 @@ function drawSignalRiver(data) {
     .attr("y1", margin.top - 12)
     .attr("y2", height - margin.bottom + 12);
 
+  const focusedRow = rows.find((row) => row.year === activeFocusYear);
+  const orgSignals = focusedRow["Org/development/training"] || 0;
+  const selectionSignals = focusedRow["Selection/assessment/methods"] || 0;
+  const calloutX = Math.min(Math.max(margin.left + 8, focusX + 18), width - margin.right - 278);
+  const calloutY = margin.top + 4;
+  svg
+    .append("path")
+    .attr("class", "story-arrow")
+    .attr(
+      "d",
+      `M${calloutX + 28},${calloutY + 74} C${calloutX + 24},${height - margin.bottom - 18} ${focusX - 18},${height - margin.bottom - 18} ${focusX},${height - margin.bottom + 12}`,
+    );
+  appendCallout(svg, {
+    x: calloutX,
+    y: calloutY,
+    title: activeContext === "All" ? `${activeFocusYear}: read the mix` : `${shortContext(activeContext)} focused`,
+    copy:
+      activeContext === "All"
+        ? `Org/dev ${orgSignals}; selection ${selectionSignals}.`
+        : `${focusedRow[activeContext] || 0} signals in ${activeFocusYear}; compare years below.`,
+  });
+
   svg
     .append("g")
     .selectAll("circle")
@@ -626,6 +780,18 @@ function drawSideLaneChart(data) {
     .attr("y", 32)
     .attr("class", "chart-note")
     .text("Two-lane view: selection/assessment vs org-side people-context AI");
+
+  const focusedSideRows = getSideRowsForYear(data, activeFocusYear);
+  const focusedI = focusedSideRows.find((row) => row.side === "I-side selection/assessment");
+  const focusedO = focusedSideRows.find((row) => row.side === "O-side org/development");
+  const balance = focusedO.sessions - focusedI.sessions;
+  appendCallout(svg, {
+    x: width - margin.right - 304,
+    y: 26,
+    width: 304,
+    title: `${activeFocusYear}: ${balance >= 0 ? "O-side leads" : "I-side leads"}`,
+    copy: `Selection ${focusedI.sessions}; org-side ${focusedO.sessions}; balance ${balance >= 0 ? "+" : ""}${balance}.`,
+  });
 
   SIDE_ORDER.forEach((side) => {
     const sideRows = rows.filter((row) => row.side === side).sort((a, b) => a.year - b.year);
@@ -813,6 +979,25 @@ function drawUseCaseCompass(data) {
     .domain([0, d3.max(rows, (d) => d.sessions) || 1])
     .range([14, 56]);
 
+  const quadrants = [
+    { x0: 0, x1: 0.5, y0: 0.5, y1: 1, color: "rgba(220, 236, 255, 0.72)" },
+    { x0: 0.5, x1: 1, y0: 0.5, y1: 1, color: "rgba(255, 240, 196, 0.62)" },
+    { x0: 0, x1: 0.5, y0: 0, y1: 0.5, color: "rgba(255, 231, 247, 0.62)" },
+    { x0: 0.5, x1: 1, y0: 0, y1: 0.5, color: "rgba(236, 229, 255, 0.76)" },
+  ];
+
+  svg
+    .append("g")
+    .selectAll("rect")
+    .data(quadrants)
+    .join("rect")
+    .attr("class", "compass-quadrant")
+    .attr("x", (d) => x(d.x0))
+    .attr("y", (d) => y(d.y1))
+    .attr("width", (d) => x(d.x1) - x(d.x0))
+    .attr("height", (d) => y(d.y0) - y(d.y1))
+    .attr("fill", (d) => d.color);
+
   svg
     .append("rect")
     .attr("x", margin.left)
@@ -820,7 +1005,7 @@ function drawUseCaseCompass(data) {
     .attr("width", width - margin.left - margin.right)
     .attr("height", height - margin.top - margin.bottom)
     .attr("rx", 8)
-    .attr("fill", "#f9fbfc")
+    .attr("fill", "transparent")
     .attr("stroke", "#dce3ea");
 
   svg
@@ -920,6 +1105,15 @@ function drawUseCaseCompass(data) {
     .attr("x", margin.left)
     .attr("y", 34)
     .text(`${activeFocusYear} AI use-case compass`);
+
+  const topCompassContext = [...rows].sort((a, b) => b.sessions - a.sessions)[0];
+  appendCallout(svg, {
+    x: width - margin.right - 292,
+    y: 24,
+    width: 292,
+    title: `${shortContext(topCompassContext.ai_context_group)} is largest`,
+    copy: `Bubble size shows ${topCompassContext.sessions} context signals.`,
+  });
 }
 
 function drawContextChart(data) {
@@ -1497,25 +1691,20 @@ function wireBaselineControls(data) {
 }
 
 function wireRiverModeToggle(data) {
-  const note = document.querySelector("#river-mode-note");
   document.querySelectorAll(".river-mode").forEach((button) => {
     button.addEventListener("click", () => {
       riverMode = button.dataset.mode;
       activeSide = "All";
-      document.querySelectorAll(".river-mode").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      if (note) {
-        note.textContent =
-          riverMode === "sides"
-            ? "Two-lane mode simplifies the story into I-side selection/assessment versus O-side people-context AI."
-            : "Five-band mode shows where AI language appears in the program. Click a band to focus the story.";
-      }
+      activeContext = "All";
+      syncRiverModeControls();
       drawSignalRiver(data);
       renderRiverInsights(data);
       renderActiveLens(data);
       renderDynamicTakeaway(data);
+      syncStoryBeatControls();
     });
   });
+  syncRiverModeControls();
 }
 
 function stopReplay() {
@@ -1744,6 +1933,7 @@ async function init() {
     renderRiverInsights(storyData);
     renderDynamicTakeaway(storyData);
     wireMetricButtons();
+    renderStoryBeatControls();
     wireYearScrubber(storyData);
     wireBaselineControls(storyData);
     wireRiverModeToggle(storyData);

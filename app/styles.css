@@ -79,6 +79,85 @@ main {
   text-transform: uppercase;
 }
 
+.story-beats {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.32fr) minmax(0, 1fr);
+  gap: 16px;
+  width: min(1020px, 100%);
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: 0 18px 38px rgba(37, 92, 153, 0.08);
+  padding: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.story-beats strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.2;
+}
+
+.story-beat-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.story-beat {
+  min-height: 104px;
+  border-radius: 14px;
+  border-color: rgba(230, 221, 248, 0.95);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(236, 229, 255, 0.66)),
+    var(--panel);
+  color: var(--ink);
+  padding: 13px;
+  text-align: left;
+}
+
+.story-beat strong,
+.story-beat span {
+  display: block;
+}
+
+.story-beat span:first-child {
+  margin-bottom: 8px;
+  color: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.story-beat strong {
+  margin-bottom: 7px;
+  font-size: 0.98rem;
+}
+
+.story-beat span:last-child {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.story-beat.active {
+  border-color: transparent;
+  background:
+    linear-gradient(135deg, rgba(20, 84, 232, 0.96), rgba(124, 92, 255, 0.94)),
+    var(--blue);
+  color: #fff;
+  box-shadow: 0 18px 36px rgba(20, 84, 232, 0.24);
+}
+
+.story-beat.active span:first-child,
+.story-beat.active span:last-child,
+.story-beat.active strong {
+  color: #fff;
+}
+
 .hero {
   position: relative;
   min-height: 88vh;
@@ -379,6 +458,32 @@ p {
   cursor: pointer;
   stroke: #fff;
   stroke-width: 2;
+}
+
+.chart-callout rect {
+  fill: rgba(255, 255, 255, 0.88);
+  stroke: rgba(230, 221, 248, 0.98);
+  filter: drop-shadow(0 12px 22px rgba(24, 42, 58, 0.09));
+}
+
+.chart-callout text {
+  fill: var(--ink);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.chart-callout .callout-copy {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.story-arrow {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 2;
+  stroke-dasharray: 5 6;
+  opacity: 0.72;
 }
 
 .side-lane-line {
@@ -717,6 +822,10 @@ p {
   stroke: #c8d3dc;
   stroke-width: 1.4;
   stroke-dasharray: 5 8;
+}
+
+.compass-quadrant {
+  opacity: 0.78;
 }
 
 .compass-quadrant-label,
@@ -1104,6 +1213,7 @@ select:focus {
 
   .hero-grid,
   .exploration-lens,
+  .story-beats,
   .section-heading,
   .insight-grid,
   .compare-grid,
@@ -1111,6 +1221,10 @@ select:focus {
   .format-strip,
   .focus-insights,
   .river-insights {
+    grid-template-columns: 1fr;
+  }
+
+  .story-beat-controls {
     grid-template-columns: 1fr;
   }
 

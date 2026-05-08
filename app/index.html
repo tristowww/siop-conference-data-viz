@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260508-reference-palette" />
+    <link rel="stylesheet" href="styles.css?v=20260508-story-graphics" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260508-reference-palette" defer></script>
+    <script src="app.js?v=20260508-story-graphics" defer></script>
   </head>
   <body>
     <main>
@@ -23,6 +23,13 @@
           <span>2. Use-case shift</span>
           <span>3. Why it matters</span>
         </div>
+        <div class="story-beats" aria-label="Follow the story">
+          <div>
+            <span class="stat-label">Follow the story</span>
+            <strong>Use the beats to move the graphics.</strong>
+          </div>
+          <div id="story-beat-controls" class="story-beat-controls"></div>
+        </div>
         <div class="signal-stage" aria-label="Interactive AI signal console">
           <div
             id="hero-signal-field"
@@ -33,7 +40,7 @@
           <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
           <div class="hero-control-row">
             <div id="baseline-current" class="baseline-current" aria-label="Compare baseline and current year"></div>
-            <button id="reset-exploration" class="reset-story-button" type="button">Reset story</button>
+            <button id="reset-exploration" class="reset-story-button" type="button">Back to overview</button>
           </div>
           <div class="replay-controls" aria-label="Replay the year sequence">
             <button id="replay-years" class="replay-button" type="button">Play year replay</button>
