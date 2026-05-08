@@ -750,6 +750,10 @@ select:focus {
   font-weight: 750;
 }
 
+.is-hidden {
+  display: none;
+}
+
 .example-meta {
   display: flex;
   flex-wrap: wrap;

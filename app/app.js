@@ -1397,8 +1397,13 @@ function renderSessionExplorer(data) {
   const sessions = filteredSessions(data);
   const visible = sessions.slice(0, 24);
   renderActiveLens(sessions);
+  const authorCount = sessions.filter((session) => session.speakers).length;
   document.querySelector("#session-count").textContent =
     `${sessions.length}/${data.session_explorer.length} talks visible`;
+  document.querySelector("#author-coverage").textContent =
+    sessions.length > 0
+      ? `Author names are available for ${authorCount} of these ${sessions.length} visible sessions.`
+      : "";
 
   d3.select("#session-list").selectAll(".empty-state").remove();
   const cards = d3.select("#session-list").selectAll(".session-card").data(visible, (d) => `${d.year}-${d.title}`);
@@ -1420,7 +1425,8 @@ function renderSessionExplorer(data) {
   merged.select("h3").html((d) => highlightTerm(d.title, query));
   merged
     .select(".session-authors")
-    .html((d) => highlightTerm(d.speakers ? `Authors: ${d.speakers}` : "Authors not listed in this source", query));
+    .classed("is-hidden", (d) => !d.speakers)
+    .html((d) => (d.speakers ? highlightTerm(`Authors: ${d.speakers}`, query) : ""));
   merged.select(".session-tracks").html((d) => highlightTerm(sessionDescriptor(d), query));
   merged.select(".session-description").html((d) => highlightTerm(d.description || d.location, query));
   cards.exit().remove();
