@@ -1402,7 +1402,7 @@ function renderSessionExplorer(data) {
     `${sessions.length}/${data.session_explorer.length} talks visible`;
   document.querySelector("#author-coverage").textContent =
     sessions.length > 0
-      ? `Author names are available for ${authorCount} of these ${sessions.length} visible sessions.`
+      ? `Author names were parsed for ${authorCount} of these ${sessions.length} visible sessions.`
       : "";
 
   d3.select("#session-list").selectAll(".empty-state").remove();
