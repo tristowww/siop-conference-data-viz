@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260508-story-path" />
+    <link rel="stylesheet" href="styles.css?v=20260508-reset-story" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260508-story-path" defer></script>
+    <script src="app.js?v=20260508-reset-story" defer></script>
   </head>
   <body>
     <main>
@@ -31,7 +31,10 @@
             aria-label="Data-driven AI signal field by year and context"
           ></div>
           <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
-          <div id="baseline-current" class="baseline-current" aria-label="Compare baseline and current year"></div>
+          <div class="hero-control-row">
+            <div id="baseline-current" class="baseline-current" aria-label="Compare baseline and current year"></div>
+            <button id="reset-exploration" class="reset-story-button" type="button">Reset story</button>
+          </div>
           <div class="replay-controls" aria-label="Replay the year sequence">
             <button id="replay-years" class="replay-button" type="button">Play year replay</button>
             <div class="replay-track" aria-hidden="true">
@@ -66,7 +69,6 @@
             <strong id="active-lens-title">2026 program emphasis</strong>
             <span id="active-lens-detail">Use the year buttons and signal views to compare how the program emphasis changes.</span>
           </div>
-          <button id="reset-exploration" type="button">Reset story</button>
         </div>
         <div class="story-takeaway" aria-live="polite">
           <span class="stat-label">Story takeaway</span>

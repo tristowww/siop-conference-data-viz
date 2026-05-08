@@ -164,8 +164,22 @@ p {
   align-items: center;
 }
 
-.baseline-current {
+.hero-control-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
   padding-bottom: 10px;
+}
+
+.baseline-current {
+  padding-bottom: 0;
+}
+
+.reset-story-button {
+  border-color: #c9d4dd;
+  color: var(--muted);
 }
 
 .replay-controls {
