@@ -105,6 +105,20 @@ function highlightTerm(text, query) {
   return safe.replace(new RegExp(`(${escaped})`, "ig"), "<mark>$1</mark>");
 }
 
+function sessionDescriptor(session) {
+  const pieces = [];
+  if (session.tracks && session.tracks !== "Untracked") {
+    pieces.push(session.tracks);
+  } else if (session.year < 2025) {
+    pieces.push("Archived program text; track label not available");
+  } else {
+    pieces.push("No track label available");
+  }
+  const when = [session.date, session.start_time].filter(Boolean).join(" at ");
+  if (when) pieces.push(when);
+  return pieces.join(" | ");
+}
+
 function setExplorerLens({ year = null, context = null, query = null, link = undefined } = {}) {
   if (year !== null) document.querySelector("#session-year").value = String(year);
   if (context !== null) document.querySelector("#session-context").value = context;
@@ -1375,7 +1389,7 @@ function renderActiveLens(sessions) {
   document.querySelector("#active-lens-title").textContent =
     pieces.length > 0 ? pieces.join(" / ") : "All AI-related sessions";
   document.querySelector("#active-lens-detail").textContent =
-    `${sessions.length} talks visible. Click the river, compass, year replay, or reset to change the lens.`;
+    `${sessions.length} talks visible. Use the river, compass, year replay, or filters to change the lens.`;
 }
 
 function renderSessionExplorer(data) {
@@ -1403,7 +1417,7 @@ function renderSessionExplorer(data) {
     );
   });
   merged.select("h3").html((d) => highlightTerm(d.title, query));
-  merged.select(".session-tracks").html((d) => highlightTerm(d.tracks, query));
+  merged.select(".session-tracks").html((d) => highlightTerm(sessionDescriptor(d), query));
   merged.select(".session-description").html((d) => highlightTerm(d.description || d.location, query));
   cards.exit().remove();
 
