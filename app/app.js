@@ -28,7 +28,6 @@ const CONTEXT_ORDER = [
 ];
 
 const SIDE_ORDER = ["I-side selection/assessment", "O-side org/development"];
-const STORY_STEPS = ["visibility-step", "shift-step", "meaning-step"];
 
 let activeMetric = "sessions";
 let activeContext = "All";
@@ -1519,25 +1518,6 @@ function wireRiverModeToggle(data) {
   });
 }
 
-function wireStoryProgress() {
-  const links = document.querySelectorAll(".story-progress a");
-  if (!links.length || !("IntersectionObserver" in window)) return;
-  const observer = new IntersectionObserver(
-    (entries) => {
-      const visible = entries
-        .filter((entry) => entry.isIntersecting)
-        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (!visible) return;
-      links.forEach((link) => link.classList.toggle("active", link.dataset.step === visible.target.id));
-    },
-    { threshold: [0.28, 0.45, 0.62] },
-  );
-  STORY_STEPS.forEach((id) => {
-    const section = document.getElementById(id);
-    if (section) observer.observe(section);
-  });
-}
-
 function stopReplay() {
   if (replayTimer) {
     window.clearInterval(replayTimer);
@@ -1648,30 +1628,21 @@ function filteredSessions(data) {
 
 function renderActiveLens(data = storyData) {
   if (!data) return;
-  const pieces = [];
-  if (activeFocusYear) pieces.push(activeFocusYear);
-  if (activeContext !== "All") pieces.push(activeContext);
-  if (activeSide !== "All") pieces.push(activeSide);
-  if (selectedLink) pieces.push(`${selectedLink.source} + ${selectedLink.target}`);
-  if (selectedTime) pieces.push(`${selectedTime.dateLabel} at ${selectedTime.hour}:00`);
-  const sessions = data.session_explorer.filter((session) => {
-    const groups = session.context_groups || [session.context];
-    const matchesYear = !activeFocusYear || session.year === activeFocusYear;
-    const matchesContext = activeContext === "All" || groups.includes(activeContext);
-    const matchesSide = sessionMatchesSide(session, activeSide);
-    const matchesLink =
-      !selectedLink || (groups.includes(selectedLink.source) && groups.includes(selectedLink.target));
-    const matchesTime =
-      !selectedTime ||
-      (session.year === selectedTime.year &&
-        session.date === selectedTime.date &&
-        Number(String(session.start_time || "").slice(0, 2)) === selectedTime.hour);
-    return matchesYear && matchesContext && matchesSide && matchesLink && matchesTime;
-  });
-  document.querySelector("#active-lens-title").textContent =
-    pieces.length > 0 ? pieces.join(" / ") : "All AI-related sessions";
-  document.querySelector("#active-lens-detail").textContent =
-    `${sessions.length} AI-related sessions in this view. Use the visuals to compare volume, context, and the I-side/O-side shape of the story.`;
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const title =
+    activeContext !== "All"
+      ? `${activeFocusYear}: ${shortContext(activeContext)} emphasis`
+      : activeSide !== "All"
+        ? `${activeFocusYear}: ${activeSide}`
+        : `${activeFocusYear} program emphasis`;
+  const detail =
+    activeContext !== "All"
+      ? contextMicrocopy(activeContext)
+      : activeSide !== "All"
+        ? "This lens simplifies the story into the I-side/O-side distinction."
+        : `${current.ai_related_sessions} AI-related sessions, ${percent(current.ai_share)} of the parsed program. Use the controls to compare years and use-case emphasis.`;
+  document.querySelector("#active-lens-title").textContent = title;
+  document.querySelector("#active-lens-detail").textContent = detail;
 }
 
 function renderSessionExplorer(data) {
@@ -1776,7 +1747,6 @@ async function init() {
     wireYearScrubber(storyData);
     wireBaselineControls(storyData);
     wireRiverModeToggle(storyData);
-    wireStoryProgress();
     wireReplayControls(storyData);
     wireNetworkButtons();
     wireSessionExplorer(storyData);

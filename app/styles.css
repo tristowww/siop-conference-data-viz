@@ -42,39 +42,22 @@ main {
   padding: 42px 0 64px;
 }
 
-.story-progress {
-  position: fixed;
-  top: 50%;
-  left: 18px;
-  z-index: 10;
-  display: grid;
+.story-path {
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  transform: translateY(-50%);
+  max-width: 760px;
 }
 
-.story-progress a {
+.story-path span {
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 8px 28px rgba(23, 32, 42, 0.08);
+  background: rgba(255, 255, 255, 0.72);
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   font-weight: 850;
   padding: 8px 10px;
-  text-decoration: none;
   text-transform: uppercase;
-  transition:
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms ease;
-}
-
-.story-progress a.active {
-  border-color: var(--blue);
-  background: var(--blue);
-  color: #fff;
-  transform: translateX(4px);
 }
 
 .hero {
@@ -899,23 +882,9 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .story-progress {
-    top: auto;
-    right: 12px;
-    bottom: 12px;
-    left: 12px;
-    display: flex;
-    justify-content: center;
-    transform: none;
-  }
-
-  .story-progress a {
-    font-size: 0.68rem;
+  .story-path span {
+    font-size: 0.7rem;
     padding: 7px 8px;
-  }
-
-  .story-progress a.active {
-    transform: none;
   }
 
   .exploration-lens {

@@ -4,16 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260508-story-controls" />
+    <link rel="stylesheet" href="styles.css?v=20260508-story-path" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260508-story-controls" defer></script>
+    <script src="app.js?v=20260508-story-path" defer></script>
   </head>
   <body>
-    <nav class="story-progress" aria-label="Story progress">
-      <a href="#visibility-step" data-step="visibility-step">Visibility</a>
-      <a href="#shift-step" data-step="shift-step">Use-case shift</a>
-      <a href="#meaning-step" data-step="meaning-step">Why it matters</a>
-    </nav>
     <main>
       <section id="visibility-step" class="hero story-step" aria-labelledby="page-title">
         <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
@@ -23,6 +18,11 @@
           years. It also appears in a wider mix of use-case contexts, including training, coaching,
           leadership, culture, employee experience, and accessibility.
         </p>
+        <div class="story-path" aria-label="Story path">
+          <span>1. Visibility</span>
+          <span>2. Use-case shift</span>
+          <span>3. Why it matters</span>
+        </div>
         <div class="signal-stage" aria-label="Interactive AI signal console">
           <div
             id="hero-signal-field"
@@ -62,11 +62,11 @@
         </div>
         <div class="exploration-lens" aria-live="polite">
           <div>
-            <span class="stat-label">Focused view</span>
-            <strong id="active-lens-title">All AI-related sessions</strong>
-            <span id="active-lens-detail">Use the river, compass, or year replay to focus the aggregate story.</span>
+            <span class="stat-label">Current story lens</span>
+            <strong id="active-lens-title">2026 program emphasis</strong>
+            <span id="active-lens-detail">Use the year buttons and signal views to compare how the program emphasis changes.</span>
           </div>
-          <button id="reset-exploration" type="button">Reset view</button>
+          <button id="reset-exploration" type="button">Reset story</button>
         </div>
         <div class="story-takeaway" aria-live="polite">
           <span class="stat-label">Story takeaway</span>
