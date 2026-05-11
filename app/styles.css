@@ -79,6 +79,34 @@ main {
   text-transform: uppercase;
 }
 
+.source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.source-links a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  border: 1px solid rgba(20, 84, 232, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--blue);
+  font-size: 0.84rem;
+  font-weight: 850;
+  padding: 8px 12px;
+  text-decoration: none;
+}
+
+.source-links a:hover,
+.source-links a:focus-visible {
+  border-color: var(--blue);
+  background: rgba(255, 255, 255, 0.94);
+  outline: 2px solid rgba(20, 84, 232, 0.16);
+  outline-offset: 2px;
+}
+
 .story-beats {
   display: grid;
   grid-template-columns: minmax(190px, 0.32fr) minmax(0, 1fr);
