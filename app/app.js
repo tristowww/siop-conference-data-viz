@@ -293,7 +293,15 @@ function renderSessionDrilldown(targetSelector, lens) {
   target.querySelector(".drilldown-clear").addEventListener("click", () => {
     resetSessionDrilldown(targetSelector);
   });
-  target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  markPanelUpdated(target);
+}
+
+function markPanelUpdated(target) {
+  target.classList.remove("is-updated");
+  window.requestAnimationFrame(() => {
+    target.classList.add("is-updated");
+    window.setTimeout(() => target.classList.remove("is-updated"), 700);
+  });
 }
 
 function countBy(items, keyFn) {
@@ -426,7 +434,7 @@ function renderDataLens({ year = activeFocusYear, context = "All", side = "All" 
       renderSessionDrilldown("#meaning-session-drilldown", { year: nextYear, context, side });
     });
   });
-  target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  markPanelUpdated(target);
 }
 
 function resetSessionDrilldown(targetSelector) {
@@ -2206,8 +2214,6 @@ function wireDataStoryCards(data) {
       const year = Number(card.dataset.drillYear || getYears(data).at(-1));
       const context = card.dataset.drillContext || "All";
       applyContextDrill({ year, context, targetSelector: "#river-session-drilldown" });
-      const target = document.querySelector("#shift-step");
-      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     };
     card.addEventListener("click", activate);
     card.addEventListener("keydown", (event) => {
@@ -2232,9 +2238,6 @@ function wireSideDrillCards() {
       selectedLink = null;
       selectedTime = null;
       syncRiverModeControls();
-      drawSignalRiver(storyData);
-      drawUseCaseCompass(storyData);
-      renderRiverInsights(storyData);
       renderActiveLens(storyData);
       renderDynamicTakeaway(storyData);
       renderDataLens({ year: activeFocusYear, side });

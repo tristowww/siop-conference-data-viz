@@ -484,6 +484,16 @@ p {
   border-radius: 8px;
   background: rgba(248, 251, 255, 0.86);
   padding: 16px;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.session-drilldown.is-updated,
+.data-lens.is-updated {
+  border-color: rgba(109, 77, 247, 0.36);
+  box-shadow: 0 16px 38px rgba(109, 77, 247, 0.11);
 }
 
 .drilldown-header {
@@ -545,6 +555,10 @@ p {
   background: rgba(248, 251, 255, 0.9);
   padding: 18px;
   text-align: left;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
 }
 
 .data-lens-header {
