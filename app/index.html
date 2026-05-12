@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-session-drilldown" />
+    <link rel="stylesheet" href="styles.css?v=20260512-deep-clicks" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260512-session-drilldown" defer></script>
+    <script src="app.js?v=20260512-deep-clicks" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -134,7 +134,7 @@
           </p>
         </div>
         <div class="insight-grid">
-          <article>
+          <article class="data-story-card" data-drill-year="2026" data-drill-context="All">
             <span class="pill">1</span>
             <h3>AI became more visible.</h3>
             <p>
@@ -142,7 +142,7 @@
               five-year view, suggesting AI is more central to the public-facing program.
             </p>
           </article>
-          <article>
+          <article class="data-story-card" data-drill-year="2026" data-drill-context="Selection/assessment/methods">
             <span class="pill">2</span>
             <h3>The assessment story is still there.</h3>
             <p>
@@ -150,7 +150,7 @@
               experience, which fits the more deterministic I-side tradition.
             </p>
           </article>
-          <article>
+          <article class="data-story-card" data-drill-year="2026" data-drill-context="Org/development/training">
             <span class="pill">3</span>
             <h3>The org-side story is growing.</h3>
             <p>
@@ -208,7 +208,7 @@
           </p>
         </div>
         <div class="compare-grid">
-          <article>
+          <article class="side-drill-card" data-side="I-side selection/assessment">
             <span class="compare-label">More deterministic</span>
             <h3>I-side selection and assessment</h3>
             <p>
@@ -217,7 +217,7 @@
               and defensible decision rules.
             </p>
           </article>
-          <article>
+          <article class="side-drill-card" data-side="O-side org/development">
             <span class="compare-label">More human-contextual</span>
             <h3>O-side training and organization development</h3>
             <p>
@@ -240,6 +240,23 @@
           role="img"
           aria-label="AI use-case compass from deterministic to judgment-rich and individual to organizational"
         ></div>
+        <div id="meaning-data-lens" class="data-lens" aria-live="polite">
+          <div>
+            <span class="stat-label">Data lens</span>
+            <strong>Click a compass bubble or I-side/O-side card to inspect the slice.</strong>
+          </div>
+        </div>
+        <div
+          id="meaning-session-drilldown"
+          class="session-drilldown"
+          aria-live="polite"
+          aria-label="Sessions behind selected meaning section slice"
+        >
+          <div>
+            <span class="stat-label">Session drilldown</span>
+            <strong>Click a compass bubble or side card to see the matching sessions.</strong>
+          </div>
+        </div>
         <div class="side-matrix" aria-label="I-side and O-side AI comparison">
           <article>
             <span class="matrix-label">Risk questions</span>

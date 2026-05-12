@@ -284,12 +284,146 @@ function renderSessionDrilldown(targetSelector, lens) {
   target.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
+function countBy(items, keyFn) {
+  return Array.from(
+    d3.rollup(
+      items,
+      (values) => values.length,
+      keyFn,
+    ),
+    ([label, count]) => ({ label: label || "Unlisted", count }),
+  ).sort((a, b) => b.count - a.count || String(a.label).localeCompare(String(b.label)));
+}
+
+function contextRowFor(data, year, context) {
+  return data.context_summary.find(
+    (item) => item.conference_year === Number(year) && item.ai_context_group === context,
+  );
+}
+
+function trajectoryForLens(data, { context = "All", side = "All" } = {}) {
+  return getYears(data).map((year) => {
+    if (context !== "All") {
+      const row = contextRowFor(data, year, context);
+      return { year, sessions: row ? row.sessions : 0 };
+    }
+    if (side !== "All") {
+      const row = getSideRowsForYear(data, year).find((item) => item.side === side);
+      return { year, sessions: row ? row.sessions : 0 };
+    }
+    const row = data.ai_summary.find((item) => item.year === year);
+    return { year, sessions: row ? row.ai_related_sessions : 0 };
+  });
+}
+
+function renderDataLens({ year = activeFocusYear, context = "All", side = "All" } = {}) {
+  const target = document.querySelector("#meaning-data-lens");
+  if (!target || !storyData) return;
+  const sessions = sessionsForLens(storyData, { year, context, side });
+  const trajectory = trajectoryForLens(storyData, { context, side });
+  const first = trajectory[0];
+  const last = trajectory.at(-1);
+  const selectedCount = sessions.length;
+  const contextRow = context !== "All" ? contextRowFor(storyData, year, context) : null;
+  const formats = countBy(sessions, (session) => session.session_format).slice(0, 3);
+  const tracks = countBy(
+    sessions.filter((session) => session.tracks && session.tracks !== "Untracked"),
+    (session) => session.tracks,
+  ).slice(0, 3);
+  const label =
+    context !== "All"
+      ? shortContext(context)
+      : side !== "All"
+        ? side
+        : "All AI-related sessions";
+  const microcopy =
+    context !== "All"
+      ? contextMicrocopy(context)
+      : side !== "All"
+        ? "This side lens groups related contexts so the I-side/O-side contrast is easier to inspect."
+        : "This lens keeps the full AI-related session set visible for the selected year.";
+
+  target.innerHTML = `
+    <div class="data-lens-header">
+      <div>
+        <span class="stat-label">Data lens</span>
+        <strong>${escapeHtml(year)} | ${escapeHtml(label)}</strong>
+        <p>${escapeHtml(microcopy)}</p>
+      </div>
+      <button class="drilldown-clear" type="button">Clear</button>
+    </div>
+    <div class="data-lens-grid">
+      <article>
+        <span class="stat-label">Selected year</span>
+        <strong>${selectedCount}</strong>
+        <p>${contextRow ? `${percent(contextRow.share)} of AI context links in ${year}.` : "Matching AI-related sessions in this slice."}</p>
+      </article>
+      <article>
+        <span class="stat-label">Five-year arc</span>
+        <strong>${first.sessions} → ${last.sessions}</strong>
+        <p>${last.sessions - first.sessions >= 0 ? "+" : ""}${last.sessions - first.sessions} from ${first.year} to ${last.year}.</p>
+      </article>
+      <article>
+        <span class="stat-label">Top formats</span>
+        <strong>${escapeHtml(formats.map((item) => `${item.label} (${item.count})`).join(", ") || "n/a")}</strong>
+        <p>Most common session formats in this selected slice.</p>
+      </article>
+      <article>
+        <span class="stat-label">Top tracks</span>
+        <strong>${escapeHtml(tracks.map((item) => `${item.label} (${item.count})`).join(", ") || "n/a")}</strong>
+        <p>Track labels are less complete before 2025.</p>
+      </article>
+    </div>
+    <div class="data-lens-trajectory" aria-label="Five-year trajectory">
+      ${trajectory
+        .map(
+          (item) => `
+            <button class="trajectory-chip${Number(item.year) === Number(year) ? " active" : ""}" type="button" data-year="${item.year}">
+              <span>${item.year}</span>
+              <strong>${item.sessions}</strong>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+  target.querySelector(".drilldown-clear").addEventListener("click", () => {
+    target.innerHTML = `
+      <div>
+        <span class="stat-label">Data lens</span>
+        <strong>Click a compass bubble or I-side/O-side card to inspect the slice.</strong>
+      </div>
+    `;
+    resetSessionDrilldown("#meaning-session-drilldown");
+  });
+  target.querySelectorAll(".trajectory-chip").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextYear = Number(button.dataset.year);
+      activeFocusYear = nextYear;
+      activeNetworkYear = nextYear;
+      syncYearControls();
+      drawHeroSignalField(storyData);
+      drawSignalRiver(storyData);
+      drawUseCaseCompass(storyData);
+      renderFocusInsights(storyData);
+      renderStoryCaption(storyData);
+      renderRiverInsights(storyData);
+      renderDynamicTakeaway(storyData);
+      renderDataLens({ year: nextYear, context, side });
+      renderSessionDrilldown("#meaning-session-drilldown", { year: nextYear, context, side });
+    });
+  });
+  target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
 function resetSessionDrilldown(targetSelector) {
   const target = document.querySelector(targetSelector);
   if (!target) return;
   const copy =
     targetSelector === "#river-session-drilldown"
       ? "Click a band, year marker, or lane dot to inspect the matching sessions."
+      : targetSelector === "#meaning-session-drilldown"
+        ? "Click a compass bubble or side card to see the matching sessions."
       : "Click a bubble to see the sessions behind that year and context.";
   target.innerHTML = `
     <div>
@@ -343,6 +477,16 @@ function resetExploration() {
   renderDynamicTakeaway(storyData);
   resetSessionDrilldown("#hero-session-drilldown");
   resetSessionDrilldown("#river-session-drilldown");
+  resetSessionDrilldown("#meaning-session-drilldown");
+  const dataLens = document.querySelector("#meaning-data-lens");
+  if (dataLens) {
+    dataLens.innerHTML = `
+      <div>
+        <span class="stat-label">Data lens</span>
+        <strong>Click a compass bubble or I-side/O-side card to inspect the slice.</strong>
+      </div>
+    `;
+  }
 }
 
 function focusYear(year, { updateExplorer = false } = {}) {
@@ -1178,6 +1322,11 @@ function drawUseCaseCompass(data) {
     .on("mouseleave", hideTooltip)
     .on("click", (_, d) => {
       focusContext(d.ai_context_group);
+      renderDataLens({ year: activeFocusYear, context: d.ai_context_group });
+      renderSessionDrilldown("#meaning-session-drilldown", {
+        year: activeFocusYear,
+        context: d.ai_context_group,
+      });
     });
 
   nodes
@@ -2015,6 +2164,79 @@ function wireSessionExplorer(data) {
   renderSessionExplorer(data);
 }
 
+function applyContextDrill({ year, context = "All", targetSelector = "#river-session-drilldown" }) {
+  activeFocusYear = Number(year);
+  activeNetworkYear = activeFocusYear;
+  activeSide = "All";
+  activeContext = context;
+  riverMode = "contexts";
+  selectedLink = null;
+  selectedTime = null;
+  syncRiverModeControls();
+  syncYearControls();
+  drawHeroSignalField(storyData);
+  drawSignalRiver(storyData);
+  drawUseCaseCompass(storyData);
+  renderFocusInsights(storyData);
+  renderStoryCaption(storyData);
+  renderRiverInsights(storyData);
+  renderActiveLens(storyData);
+  renderDynamicTakeaway(storyData);
+  renderSessionDrilldown(targetSelector, { year: activeFocusYear, context });
+}
+
+function wireDataStoryCards(data) {
+  document.querySelectorAll(".data-story-card").forEach((card) => {
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("role", "button");
+    const activate = () => {
+      const year = Number(card.dataset.drillYear || getYears(data).at(-1));
+      const context = card.dataset.drillContext || "All";
+      applyContextDrill({ year, context, targetSelector: "#river-session-drilldown" });
+      const target = document.querySelector("#shift-step");
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+    card.addEventListener("click", activate);
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
+    });
+  });
+}
+
+function wireSideDrillCards() {
+  document.querySelectorAll(".side-drill-card").forEach((card) => {
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("role", "button");
+    const activate = () => {
+      const side = card.dataset.side;
+      if (!side) return;
+      activeSide = side;
+      activeContext = "All";
+      riverMode = "sides";
+      selectedLink = null;
+      selectedTime = null;
+      syncRiverModeControls();
+      drawSignalRiver(storyData);
+      drawUseCaseCompass(storyData);
+      renderRiverInsights(storyData);
+      renderActiveLens(storyData);
+      renderDynamicTakeaway(storyData);
+      renderDataLens({ year: activeFocusYear, side });
+      renderSessionDrilldown("#meaning-session-drilldown", { year: activeFocusYear, side });
+    };
+    card.addEventListener("click", activate);
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activate();
+      }
+    });
+  });
+}
+
 function wireMetricButtons() {
   document.querySelectorAll(".metric-toggle").forEach((button) => {
     button.addEventListener("click", () => {
@@ -2046,6 +2268,8 @@ async function init() {
     wireReplayControls(storyData);
     wireNetworkButtons();
     wireSessionExplorer(storyData);
+    wireDataStoryCards(storyData);
+    wireSideDrillCards();
     document.querySelector("#reset-exploration").addEventListener("click", resetExploration);
   } catch (error) {
     document.body.insertAdjacentHTML(

@@ -528,11 +528,94 @@ p {
   color: var(--ink);
   font-size: 0.98rem;
   line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .drilldown-card p {
   margin: 0;
   font-size: 0.88rem;
+}
+
+.data-lens {
+  display: grid;
+  gap: 16px;
+  margin: 18px 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.9);
+  padding: 18px;
+  text-align: left;
+}
+
+.data-lens-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.data-lens-header strong,
+.data-lens > div > strong {
+  display: block;
+  color: var(--ink);
+  font-size: clamp(1.1rem, 1.7vw, 1.5rem);
+  line-height: 1.2;
+}
+
+.data-lens-header p {
+  max-width: 780px;
+  margin: 8px 0 0;
+}
+
+.data-lens-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.data-lens-grid article {
+  border: 1px solid rgba(220, 228, 239, 0.94);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 14px;
+}
+
+.data-lens-grid strong {
+  display: block;
+  color: var(--ink);
+  font-size: clamp(1.05rem, 1.8vw, 1.6rem);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.data-lens-grid p {
+  margin: 8px 0 0;
+  font-size: 0.86rem;
+}
+
+.data-lens-trajectory {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.trajectory-chip {
+  display: grid;
+  min-height: 58px;
+  align-content: center;
+  justify-items: center;
+  gap: 3px;
+  border-radius: 8px;
+}
+
+.trajectory-chip span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+}
+
+.trajectory-chip strong {
+  font-size: 1.18rem;
 }
 
 .signal-river-chart {
@@ -911,6 +994,10 @@ p {
   position: relative;
   overflow: hidden;
   padding: 20px;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
 .insight-grid article::after,
@@ -945,6 +1032,23 @@ p {
 .side-matrix article > * {
   position: relative;
   z-index: 1;
+}
+
+.data-story-card,
+.side-drill-card,
+.compass-node {
+  cursor: pointer;
+}
+
+.data-story-card:hover,
+.data-story-card:focus-visible,
+.side-drill-card:hover,
+.side-drill-card:focus-visible {
+  border-color: rgba(109, 77, 247, 0.32);
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+  outline: 2px solid rgba(109, 77, 247, 0.14);
+  outline-offset: 2px;
+  transform: translateY(-1px);
 }
 
 .insight-grid h3,
@@ -1426,7 +1530,9 @@ select:focus {
   .format-strip,
   .focus-insights,
   .river-insights,
-  .drilldown-list {
+  .drilldown-list,
+  .data-lens-grid,
+  .data-lens-trajectory {
     grid-template-columns: 1fr;
   }
 
@@ -1452,6 +1558,10 @@ select:focus {
   }
 
   .drilldown-header {
+    flex-direction: column;
+  }
+
+  .data-lens-header {
     flex-direction: column;
   }
 
