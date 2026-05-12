@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-clean-ui" />
+    <link rel="stylesheet" href="styles.css?v=20260512-session-drilldown" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260512-clean-ui" defer></script>
+    <script src="app.js?v=20260512-session-drilldown" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -96,6 +96,17 @@
             Focus a year to see how the AI conversation changes across the story.
           </p>
           <div id="focus-insights" class="focus-insights" aria-label="Focused year insights"></div>
+          <div
+            id="hero-session-drilldown"
+            class="session-drilldown"
+            aria-live="polite"
+            aria-label="Sessions behind selected context"
+          >
+            <div>
+              <span class="stat-label">Session drilldown</span>
+              <strong>Click a bubble to see the sessions behind that year and context.</strong>
+            </div>
+          </div>
         </div>
         <div class="exploration-lens" aria-live="polite">
           <div>
@@ -172,6 +183,17 @@
           role="img"
           aria-label="Stacked stream of AI-related contexts by year"
         ></div>
+        <div
+          id="river-session-drilldown"
+          class="session-drilldown"
+          aria-live="polite"
+          aria-label="Sessions behind selected signal river point"
+        >
+          <div>
+            <span class="stat-label">Session drilldown</span>
+            <strong>Click a band, year marker, or lane dot to inspect the matching sessions.</strong>
+          </div>
+        </div>
         <div id="river-insights" class="river-insights" aria-label="Signal river interpretation"></div>
       </section>
 

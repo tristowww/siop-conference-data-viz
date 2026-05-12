@@ -83,6 +83,7 @@ let selectedTime = null;
 let replayTimer = null;
 let replayIndex = 0;
 let storyData;
+const SESSION_PREVIEW_LIMIT = 8;
 
 function percent(value) {
   return `${Math.round(value * 100)}%`;
@@ -215,6 +216,89 @@ function sessionDescriptor(session) {
   return pieces.join(" | ");
 }
 
+function sessionsForLens(data, { year = "All", context = "All", side = "All" } = {}) {
+  return data.session_explorer.filter((session) => {
+    const groups = session.context_groups || [session.context];
+    const matchesYear = year === "All" || Number(session.year) === Number(year);
+    const matchesContext = context === "All" || groups.includes(context);
+    const matchesSide = side === "All" || sessionMatchesSide(session, side);
+    return matchesYear && matchesContext && matchesSide;
+  });
+}
+
+function renderSessionDrilldown(targetSelector, lens) {
+  const target = document.querySelector(targetSelector);
+  if (!target || !storyData) return;
+  const sessions = sessionsForLens(storyData, lens);
+  const preview = sessions.slice(0, SESSION_PREVIEW_LIMIT);
+  const labelParts = [
+    lens.year && lens.year !== "All" ? lens.year : "All years",
+    lens.context && lens.context !== "All" ? shortContext(lens.context) : null,
+    lens.side && lens.side !== "All" ? lens.side : null,
+  ].filter(Boolean);
+  const label = labelParts.join(" | ");
+  const sessionWord = sessions.length === 1 ? "session" : "sessions";
+  const cards = preview
+    .map((session) => {
+      const displayedContext =
+        lens.context && lens.context !== "All" ? shortContext(lens.context) : shortContext(session.context);
+      return `
+        <article class="drilldown-card">
+          <div class="example-meta">
+            <span class="pill">${escapeHtml(session.year)}</span>
+            <span class="pill">${escapeHtml(displayedContext)}</span>
+            <span class="pill">${escapeHtml(session.session_format || "Session")}</span>
+          </div>
+          <h3>${escapeHtml(session.title)}</h3>
+          ${
+            session.speakers
+              ? `<p class="session-authors">${escapeHtml(`Authors: ${session.speakers}`)}</p>`
+              : ""
+          }
+          <p>${escapeHtml(sessionDescriptor(session))}</p>
+        </article>
+      `;
+    })
+    .join("");
+
+  target.innerHTML = `
+    <div class="drilldown-header">
+      <div>
+        <span class="stat-label">Sessions behind this point</span>
+        <strong>${escapeHtml(label || "Selected slice")}</strong>
+        <p>${sessions.length} matching ${sessionWord}. Showing ${Math.min(preview.length, SESSION_PREVIEW_LIMIT)}.</p>
+      </div>
+      <button class="drilldown-clear" type="button">Clear</button>
+    </div>
+    <div class="drilldown-list">
+      ${
+        preview.length
+          ? cards
+          : '<div class="empty-state">No sessions match this slice.</div>'
+      }
+    </div>
+  `;
+  target.querySelector(".drilldown-clear").addEventListener("click", () => {
+    resetSessionDrilldown(targetSelector);
+  });
+  target.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function resetSessionDrilldown(targetSelector) {
+  const target = document.querySelector(targetSelector);
+  if (!target) return;
+  const copy =
+    targetSelector === "#river-session-drilldown"
+      ? "Click a band, year marker, or lane dot to inspect the matching sessions."
+      : "Click a bubble to see the sessions behind that year and context.";
+  target.innerHTML = `
+    <div>
+      <span class="stat-label">Session drilldown</span>
+      <strong>${copy}</strong>
+    </div>
+  `;
+}
+
 function setExplorerLens({ year = null, context = null, side = null, query = null, link = undefined } = {}) {
   const yearSelect = document.querySelector("#session-year");
   const contextSelect = document.querySelector("#session-context");
@@ -257,6 +341,8 @@ function resetExploration() {
   renderRiverInsights(storyData);
   renderActiveLens(storyData);
   renderDynamicTakeaway(storyData);
+  resetSessionDrilldown("#hero-session-drilldown");
+  resetSessionDrilldown("#river-session-drilldown");
 }
 
 function focusYear(year, { updateExplorer = false } = {}) {
@@ -507,6 +593,10 @@ function drawHeroSignalField(data) {
       selectedTime = null;
       focusYear(d.conference_year);
       setExplorerLens({ year: d.conference_year, context: d.ai_context_group, query: "", link: null });
+      renderSessionDrilldown("#hero-session-drilldown", {
+        year: d.conference_year,
+        context: d.ai_context_group,
+      });
     });
 
   groups
@@ -679,6 +769,10 @@ function drawSignalRiver(data) {
     .on("mouseleave", hideTooltip)
     .on("click", (_, d) => {
       focusContext(d.key);
+      renderSessionDrilldown("#river-session-drilldown", {
+        year: activeFocusYear,
+        context: d.key,
+      });
     });
 
   const focusX = x(activeFocusYear);
@@ -725,7 +819,14 @@ function drawSignalRiver(data) {
     .on("mouseenter", (event, d) => showTooltip(event, d.year, "Click to focus this conference year."))
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
-    .on("click", (_, d) => focusYear(d.year, { updateExplorer: true }));
+    .on("click", (_, d) => {
+      focusYear(d.year, { updateExplorer: true });
+      renderSessionDrilldown("#river-session-drilldown", {
+        year: d.year,
+        context: activeContext,
+        side: activeSide,
+      });
+    });
 
   svg
     .append("g")
@@ -839,6 +940,10 @@ function drawSideLaneChart(data) {
       drawHeroSignalField(storyData);
       renderStoryCaption(storyData);
       renderFocusInsights(storyData);
+      renderSessionDrilldown("#river-session-drilldown", {
+        year: d.year,
+        side: d.side,
+      });
     });
 
   svg
