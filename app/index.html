@@ -4,20 +4,22 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-guided-explore" />
+    <link rel="stylesheet" href="styles.css?v=20260512-guided-deck" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260512-guided-explore" defer></script>
+    <script src="app.js?v=20260512-guided-deck" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
-      <a class="brand-mark" href="#visibility-step" aria-label="SIOP AI Shift home">
+      <a class="brand-mark guide-nav" href="#home-step" data-guide-target="home" aria-label="SIOP AI Shift home">
         <span aria-hidden="true"></span>
         <strong>SIOP AI Shift</strong>
       </a>
       <nav class="nav-links" aria-label="Story sections">
-        <a href="#visibility-step">Overview</a>
-        <a href="#shift-step">Signal</a>
-        <a href="#meaning-step">Meaning</a>
+        <button class="guide-nav active" type="button" data-guide-target="home">Home</button>
+        <button class="guide-nav" type="button" data-guide-target="overview">Overview</button>
+        <button class="guide-nav" type="button" data-guide-target="signal">Signal</button>
+        <button class="guide-nav" type="button" data-guide-target="meaning">Meaning</button>
+        <button class="guide-nav" type="button" data-guide-target="takeaway">Takeaway</button>
         <a
           href="https://github.com/tristowww/siop-conference-data-viz/tree/main/data/raw"
           target="_blank"
@@ -27,8 +29,43 @@
         </a>
       </nav>
     </header>
-    <main>
-      <section id="visibility-step" class="hero story-step" aria-labelledby="page-title">
+    <main class="guide-main">
+      <section id="home-step" class="home-panel guided-step is-active" data-guide-step="home" aria-labelledby="home-title">
+        <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
+        <h1 id="home-title">A guided look at how AI is shifting across SIOP.</h1>
+        <p class="hero-copy">
+          Move through the story one step at a time: first the headline signal, then the context
+          shift, then why the I-side/O-side distinction matters.
+        </p>
+        <div class="home-actions" aria-label="Start guided story">
+          <button class="primary-guide-button guide-nav" type="button" data-guide-target="overview">Start the story</button>
+          <button class="guide-nav secondary-guide-button" type="button" data-guide-target="meaning">Jump to meaning</button>
+        </div>
+        <div class="home-step-grid" aria-label="Guided story path">
+          <button class="guide-nav home-step-card" type="button" data-guide-target="overview">
+            <span class="stat-label">Step 1</span>
+            <strong>Overview</strong>
+            <span>See the five-year headline signal and selected session examples.</span>
+          </button>
+          <button class="guide-nav home-step-card" type="button" data-guide-target="signal">
+            <span class="stat-label">Step 2</span>
+            <strong>Signal</strong>
+            <span>Inspect the context bands and I-side/O-side lane comparison.</span>
+          </button>
+          <button class="guide-nav home-step-card" type="button" data-guide-target="meaning">
+            <span class="stat-label">Step 3</span>
+            <strong>Meaning</strong>
+            <span>Explore why deterministic assessment use cases differ from org-side AI.</span>
+          </button>
+          <button class="guide-nav home-step-card" type="button" data-guide-target="takeaway">
+            <span class="stat-label">Step 4</span>
+            <strong>Takeaway</strong>
+            <span>End with the portfolio narrative and how to interpret the evidence.</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="visibility-step" class="hero story-step guided-step" data-guide-step="overview" aria-labelledby="page-title">
         <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
         <h1 id="page-title">AI is becoming a broader I-O conversation.</h1>
         <p class="hero-copy">
@@ -122,7 +159,7 @@
         </div>
       </section>
 
-      <section class="section-band intro-band story-step" aria-labelledby="takeaways-title">
+      <section id="reading-step" class="section-band intro-band story-step guided-step" data-guide-step="overview" aria-labelledby="takeaways-title">
         <div class="section-heading">
           <p class="eyebrow">Reading the shift</p>
           <h2 id="takeaways-title">The interesting part is not just volume.</h2>
@@ -162,7 +199,7 @@
         </div>
       </section>
 
-      <section id="shift-step" class="section-band signal-river-band story-step" aria-labelledby="signal-river-title">
+      <section id="shift-step" class="section-band signal-river-band story-step guided-step" data-guide-step="signal" aria-labelledby="signal-river-title">
         <div class="section-heading">
           <p class="eyebrow">Signal river</p>
           <h2 id="signal-river-title">The AI story widens, narrows, then surges.</h2>
@@ -199,7 +236,7 @@
         <div id="river-insights" class="river-insights" aria-label="Signal river interpretation"></div>
       </section>
 
-      <section id="meaning-step" class="section-band story-step" aria-labelledby="side-title">
+      <section id="meaning-step" class="section-band story-step guided-step" data-guide-step="meaning" aria-labelledby="side-title">
         <div class="section-heading">
           <p class="eyebrow">I-side and O-side</p>
           <h2 id="side-title">Why the context shift matters.</h2>
@@ -301,7 +338,7 @@
         </div>
       </section>
 
-      <section class="section-band closing-band" aria-labelledby="closing-title">
+      <section id="takeaway-step" class="section-band closing-band guided-step" data-guide-step="takeaway" aria-labelledby="closing-title">
         <div class="section-heading">
           <p class="eyebrow">Portfolio takeaway</p>
           <h2 id="closing-title">The sharper story is where AI is showing up.</h2>
@@ -333,6 +370,11 @@
       </section>
 
     </main>
+    <div class="guide-controls" aria-label="Guided story controls">
+      <button id="guide-prev" type="button">Previous</button>
+      <span id="guide-progress" aria-live="polite">Home 1 of 5</span>
+      <button id="guide-next" type="button">Next</button>
+    </div>
     <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
   </body>
 </html>

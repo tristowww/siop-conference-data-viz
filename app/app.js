@@ -72,6 +72,23 @@ const STORY_BEATS = [
   },
 ];
 
+const GUIDE_STEPS = [
+  { id: "home", label: "Home", hash: "#home-step" },
+  { id: "overview", label: "Overview", hash: "#visibility-step" },
+  { id: "signal", label: "Signal", hash: "#shift-step" },
+  { id: "meaning", label: "Meaning", hash: "#meaning-step" },
+  { id: "takeaway", label: "Takeaway", hash: "#takeaway-step" },
+];
+
+const HASH_TO_GUIDE_STEP = new Map([
+  ["#home-step", "home"],
+  ["#visibility-step", "overview"],
+  ["#reading-step", "overview"],
+  ["#shift-step", "signal"],
+  ["#meaning-step", "meaning"],
+  ["#takeaway-step", "takeaway"],
+]);
+
 let activeMetric = "sessions";
 let activeContext = "All";
 let activeSide = "All";
@@ -82,6 +99,7 @@ let selectedLink = null;
 let selectedTime = null;
 let replayTimer = null;
 let replayIndex = 0;
+let activeGuideStep = "home";
 let storyData;
 const SESSION_PREVIEW_LIMIT = 4;
 const SESSION_EXPANDED_LIMIT = 12;
@@ -625,10 +643,95 @@ function syncStoryBeatControls() {
   });
 }
 
-function storyBeatTarget(beat) {
-  if (beat.id === "meaning") return "#meaning-step";
-  if (beat.id === "baseline") return "#visibility-step";
-  return "#shift-step";
+function guideStepFromHash() {
+  return HASH_TO_GUIDE_STEP.get(window.location.hash) || "home";
+}
+
+function guideIndex(stepId = activeGuideStep) {
+  const index = GUIDE_STEPS.findIndex((step) => step.id === stepId);
+  return index >= 0 ? index : 0;
+}
+
+function showGuideStep(stepId, { updateHash = true, resetScroll = true } = {}) {
+  const step = GUIDE_STEPS.find((item) => item.id === stepId) || GUIDE_STEPS[0];
+  activeGuideStep = step.id;
+  stopReplay();
+  hideTooltip();
+
+  document.querySelectorAll(".guided-step").forEach((section) => {
+    const isActive = section.dataset.guideStep === step.id;
+    section.classList.toggle("is-active", isActive);
+    section.toggleAttribute("hidden", !isActive);
+  });
+
+  document.querySelectorAll(".guide-nav").forEach((control) => {
+    const isActive = control.dataset.guideTarget === step.id;
+    control.classList.toggle("active", isActive);
+    if (control.tagName === "BUTTON") {
+      if (isActive) {
+        control.setAttribute("aria-current", "step");
+      } else {
+        control.removeAttribute("aria-current");
+      }
+    }
+  });
+
+  const index = guideIndex(step.id);
+  const previous = document.querySelector("#guide-prev");
+  const next = document.querySelector("#guide-next");
+  const progress = document.querySelector("#guide-progress");
+  if (previous) previous.disabled = index === 0;
+  if (next) next.disabled = index === GUIDE_STEPS.length - 1;
+  if (progress) progress.textContent = `${step.label} ${index + 1} of ${GUIDE_STEPS.length}`;
+
+  if (updateHash && window.location.hash !== step.hash) {
+    history.pushState(null, "", step.hash);
+  }
+
+  if (resetScroll) {
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+}
+
+function storyBeatStep(beat) {
+  if (beat.id === "meaning") return "meaning";
+  if (beat.id === "baseline") return "overview";
+  return "signal";
+}
+
+function wireGuideNavigation() {
+  document.querySelectorAll(".guide-nav").forEach((control) => {
+    control.addEventListener("click", (event) => {
+      const target = control.dataset.guideTarget;
+      if (!target) return;
+      event.preventDefault();
+      showGuideStep(target);
+    });
+  });
+
+  const previous = document.querySelector("#guide-prev");
+  const next = document.querySelector("#guide-next");
+  if (previous) {
+    previous.addEventListener("click", () => {
+      const nextIndex = Math.max(0, guideIndex() - 1);
+      showGuideStep(GUIDE_STEPS[nextIndex].id);
+    });
+  }
+  if (next) {
+    next.addEventListener("click", () => {
+      const nextIndex = Math.min(GUIDE_STEPS.length - 1, guideIndex() + 1);
+      showGuideStep(GUIDE_STEPS[nextIndex].id);
+    });
+  }
+
+  window.addEventListener("popstate", () => {
+    showGuideStep(guideStepFromHash(), { updateHash: false });
+  });
+  window.addEventListener("hashchange", () => {
+    showGuideStep(guideStepFromHash(), { updateHash: false });
+  });
+
+  showGuideStep(guideStepFromHash(), { updateHash: false, resetScroll: false });
 }
 
 function applyStoryBeat(beatId) {
@@ -652,8 +755,7 @@ function applyStoryBeat(beatId) {
   renderRiverInsights(storyData);
   renderActiveLens(storyData);
   renderDynamicTakeaway(storyData);
-  const target = document.querySelector(storyBeatTarget(beat));
-  if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+  showGuideStep(storyBeatStep(beat));
 }
 
 function renderStoryBeatControls() {
@@ -2253,6 +2355,7 @@ function wireDataStoryCards(data) {
       const year = Number(card.dataset.drillYear || getYears(data).at(-1));
       const context = card.dataset.drillContext || "All";
       applyContextDrill({ year, context, targetSelector: "#river-session-drilldown" });
+      showGuideStep("signal");
     };
     card.addEventListener("click", activate);
     card.addEventListener("keydown", (event) => {
@@ -2326,6 +2429,7 @@ async function init() {
     wireDataStoryCards(storyData);
     wireSideDrillCards();
     wireTooltipCleanup();
+    wireGuideNavigation();
     document.querySelector("#reset-exploration").addEventListener("click", resetExploration);
   } catch (error) {
     document.body.insertAdjacentHTML(
