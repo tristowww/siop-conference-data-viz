@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-guided-polish" />
+    <link rel="stylesheet" href="styles.css?v=20260512-copy-pass" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260512-guided-polish" defer></script>
+    <script src="app.js?v=20260512-copy-pass" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -36,10 +36,10 @@
       <section id="home-step" class="home-panel guided-step is-active" data-guide-step="home" aria-labelledby="home-title">
         <div class="guide-step-label">Home <span>1 of 5</span></div>
         <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
-        <h1 id="home-title">A guided look at how AI is shifting across SIOP.</h1>
+        <h1 id="home-title">A guided look at where AI is showing up at SIOP.</h1>
         <p class="hero-copy">
-          Move through the story one step at a time: first the headline signal, then the context
-          shift, then why the I-side/O-side distinction matters.
+          Start with how often AI appears, then look at where it appears: selection and assessment,
+          training and coaching, leadership, culture, accessibility, and work design.
         </p>
         <div class="home-actions" aria-label="Start guided story">
           <button class="primary-guide-button guide-nav" type="button" data-guide-target="overview">Start the story</button>
@@ -49,22 +49,22 @@
           <button class="guide-nav home-step-card" type="button" data-guide-target="overview">
             <span class="stat-label">Step 1</span>
             <strong>Overview</strong>
-            <span>See the five-year headline signal and selected session examples.</span>
+            <span>See how often AI appears across five years of public conference sessions.</span>
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="signal">
             <span class="stat-label">Step 2</span>
             <strong>Signal</strong>
-            <span>Inspect the context bands and I-side/O-side lane comparison.</span>
+            <span>Compare the main topic areas and the selection-vs-organization split.</span>
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="meaning">
             <span class="stat-label">Step 3</span>
             <strong>Meaning</strong>
-            <span>Explore why deterministic assessment use cases differ from org-side AI.</span>
+            <span>See why rule-based assessment work differs from more judgment-heavy org work.</span>
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="takeaway">
             <span class="stat-label">Step 4</span>
             <strong>Takeaway</strong>
-            <span>End with the portfolio narrative and how to interpret the evidence.</span>
+            <span>Close with the clearest read of what the conference pattern suggests.</span>
           </button>
         </div>
       </section>
@@ -74,9 +74,9 @@
         <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
         <h1 id="page-title">AI is becoming a broader I-O conversation.</h1>
         <p class="hero-copy">
-          Public SIOP conference program data signals that AI is not only more visible across recent
-          years. It also appears in a wider mix of use-case contexts, including training, coaching,
-          leadership, culture, employee experience, and accessibility.
+          Public SIOP conference sessions suggest that AI is not only showing up more often. It is
+          also showing up in a wider mix of work: training, coaching, leadership, culture, employee
+          experience, accessibility, selection, and assessment.
         </p>
         <div class="source-links" aria-label="Project source links">
           <a
@@ -89,40 +89,40 @@
         </div>
         <div class="hero-grid" aria-label="Key findings">
           <div>
-            <span class="stat-label">AI-language sessions</span>
+            <span class="stat-label">Sessions mentioning AI</span>
             <strong id="ai-language-stat">...</strong>
             <span id="ai-language-detail">Loading comparison</span>
           </div>
           <div>
-            <span class="stat-label">Visible AI signals</span>
+            <span class="stat-label">Visible AI mentions</span>
             <strong id="visible-ai-stat">...</strong>
             <span id="visible-ai-detail">Loading comparison</span>
           </div>
           <div>
             <span class="stat-label">Use-case shift</span>
             <strong id="context-stat">...</strong>
-            <span>Selection/methods is still central, but the five-year arc shows a broader use-case mix.</span>
+            <span>Selection and methods still matter, but the five-year pattern points to a wider set of use cases.</span>
           </div>
         </div>
         <div class="story-path" aria-label="Story path">
-          <span>1. Visibility</span>
-          <span>2. Use-case shift</span>
+          <span>1. AI shows up more</span>
+          <span>2. The use cases broaden</span>
           <span>3. Why it matters</span>
         </div>
         <div class="story-beats" aria-label="Follow the story">
           <div>
             <span class="stat-label">Follow the story</span>
-            <strong>Choose a beat to focus the graphics.</strong>
+            <strong>Choose a beat to focus the charts.</strong>
           </div>
           <div id="story-beat-controls" class="story-beat-controls"></div>
         </div>
-        <div class="signal-stage" aria-label="Interactive AI signal console">
-          <p class="interaction-cue">Click any bubble to inspect the sessions behind that year and context.</p>
+        <div class="signal-stage" aria-label="Interactive AI topic view">
+          <p class="interaction-cue">Click any bubble to see the sessions behind that year and topic area.</p>
           <div
             id="hero-signal-field"
             class="hero-signal-field"
             role="img"
-            aria-label="Data-driven AI signal field by year and context"
+            aria-label="AI topic view by year and context"
           ></div>
           <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
           <div class="hero-control-row">
@@ -136,7 +136,7 @@
             </div>
           </div>
           <p id="story-caption" class="story-caption">
-            Focus a year to see how the AI conversation changes across the story.
+            Choose a year to see how the AI conversation changes.
           </p>
           <div id="focus-insights" class="focus-insights" aria-label="Focused year insights"></div>
           <div
@@ -146,34 +146,34 @@
             aria-label="Sessions behind selected context"
           >
             <div>
-              <span class="stat-label">Sessions behind this signal</span>
-              <strong>Click a bubble to see the sessions behind that year and context.</strong>
+              <span class="stat-label">Sessions behind this view</span>
+              <strong>Click a bubble to see the matching sessions.</strong>
             </div>
           </div>
         </div>
         <div class="exploration-lens" aria-live="polite">
           <div>
-            <span class="stat-label">Current story lens</span>
-            <strong id="active-lens-title">2026 program emphasis</strong>
-            <span id="active-lens-detail">Use the year buttons and signal views to compare how the program emphasis changes.</span>
+            <span class="stat-label">Current view</span>
+            <strong id="active-lens-title">2026 conference pattern</strong>
+            <span id="active-lens-detail">Use the year buttons and chart views to compare how the topic mix changes.</span>
           </div>
         </div>
         <div class="story-takeaway" aria-live="polite">
           <span class="stat-label">Story takeaway</span>
-          <strong id="dynamic-takeaway">Focus a year or context to read the shift.</strong>
+          <strong id="dynamic-takeaway">Choose a year or topic area to read the pattern.</strong>
         </div>
       </section>
 
       <section id="reading-step" class="section-band intro-band story-step guided-step" data-guide-step="overview" aria-labelledby="takeaways-title">
         <div class="section-heading">
           <p class="eyebrow">Reading the shift</p>
-          <h2 id="takeaways-title">The interesting part is not just volume.</h2>
+          <h2 id="takeaways-title">The interesting part is not just that AI increased.</h2>
           <p>
-            The portfolio story is about where AI shows up in the program. Selection and assessment
-            remain a natural home for AI because those use cases often involve prediction,
-            validation, scoring, and structured decision support. But the 2026 program also gives
-            more space to less deterministic use cases where context, judgment, learning, and
-            employee experience matter.
+            The portfolio story is about where AI shows up. Selection and assessment remain a
+            natural home for AI because those use cases often involve prediction, validation,
+            scoring, and structured decision support. But by 2026, AI also appears more often in
+            work that is less rule-based and more dependent on context, judgment, learning, and
+            employee experience.
           </p>
         </div>
         <div class="insight-grid">
@@ -181,8 +181,8 @@
             <span class="pill">1</span>
             <h3>AI became more visible.</h3>
             <p>
-              Both the broad text signal and the stricter title/track signal rise across the
-              five-year view, suggesting AI is more central to the public-facing program.
+              Both the broad text pattern and the stricter title/track pattern rise across the
+              five-year view, suggesting AI is more visible in the public conference program.
             </p>
           </article>
           <article class="data-story-card" data-drill-year="2026" data-drill-context="Selection/assessment/methods">
@@ -190,7 +190,7 @@
             <h3>The assessment story is still there.</h3>
             <p>
               Sessions still address cheating, faking, validation, measurement, and candidate
-              experience, which fits the more deterministic I-side tradition.
+              experience, which fits the more rule-based I-side tradition.
             </p>
           </article>
           <article class="data-story-card" data-drill-year="2026" data-drill-context="Org/development/training">
@@ -198,7 +198,7 @@
             <h3>The org-side story is growing.</h3>
             <p>
               Training, coaching, leadership, culture, accessibility, and work design show AI moving
-              into more human-contextual applications.
+              into more people-centered applications.
             </p>
           </article>
         </div>
@@ -208,16 +208,16 @@
         <div class="guide-step-label">Signal <span>3 of 5</span></div>
         <div class="section-heading">
           <p class="eyebrow">Signal river</p>
-          <h2 id="signal-river-title">The AI story widens, narrows, then surges.</h2>
+          <h2 id="signal-river-title">The mix changes over time.</h2>
           <p>
-            This stream view follows use-case context counts across the five-year set. Hover or
-            click a band to focus the aggregate story on that use-case context.
+            This view tracks AI-related topic areas across the five-year dataset. Hover or click a
+            band to focus on that part of the conference program.
           </p>
         </div>
         <p id="river-mode-note" class="microcopy">
-          Five-band mode shows where AI language appears in the program. Click a band to focus the story.
+          Five-band mode shows where AI appears in the program. Click a band to focus the view.
         </p>
-        <p class="interaction-cue">Click a band, year marker, or lane dot. The page will update the panels below without jumping.</p>
+        <p class="interaction-cue">Click a band, year marker, or lane dot. The panels below will update without jumping.</p>
         <div class="view-toggle" aria-label="Choose signal view">
           <button class="river-mode active" type="button" data-mode="contexts">Five context bands</button>
           <button class="river-mode" type="button" data-mode="sides">I-side vs O-side</button>
@@ -235,8 +235,8 @@
           aria-label="Sessions behind selected signal river point"
         >
           <div>
-            <span class="stat-label">Sessions behind this signal</span>
-            <strong>Click a band, year marker, or lane dot to inspect the matching sessions.</strong>
+            <span class="stat-label">Sessions behind this view</span>
+            <strong>Click a band, year marker, or lane dot to see the matching sessions.</strong>
           </div>
         </div>
         <div id="river-insights" class="river-insights" aria-label="Signal river interpretation"></div>
@@ -250,12 +250,12 @@
           <p>
             In I-O psychology, the I-side often centers individual measurement and selection. The
             O-side often centers organizations, teams, culture, learning, and work experience. AI
-            can support both, but the risk profile and design questions change.
+            can support both, but the design questions and risks change.
           </p>
         </div>
         <div class="compare-grid">
           <article class="side-drill-card" data-side="I-side selection/assessment">
-            <span class="compare-label">More deterministic</span>
+            <span class="compare-label">More rule-based</span>
             <h3>I-side selection and assessment</h3>
             <p>
               Common AI questions include how to score, predict, validate, audit, and protect
@@ -264,7 +264,7 @@
             </p>
           </article>
           <article class="side-drill-card" data-side="O-side org/development">
-            <span class="compare-label">More human-contextual</span>
+            <span class="compare-label">More judgment-heavy</span>
             <h3>O-side training and organization development</h3>
             <p>
               Common AI questions include how to coach, teach, personalize learning, improve
@@ -275,22 +275,22 @@
         </div>
         <div class="side-thesis">
           <p>
-            The portfolio-level story is a movement from <strong>AI as measurement technology</strong>
-            toward <strong>AI as organizational intervention</strong>: not replacing the assessment
-            conversation, but expanding into how people learn, coordinate, lead, and experience work.
+            The clearest story is a shift from <strong>AI mainly as measurement technology</strong>
+            toward <strong>AI as support for learning, leadership, and organizational change</strong>.
+            The assessment conversation is still there, but it is no longer the whole story.
           </p>
         </div>
         <div
           id="use-case-compass"
           class="chart compass-chart"
           role="img"
-          aria-label="AI use-case compass from deterministic to judgment-rich and individual to organizational"
+          aria-label="AI use-case compass from rule-based to judgment-rich and individual to organizational"
         ></div>
-        <p class="interaction-cue">Click a bubble or comparison card to open a focused data lens for that slice.</p>
+        <p class="interaction-cue">Click a bubble or comparison card to look more closely at that slice.</p>
         <div id="meaning-data-lens" class="data-lens" aria-live="polite">
           <div>
-            <span class="stat-label">Data lens</span>
-            <strong>Click a compass bubble or I-side/O-side card to inspect the slice.</strong>
+            <span class="stat-label">Closer look</span>
+            <strong>Click a compass bubble or I-side/O-side card to inspect a slice.</strong>
           </div>
         </div>
         <div
@@ -300,7 +300,7 @@
           aria-label="Sessions behind selected meaning section slice"
         >
           <div>
-            <span class="stat-label">Sessions behind this signal</span>
+            <span class="stat-label">Sessions behind this view</span>
             <strong>Click a compass bubble or side card to see the matching sessions.</strong>
           </div>
         </div>
@@ -351,28 +351,27 @@
           <p class="eyebrow">Portfolio takeaway</p>
           <h2 id="closing-title">The sharper story is where AI is showing up.</h2>
           <p>
-            Across the public SIOP program data, AI appears to be moving beyond a primarily
-            assessment-and-methods conversation into a broader set of people-context applications.
-            The signal is not that selection went away. It is that training, coaching, leadership,
-            culture, accessibility, and work design have become a more visible part of the AI
-            conversation.
+            Across the public SIOP program data, AI appears to be moving beyond a mostly
+            assessment-and-methods conversation into a broader set of people-centered applications.
+            Selection did not disappear. The newer pattern is that training, coaching, leadership,
+            culture, accessibility, and work design are becoming easier to see in the AI conversation.
           </p>
         </div>
         <div class="closing-grid">
           <article>
             <span class="stat-label">What changed</span>
             <strong>More volume, broader use cases</strong>
-            <p>AI-related language grows, while org-side contexts become easier to see in the program mix.</p>
+            <p>More sessions mention AI, and org-side topics become easier to see in the program mix.</p>
           </article>
           <article>
             <span class="stat-label">Why it matters</span>
             <strong>The design problem changes</strong>
-            <p>O-side AI is less about one deterministic score and more about judgment, trust, learning, and context.</p>
+            <p>O-side AI is less about one score and more about judgment, trust, learning, and context.</p>
           </article>
           <article>
             <span class="stat-label">How to read it</span>
-            <strong>A program signal, not a causal claim</strong>
-            <p>The charts describe conference emphasis and examples, not definitive field-wide adoption.</p>
+            <strong>A conference pattern, not a causal claim</strong>
+            <p>The charts describe conference sessions and examples, not definitive field-wide adoption.</p>
           </article>
         </div>
       </section>

@@ -34,7 +34,7 @@ const STORY_BEATS = [
     id: "baseline",
     step: "1. Baseline",
     title: "Start before the surge",
-    copy: "2022 shows AI as present, but not yet dominant.",
+    copy: "AI is already present in 2022, but it is not yet the headline.",
     year: 2022,
     riverMode: "contexts",
     context: "All",
@@ -43,8 +43,8 @@ const STORY_BEATS = [
   {
     id: "rise",
     step: "2. Visibility",
-    title: "Watch AI become louder",
-    copy: "2024 is the bridge into a bigger signal.",
+    title: "Watch AI become more visible",
+    copy: "By 2024, the AI conversation starts to feel more prominent.",
     year: 2024,
     riverMode: "contexts",
     context: "All",
@@ -54,7 +54,7 @@ const STORY_BEATS = [
     id: "context",
     step: "3. Use-case mix",
     title: "Focus the org-side band",
-    copy: "2026 highlights training, leadership, and work context.",
+    copy: "2026 puts more attention on training, leadership, and work context.",
     year: 2026,
     riverMode: "contexts",
     context: "Org/development/training",
@@ -64,7 +64,7 @@ const STORY_BEATS = [
     id: "meaning",
     step: "4. Meaning",
     title: "Compare I-side and O-side",
-    copy: "The story becomes about what AI is being used for.",
+    copy: "The question becomes what kind of work AI is being used for.",
     year: 2026,
     riverMode: "sides",
     context: "All",
@@ -127,13 +127,13 @@ function shortContext(context) {
 
 function contextMicrocopy(context) {
   const copy = {
-    "Explicit tech/AI": "General AI and technology language, often before the use case is more specific.",
-    "Selection/assessment/methods": "I-side AI contexts: scoring, selection, assessment, validation, prediction, and methods.",
-    "Org/development/training": "O-side AI contexts: training, coaching, leadership, learning, culture, teams, and work design.",
-    "DEI/accessibility": "People-context AI questions around access, equity, inclusion, and employee experience.",
+    "Explicit tech/AI": "General AI and technology language, often before the specific use case is clear.",
+    "Selection/assessment/methods": "I-side topics: scoring, selection, assessment, validation, prediction, and methods.",
+    "Org/development/training": "O-side topics: training, coaching, leadership, learning, culture, teams, and work design.",
+    "DEI/accessibility": "People-centered AI questions around access, equity, inclusion, and employee experience.",
     "Other/special": "Special or cross-cutting sessions that do not sit cleanly in the other groups.",
   };
-  return copy[context] || "AI-related context signal.";
+  return copy[context] || "AI-related topic area.";
 }
 
 function sideForContext(context) {
@@ -311,7 +311,7 @@ function renderSessionDrilldown(targetSelector, lens) {
   target.innerHTML = `
     <div class="drilldown-header">
       <div>
-        <span class="stat-label">Sessions behind this signal</span>
+        <span class="stat-label">Sessions behind this view</span>
         <strong>${escapeHtml(label || "Selected slice")}</strong>
         <p>${sessions.length} matching ${sessionWord}. Showing ${preview.length}.</p>
         ${evidence.length ? `<p class="slice-evidence">${escapeHtml(evidence.join(" | "))}</p>` : ""}
@@ -409,13 +409,13 @@ function renderDataLens({ year = activeFocusYear, context = "All", side = "All" 
     context !== "All"
       ? contextMicrocopy(context)
       : side !== "All"
-        ? "This side lens groups related contexts so the I-side/O-side contrast is easier to inspect."
-        : "This lens keeps the full AI-related session set visible for the selected year.";
+        ? "This view groups related topics so the I-side/O-side contrast is easier to inspect."
+        : "This view keeps all AI-related sessions visible for the selected year.";
 
   target.innerHTML = `
     <div class="data-lens-header">
       <div>
-        <span class="stat-label">Data lens</span>
+        <span class="stat-label">Closer look</span>
         <strong>${escapeHtml(year)} | ${escapeHtml(label)}</strong>
         <p>${escapeHtml(microcopy)}</p>
       </div>
@@ -425,7 +425,7 @@ function renderDataLens({ year = activeFocusYear, context = "All", side = "All" 
       <article>
         <span class="stat-label">Selected year</span>
         <strong>${selectedCount}</strong>
-        <p>${contextRow ? `${percent(contextRow.share)} of AI context links in ${year}.` : "Matching AI-related sessions in this slice."}</p>
+        <p>${contextRow ? `${percent(contextRow.share)} of AI topic links in ${year}.` : "Matching AI-related sessions in this slice."}</p>
       </article>
       <article>
         <span class="stat-label">Five-year arc</span>
@@ -435,7 +435,7 @@ function renderDataLens({ year = activeFocusYear, context = "All", side = "All" 
       <article>
         <span class="stat-label">Top formats</span>
         <strong>${escapeHtml(formats.map((item) => `${item.label} (${item.count})`).join(", ") || "n/a")}</strong>
-        <p>Most common session formats in this selected slice.</p>
+        <p>Most common session formats in this slice.</p>
       </article>
       <article>
         <span class="stat-label">Top tracks</span>
@@ -459,8 +459,8 @@ function renderDataLens({ year = activeFocusYear, context = "All", side = "All" 
   target.querySelector(".drilldown-clear").addEventListener("click", () => {
     target.innerHTML = `
       <div>
-        <span class="stat-label">Data lens</span>
-        <strong>Click a compass bubble or I-side/O-side card to inspect the slice.</strong>
+        <span class="stat-label">Closer look</span>
+        <strong>Click a compass bubble or I-side/O-side card to inspect a slice.</strong>
       </div>
     `;
     resetSessionDrilldown("#meaning-session-drilldown");
@@ -490,13 +490,13 @@ function resetSessionDrilldown(targetSelector) {
   if (!target) return;
   const copy =
     targetSelector === "#river-session-drilldown"
-      ? "Click a band, year marker, or lane dot to inspect the matching sessions."
+      ? "Click a band, year marker, or lane dot to see the matching sessions."
       : targetSelector === "#meaning-session-drilldown"
         ? "Click a compass bubble or side card to see the matching sessions."
-      : "Click a bubble to see the sessions behind that year and context.";
+      : "Click a bubble to see the sessions behind that year and topic area.";
   target.innerHTML = `
     <div>
-      <span class="stat-label">Sessions behind this signal</span>
+      <span class="stat-label">Sessions behind this view</span>
       <strong>${copy}</strong>
     </div>
   `;
@@ -551,8 +551,8 @@ function resetExploration() {
   if (dataLens) {
     dataLens.innerHTML = `
       <div>
-        <span class="stat-label">Data lens</span>
-        <strong>Click a compass bubble or I-side/O-side card to inspect the slice.</strong>
+        <span class="stat-label">Closer look</span>
+        <strong>Click a compass bubble or I-side/O-side card to inspect a slice.</strong>
       </div>
     `;
   }
@@ -618,8 +618,8 @@ function syncYearControls() {
 
 function riverModeCopy(mode) {
   return mode === "sides"
-    ? "Two-lane mode simplifies the story into I-side selection/assessment versus O-side people-context AI."
-    : "Five-band mode shows where AI language appears in the program. Click a band to focus the story.";
+    ? "Two-lane mode compares selection and assessment with org-side, people-centered AI."
+    : "Five-band mode shows where AI appears in the program. Click a band to focus the view.";
 }
 
 function syncRiverModeControls() {
@@ -804,7 +804,7 @@ function setHeroStats(data) {
     `${last.ai_related_sessions} of ${last.total_sessions} in ${last.year}.`;
   document.querySelector("#visible-ai-stat").innerHTML = statShift(first.visible_ai_share, last.visible_ai_share);
   document.querySelector("#visible-ai-detail").textContent =
-    `Visible title, track, and format signals changed by ` +
+    `Mentions in titles, tracks, and formats changed by ` +
     `${formatDelta(last.visible_ai_share, first.visible_ai_share)}.`;
 
   const selectionFirst = data.context_summary.find(
@@ -907,7 +907,7 @@ function drawHeroSignalField(data) {
     )
     .attr("transform", (d) => `translate(${d.x},${d.y})`)
     .on("mouseenter", (event, d) => {
-      showTooltip(event, d.ai_context_group, `${d.sessions} AI-related session-context signals in ${d.conference_year}.`);
+      showTooltip(event, d.ai_context_group, `${d.sessions} AI-related topic links in ${d.conference_year}.`);
     })
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
@@ -952,14 +952,14 @@ function drawHeadlineChart(data) {
   const rows = data.ai_summary.flatMap((d) => [
     {
       year: String(d.year),
-      metric: "AI language",
+      metric: "Sessions mentioning AI",
       value: d.ai_share,
       count: d.ai_related_sessions,
       color: COLORS.language,
     },
     {
       year: String(d.year),
-      metric: "Visible AI signal",
+      metric: "Visible AI mentions",
       value: d.visible_ai_share,
       count: d.visible_ai_sessions,
       color: COLORS.visible,
@@ -967,7 +967,7 @@ function drawHeadlineChart(data) {
   ]);
 
   const years = data.ai_summary.map((d) => String(d.year));
-  const metrics = ["AI language", "Visible AI signal"];
+  const metrics = ["Sessions mentioning AI", "Visible AI mentions"];
   const x0 = d3.scaleBand().domain(years).range([margin.left, width - margin.right]).padding(0.34);
   const x1 = d3.scaleBand().domain(metrics).range([0, x0.bandwidth()]).padding(0.12);
   const y = d3.scaleLinear().domain([0, 0.36]).nice().range([height - margin.bottom, margin.top]);
@@ -1014,7 +1014,7 @@ function drawHeadlineChart(data) {
       setExplorerLens({
         year: d.year,
         context: "All",
-        query: d.metric === "Visible AI signal" ? "AI" : "",
+        query: d.metric === "Visible AI mentions" ? "AI" : "",
         link: null,
       });
     });
@@ -1127,7 +1127,7 @@ function drawSignalRiver(data) {
     copy:
       activeContext === "All"
         ? `Org/dev ${orgSignals}; selection ${selectionSignals}.`
-        : `${focusedRow[activeContext] || 0} signals in ${activeFocusYear}; compare years below.`,
+        : `${focusedRow[activeContext] || 0} topic links in ${activeFocusYear}; compare years below.`,
   });
 
   svg
@@ -1252,7 +1252,7 @@ function drawSideLaneChart(data) {
     .attr("stroke", (d) => (d.year === activeFocusYear ? "#17202a" : "#ffffff"))
     .attr("stroke-width", (d) => (d.year === activeFocusYear ? 3 : 1.5))
     .on("mouseenter", (event, d) => {
-      showTooltip(event, d.side, `${d.sessions} context signals in ${d.year}. Click to focus this lane.`);
+      showTooltip(event, d.side, `${d.sessions} topic links in ${d.year}. Click to focus this lane.`);
     })
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
@@ -1454,8 +1454,8 @@ function drawUseCaseCompass(data) {
     .attr("y2", y(0.5));
 
   const quadrantLabels = [
-    { text: "Individual + deterministic", x: 0.03, y: 0.08, anchor: "start" },
-    { text: "Org + deterministic", x: 0.97, y: 0.08, anchor: "end" },
+    { text: "Individual + rule-based", x: 0.03, y: 0.08, anchor: "start" },
+    { text: "Org + rule-based", x: 0.97, y: 0.08, anchor: "end" },
     { text: "Individual + judgment-rich", x: 0.03, y: 0.94, anchor: "start" },
     { text: "Org + judgment-rich", x: 0.97, y: 0.94, anchor: "end" },
   ];
@@ -1486,7 +1486,7 @@ function drawUseCaseCompass(data) {
     .attr("y", height / 2)
     .attr("text-anchor", "middle")
     .attr("transform", `rotate(-90,24,${height / 2})`)
-    .text("Deterministic → judgment-rich");
+    .text("Rule-based → judgment-rich");
 
   const nodes = svg
     .append("g")
@@ -1496,7 +1496,7 @@ function drawUseCaseCompass(data) {
     .attr("class", (d) => `compass-node${activeContext === d.ai_context_group ? " is-selected" : ""}`)
     .attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`)
     .on("mouseenter", (event, d) => {
-      showTooltip(event, d.ai_context_group, `${d.sessions} AI-related context signals in ${activeFocusYear}.`);
+      showTooltip(event, d.ai_context_group, `${d.sessions} AI-related topic links in ${activeFocusYear}.`);
     })
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
@@ -1547,7 +1547,7 @@ function drawUseCaseCompass(data) {
     y: 24,
     width: 292,
     title: `${shortContext(topCompassContext.ai_context_group)} is largest`,
-    copy: `Bubble size shows ${topCompassContext.sessions} context signals.`,
+    copy: `Bubble size shows ${topCompassContext.sessions} topic links.`,
   });
 }
 
@@ -1629,7 +1629,7 @@ function drawContextChart(data) {
       showTooltip(
         event,
         `${d.year}: ${d.context}`,
-        activeMetric === "share" ? `${percent(d.share)} of AI-related context links.` : `${d.sessions} sessions.`,
+        activeMetric === "share" ? `${percent(d.share)} of AI-related topic links.` : `${d.sessions} sessions.`,
       );
     })
     .on("mousemove", moveTooltip)
@@ -1788,17 +1788,17 @@ function renderNetworkInsights(data, nodes, links) {
   const insights = [
     {
       title: "Largest node",
-      copy: biggest ? `${biggest.id} carries ${biggest.sessions} AI-related sessions in this map.` : "No nodes loaded.",
+      copy: biggest ? `${biggest.id} includes ${biggest.sessions} AI-related sessions in this map.` : "No nodes loaded.",
     },
     {
       title: "Strongest adjacency",
       copy: strongest
         ? `${strongest.source} and ${strongest.target} co-occur in ${strongest.sessions} sessions.`
-        : "No cross-context links for this year.",
+        : "No cross-topic links for this year.",
     },
     {
       title: "Cross-context sessions",
-      copy: `${bridgeCount} session-context links show where AI topics sit across more than one program neighborhood.`,
+      copy: `${bridgeCount} session-topic links show where AI topics cross more than one program area.`,
     },
   ];
 
@@ -1822,18 +1822,18 @@ function renderFocusInsights(data) {
       label: "Focused year",
       value: activeFocusYear,
       copy: yearSummary
-        ? `${yearSummary.ai_related_sessions} AI-related sessions, ${percent(yearSummary.ai_share)} of the parsed program.`
+        ? `${yearSummary.ai_related_sessions} AI-related sessions, ${percent(yearSummary.ai_share)} of sessions in the dataset.`
         : "No summary available.",
     },
     {
       label: "Dominant context",
       value: topContext ? shortContext(topContext.ai_context_group) : "n/a",
-      copy: topContext ? `${topContext.sessions} AI-related context signals in this year.` : "No context signals found.",
+      copy: topContext ? `${topContext.sessions} AI-related topic links in this year.` : "No topic links found.",
     },
     {
       label: "Strongest bridge",
       value: strongestLink ? `${strongestLink.source.split("/")[0]} + ${strongestLink.target.split("/")[0]}` : "n/a",
-      copy: strongestLink ? `${strongestLink.sessions} sessions connect those use-case neighborhoods.` : "No bridges found.",
+      copy: strongestLink ? `${strongestLink.sessions} sessions connect those topic areas.` : "No bridges found.",
     },
   ];
 
@@ -1875,7 +1875,7 @@ function renderStoryCaption(data) {
       : `${delta >= 0 ? "+" : ""}${delta} AI-related sessions versus ${previousYear}.`;
   document.querySelector("#story-caption").textContent =
     `${activeFocusYear}: ${current.ai_related_sessions} AI-related sessions. ` +
-    `${deltaText} ${shortContext(topContext.context)} is the strongest context signal.`;
+    `${deltaText} ${shortContext(topContext.context)} is the largest topic area.`;
 }
 
 function renderRiverInsights(data) {
@@ -1892,23 +1892,23 @@ function renderRiverInsights(data) {
     {
       label: "Volume arc",
       value: `${percent(first.ai_share)} → ${percent(current.ai_share)}`,
-      copy: `AI-related sessions are ${percent(current.ai_share)} of the ${activeFocusYear} parsed program.`,
+      copy: `AI-related sessions are ${percent(current.ai_share)} of sessions in the ${activeFocusYear} dataset.`,
     },
     {
       label: riverMode === "sides" ? "Two-lane comparison" : "Strongest band",
       value: riverMode === "sides" ? `${iSide.sessions} vs ${oSide.sessions}` : shortContext(topContext.context),
       copy:
         riverMode === "sides"
-          ? `I-side selection/assessment has ${iSide.sessions} signals; O-side org/development plus DEI/accessibility has ${oSide.sessions}.`
-          : `${topContext.sessions} AI-related context signals sit in this band for ${activeFocusYear}.`,
+          ? `I-side selection/assessment has ${iSide.sessions} topic links; O-side org/development plus DEI/accessibility has ${oSide.sessions}.`
+          : `${topContext.sessions} AI-related topic links sit in this band for ${activeFocusYear}.`,
     },
     {
       label: "O-side balance",
       value: balance >= 0 ? `+${balance}` : String(balance),
       copy:
         balance >= 0
-          ? "O-side people-context signals exceed selection signals in the focused year."
-          : "Selection signals still exceed O-side people-context signals in the focused year.",
+          ? "O-side people-centered topics exceed selection topics in the focused year."
+          : "Selection topics still exceed O-side people-centered topics in the focused year.",
     },
   ];
 
@@ -1934,20 +1934,20 @@ function renderDynamicTakeaway(data) {
   const oSide = sideRows.find((item) => item.side === "O-side org/development");
   const sidePhrase =
     oSide.sessions >= iSide.sessions
-      ? `O-side people-context signals are ${oSide.sessions - iSide.sessions} higher than selection/assessment.`
-      : `Selection/assessment signals are ${iSide.sessions - oSide.sessions} higher than O-side people-context signals.`;
+      ? `O-side people-centered topics are ${oSide.sessions - iSide.sessions} higher than selection/assessment.`
+      : `Selection/assessment topics are ${iSide.sessions - oSide.sessions} higher than O-side people-centered topics.`;
   if (activeContext !== "All") {
     const context = getContextRowsForYear(data, activeFocusYear).find((item) => item.context === activeContext);
-    target.textContent = `${activeFocusYear}: ${shortContext(activeContext)} contributes ${context ? context.sessions : 0} AI-related context signals. ${contextMicrocopy(activeContext)}`;
+    target.textContent = `${activeFocusYear}: ${shortContext(activeContext)} contributes ${context ? context.sessions : 0} AI-related topic links. ${contextMicrocopy(activeContext)}`;
     return;
   }
   if (activeSide !== "All") {
     const side = sideRows.find((item) => item.side === activeSide);
-    target.textContent = `${activeFocusYear}: ${activeSide} accounts for ${side ? side.sessions : 0} AI-related context signals.`;
+    target.textContent = `${activeFocusYear}: ${activeSide} accounts for ${side ? side.sessions : 0} AI-related topic links.`;
     return;
   }
   target.textContent =
-    `${activeFocusYear}: AI-related sessions are ${percent(current.ai_share)} of the parsed program, ` +
+    `${activeFocusYear}: AI-related sessions are ${percent(current.ai_share)} of sessions in the dataset, ` +
     `up from ${percent(first.ai_share)} in ${first.year}. ${sidePhrase}`;
 }
 
@@ -2255,16 +2255,16 @@ function renderActiveLens(data = storyData) {
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
   const title =
     activeContext !== "All"
-      ? `${activeFocusYear}: ${shortContext(activeContext)} emphasis`
+      ? `${activeFocusYear}: ${shortContext(activeContext)}`
       : activeSide !== "All"
         ? `${activeFocusYear}: ${activeSide}`
-        : `${activeFocusYear} program emphasis`;
+        : `${activeFocusYear} conference pattern`;
   const detail =
     activeContext !== "All"
       ? contextMicrocopy(activeContext)
       : activeSide !== "All"
-        ? "This lens simplifies the story into the I-side/O-side distinction."
-        : `${current.ai_related_sessions} AI-related sessions, ${percent(current.ai_share)} of the parsed program. Use the controls to compare years and use-case emphasis.`;
+        ? "This view simplifies the story into the I-side/O-side distinction."
+        : `${current.ai_related_sessions} AI-related sessions, ${percent(current.ai_share)} of sessions in the dataset. Use the controls to compare years and topic areas.`;
   document.querySelector("#active-lens-title").textContent = title;
   document.querySelector("#active-lens-detail").textContent = detail;
 }
@@ -2295,7 +2295,7 @@ function renderSessionExplorer(data) {
   merged.select(".example-meta").html("");
   merged.each(function (d) {
     const meta = d3.select(this).select(".example-meta");
-    [d.year, d.context, d.session_format, d.visible_ai_signal ? "visible AI signal" : "abstract signal"].forEach(
+    [d.year, d.context, d.session_format, d.visible_ai_signal ? "visible AI mention" : "abstract mention"].forEach(
       (value) => meta.append("span").attr("class", "pill").text(value),
     );
   });
@@ -2312,7 +2312,7 @@ function renderSessionExplorer(data) {
     d3.select("#session-list")
       .append("div")
       .attr("class", "empty-state")
-      .text("No sessions match this lens yet. Try clearing search or resetting exploration.");
+      .text("No sessions match this view yet. Try clearing search or resetting exploration.");
   }
 }
 
