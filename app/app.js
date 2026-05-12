@@ -397,13 +397,11 @@ function setHeroStats(data) {
   activeNetworkYear = activeFocusYear;
   const first = data.ai_summary.find((d) => d.year === years[0]);
   const last = data.ai_summary.find((d) => d.year === years[years.length - 1]);
-  document.querySelector("#ai-language-stat").textContent =
-    `${percent(first.ai_share)} -> ${percent(last.ai_share)}`;
+  document.querySelector("#ai-language-stat").innerHTML = statShift(first.ai_share, last.ai_share);
   document.querySelector("#ai-language-detail").textContent =
     `${first.ai_related_sessions} of ${first.total_sessions} sessions in ${first.year}; ` +
     `${last.ai_related_sessions} of ${last.total_sessions} in ${last.year}.`;
-  document.querySelector("#visible-ai-stat").textContent =
-    `${percent(first.visible_ai_share)} -> ${percent(last.visible_ai_share)}`;
+  document.querySelector("#visible-ai-stat").innerHTML = statShift(first.visible_ai_share, last.visible_ai_share);
   document.querySelector("#visible-ai-detail").textContent =
     `Visible title, track, and format signals changed by ` +
     `${formatDelta(last.visible_ai_share, first.visible_ai_share)}.`;
@@ -414,8 +412,11 @@ function setHeroStats(data) {
   const selectionLast = data.context_summary.find(
     (d) => d.conference_year === last.year && d.ai_context_group === "Selection/assessment/methods",
   );
-  document.querySelector("#context-stat").textContent =
-    `${percent(selectionFirst.share)} -> ${percent(selectionLast.share)}`;
+  document.querySelector("#context-stat").innerHTML = statShift(selectionFirst.share, selectionLast.share);
+}
+
+function statShift(from, to) {
+  return `<span class="stat-shift"><span>${percent(from)}</span><span class="stat-arrow">→</span><span>${percent(to)}</span></span>`;
 }
 
 function drawHeroSignalField(data) {
@@ -1047,7 +1048,7 @@ function drawUseCaseCompass(data) {
     .attr("x", width / 2)
     .attr("y", height - 22)
     .attr("text-anchor", "middle")
-    .text("Individual-focused use cases -> organization-focused use cases");
+    .text("Individual-focused use cases → organization-focused use cases");
 
   svg
     .append("text")
@@ -1056,7 +1057,7 @@ function drawUseCaseCompass(data) {
     .attr("y", height / 2)
     .attr("text-anchor", "middle")
     .attr("transform", `rotate(-90,24,${height / 2})`)
-    .text("Deterministic -> judgment-rich");
+    .text("Deterministic → judgment-rich");
 
   const nodes = svg
     .append("g")
@@ -1456,7 +1457,7 @@ function renderRiverInsights(data) {
   const cards = [
     {
       label: "Volume arc",
-      value: `${percent(first.ai_share)} -> ${percent(current.ai_share)}`,
+      value: `${percent(first.ai_share)} → ${percent(current.ai_share)}`,
       copy: `AI-related sessions are ${percent(current.ai_share)} of the ${activeFocusYear} parsed program.`,
     },
     {
