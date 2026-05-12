@@ -125,6 +125,10 @@ main {
   gap: 4px;
 }
 
+.mobile-menu-toggle {
+  display: none;
+}
+
 .nav-links a,
 .nav-links button {
   border-radius: 999px;
@@ -152,6 +156,27 @@ main {
   background: var(--wash-lavender);
   color: var(--plum);
   outline: 0;
+}
+
+.guide-step-label {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(109, 77, 247, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--plum);
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  padding: 8px 12px;
+  text-transform: uppercase;
+}
+
+.guide-step-label span {
+  color: #8ca0b8;
+  letter-spacing: 0.08em;
 }
 
 .home-panel {
@@ -1752,7 +1777,7 @@ select:focus {
   .home-panel {
     margin: 0 -18px;
     min-height: auto;
-    padding: 52px 18px 56px;
+    padding: 52px 18px 96px;
   }
 
   .home-step-grid {
@@ -1768,16 +1793,25 @@ select:focus {
     bottom: 14px;
     left: 14px;
     justify-content: space-between;
+    gap: 6px;
+    padding: 6px;
   }
 
   #guide-progress {
     min-width: 92px;
+    font-size: 0.74rem;
+  }
+
+  .guide-controls button {
+    min-height: 30px;
+    padding: 6px 10px;
+    font-size: 0.82rem;
   }
 
   .hero {
     margin: 0 -18px;
     min-height: auto;
-    padding: 42px 18px 48px;
+    padding: 42px 18px 96px;
   }
 
   .hero::after {
@@ -1849,7 +1883,7 @@ select:focus {
 
   .section-band {
     margin-inline: -18px;
-    padding: 64px 18px;
+    padding: 64px 18px 96px;
   }
 
   .section-band.alt {
@@ -1891,5 +1925,58 @@ select:focus {
   .network-insights,
   .explorer-controls {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-nav {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px 12px;
+  }
+
+  .mobile-menu-toggle {
+    justify-self: end;
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: var(--plum);
+    font-size: 0.78rem;
+    font-weight: 900;
+    padding: 6px 10px;
+  }
+
+  .nav-links {
+    grid-column: 1 / -1;
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .site-nav.menu-open .nav-links {
+    display: grid;
+  }
+
+  .nav-links a,
+  .nav-links button {
+    font-size: 0.78rem;
+  }
+
+  .guide-controls {
+    right: 10px;
+    bottom: 10px;
+    left: 10px;
+  }
+
+  .guide-controls button {
+    padding-inline: 9px;
+  }
+
+  #guide-progress {
+    min-width: 76px;
+    font-size: 0.68rem;
   }
 }

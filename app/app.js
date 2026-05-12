@@ -700,12 +700,28 @@ function storyBeatStep(beat) {
 }
 
 function wireGuideNavigation() {
+  const siteNav = document.querySelector(".site-nav");
+  const menuToggle = document.querySelector(".mobile-menu-toggle");
+  const closeMobileMenu = () => {
+    if (!siteNav || !menuToggle) return;
+    siteNav.classList.remove("menu-open");
+    menuToggle.setAttribute("aria-expanded", "false");
+  };
+
+  if (menuToggle && siteNav) {
+    menuToggle.addEventListener("click", () => {
+      const isOpen = siteNav.classList.toggle("menu-open");
+      menuToggle.setAttribute("aria-expanded", String(isOpen));
+    });
+  }
+
   document.querySelectorAll(".guide-nav").forEach((control) => {
     control.addEventListener("click", (event) => {
       const target = control.dataset.guideTarget;
       if (!target) return;
       event.preventDefault();
       showGuideStep(target);
+      closeMobileMenu();
     });
   });
 
@@ -725,9 +741,11 @@ function wireGuideNavigation() {
   }
 
   window.addEventListener("popstate", () => {
+    closeMobileMenu();
     showGuideStep(guideStepFromHash(), { updateHash: false });
   });
   window.addEventListener("hashchange", () => {
+    closeMobileMenu();
     showGuideStep(guideStepFromHash(), { updateHash: false });
   });
 
