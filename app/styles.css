@@ -1722,8 +1722,8 @@ select:focus {
     position: sticky;
     align-items: flex-start;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px 18px;
+    gap: 12px;
+    padding: 12px 18px;
   }
 
   .brand-mark {
@@ -1731,16 +1731,22 @@ select:focus {
   }
 
   .nav-links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     width: 100%;
-    flex-wrap: nowrap;
+    flex-wrap: initial;
     gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    overflow: visible;
+    padding-bottom: 0;
   }
 
   .nav-links a,
   .nav-links button {
-    flex: 0 0 auto;
+    justify-content: center;
+    min-width: 0;
+    padding: 8px 6px;
+    text-align: center;
+    white-space: nowrap;
   }
 
   .home-panel {

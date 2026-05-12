@@ -731,7 +731,7 @@ function wireGuideNavigation() {
     showGuideStep(guideStepFromHash(), { updateHash: false });
   });
 
-  showGuideStep(guideStepFromHash(), { updateHash: false, resetScroll: false });
+  showGuideStep(guideStepFromHash(), { updateHash: false });
 }
 
 function applyStoryBeat(beatId) {
