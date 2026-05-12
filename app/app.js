@@ -149,6 +149,7 @@ function formatDelta(current, previous) {
 }
 
 function makeSvg(target, width, height) {
+  hideTooltip();
   d3.select(target).selectAll("*").remove();
   return d3
     .select(target)
@@ -172,6 +173,7 @@ function tooltip() {
 function showTooltip(event, title, body) {
   tooltip()
     .classed("visible", true)
+    .attr("aria-hidden", "false")
     .style("left", `${event.clientX}px`)
     .style("top", `${event.clientY}px`)
     .html(`<strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span>`);
@@ -182,7 +184,16 @@ function moveTooltip(event) {
 }
 
 function hideTooltip() {
-  tooltip().classed("visible", false);
+  tooltip().classed("visible", false).attr("aria-hidden", "true");
+}
+
+function wireTooltipCleanup() {
+  window.addEventListener("scroll", hideTooltip, { capture: true, passive: true });
+  window.addEventListener("blur", hideTooltip);
+  document.addEventListener("pointerdown", hideTooltip, true);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") hideTooltip();
+  });
 }
 
 function escapeHtml(value) {
@@ -227,6 +238,7 @@ function sessionsForLens(data, { year = "All", context = "All", side = "All" } =
 }
 
 function renderSessionDrilldown(targetSelector, lens) {
+  hideTooltip();
   const target = document.querySelector(targetSelector);
   if (!target || !storyData) return;
   const sessions = sessionsForLens(storyData, lens);
@@ -317,6 +329,7 @@ function trajectoryForLens(data, { context = "All", side = "All" } = {}) {
 }
 
 function renderDataLens({ year = activeFocusYear, context = "All", side = "All" } = {}) {
+  hideTooltip();
   const target = document.querySelector("#meaning-data-lens");
   if (!target || !storyData) return;
   const sessions = sessionsForLens(storyData, { year, context, side });
@@ -2270,6 +2283,7 @@ async function init() {
     wireSessionExplorer(storyData);
     wireDataStoryCards(storyData);
     wireSideDrillCards();
+    wireTooltipCleanup();
     document.querySelector("#reset-exploration").addEventListener("click", resetExploration);
   } catch (error) {
     document.body.insertAdjacentHTML(

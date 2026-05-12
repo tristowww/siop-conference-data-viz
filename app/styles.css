@@ -1236,11 +1236,15 @@ button.active {
   padding: 10px 12px;
   pointer-events: none;
   transform: translate(-50%, calc(-100% - 12px));
-  transition: opacity 120ms ease;
+  transition:
+    opacity 120ms ease,
+    visibility 120ms ease;
+  visibility: hidden;
 }
 
 .tooltip.visible {
   opacity: 1;
+  visibility: visible;
 }
 
 .tooltip strong {
