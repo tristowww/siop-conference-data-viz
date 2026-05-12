@@ -347,6 +347,15 @@ p {
   text-align: left;
 }
 
+.interaction-cue {
+  max-width: 780px;
+  margin: 0 auto 16px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 750;
+  text-align: center;
+}
+
 .hero-signal-field {
   width: min(1000px, 100%);
   min-height: 330px;
@@ -373,6 +382,12 @@ p {
 
 .signal-node.is-focus circle {
   animation: signal-pulse 1.7s ease-in-out infinite;
+}
+
+.signal-node.is-selected circle,
+.side-lane-node.is-selected,
+.compass-node.is-selected circle {
+  filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.24));
 }
 
 .signal-thread {
@@ -516,6 +531,11 @@ p {
   font-size: 0.92rem;
 }
 
+.slice-evidence {
+  color: var(--ink);
+  font-weight: 760;
+}
+
 .drilldown-clear {
   flex: 0 0 auto;
 }
@@ -524,6 +544,10 @@ p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.show-more-sessions {
+  justify-self: center;
 }
 
 .drilldown-card {
@@ -693,6 +717,10 @@ p {
 
 .river-band:hover {
   filter: saturate(1.25) drop-shadow(0 8px 14px rgba(23, 32, 42, 0.16));
+}
+
+.river-band.is-selected {
+  filter: saturate(1.35) drop-shadow(0 8px 18px rgba(15, 23, 42, 0.16));
 }
 
 .focus-line {
@@ -1100,6 +1128,40 @@ p {
 
 .side-thesis strong {
   color: #ffffff;
+}
+
+.closing-band {
+  background:
+    radial-gradient(circle at 22% 18%, rgba(109, 77, 247, 0.1), transparent 30%),
+    radial-gradient(circle at 80% 70%, rgba(8, 145, 178, 0.1), transparent 30%),
+    #ffffff;
+  padding-top: 82px;
+}
+
+.closing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  text-align: left;
+}
+
+.closing-grid article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.closing-grid strong {
+  display: block;
+  color: var(--ink);
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  line-height: 1.2;
+}
+
+.closing-grid p {
+  margin: 10px 0 0;
 }
 
 .compass-chart {
@@ -1545,6 +1607,7 @@ select:focus {
   .insight-grid,
   .compare-grid,
   .side-matrix,
+  .closing-grid,
   .format-strip,
   .focus-insights,
   .river-insights,

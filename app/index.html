@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-deep-clicks" />
+    <link rel="stylesheet" href="styles.css?v=20260512-guided-explore" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260512-deep-clicks" defer></script>
+    <script src="app.js?v=20260512-guided-explore" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -75,6 +75,7 @@
           <div id="story-beat-controls" class="story-beat-controls"></div>
         </div>
         <div class="signal-stage" aria-label="Interactive AI signal console">
+          <p class="interaction-cue">Click any bubble to inspect the sessions behind that year and context.</p>
           <div
             id="hero-signal-field"
             class="hero-signal-field"
@@ -103,7 +104,7 @@
             aria-label="Sessions behind selected context"
           >
             <div>
-              <span class="stat-label">Session drilldown</span>
+              <span class="stat-label">Sessions behind this signal</span>
               <strong>Click a bubble to see the sessions behind that year and context.</strong>
             </div>
           </div>
@@ -173,6 +174,7 @@
         <p id="river-mode-note" class="microcopy">
           Five-band mode shows where AI language appears in the program. Click a band to focus the story.
         </p>
+        <p class="interaction-cue">Click a band, year marker, or lane dot. The page will update the panels below without jumping.</p>
         <div class="view-toggle" aria-label="Choose signal view">
           <button class="river-mode active" type="button" data-mode="contexts">Five context bands</button>
           <button class="river-mode" type="button" data-mode="sides">I-side vs O-side</button>
@@ -190,7 +192,7 @@
           aria-label="Sessions behind selected signal river point"
         >
           <div>
-            <span class="stat-label">Session drilldown</span>
+            <span class="stat-label">Sessions behind this signal</span>
             <strong>Click a band, year marker, or lane dot to inspect the matching sessions.</strong>
           </div>
         </div>
@@ -240,6 +242,7 @@
           role="img"
           aria-label="AI use-case compass from deterministic to judgment-rich and individual to organizational"
         ></div>
+        <p class="interaction-cue">Click a bubble or comparison card to open a focused data lens for that slice.</p>
         <div id="meaning-data-lens" class="data-lens" aria-live="polite">
           <div>
             <span class="stat-label">Data lens</span>
@@ -253,7 +256,7 @@
           aria-label="Sessions behind selected meaning section slice"
         >
           <div>
-            <span class="stat-label">Session drilldown</span>
+            <span class="stat-label">Sessions behind this signal</span>
             <strong>Click a compass bubble or side card to see the matching sessions.</strong>
           </div>
         </div>
@@ -294,6 +297,37 @@
               about procedural justice and defensible evaluation. Employee-facing AI raises questions
               about consent, power, role clarity, and how work systems absorb the tool.
             </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-band closing-band" aria-labelledby="closing-title">
+        <div class="section-heading">
+          <p class="eyebrow">Portfolio takeaway</p>
+          <h2 id="closing-title">The sharper story is where AI is showing up.</h2>
+          <p>
+            Across the public SIOP program data, AI appears to be moving beyond a primarily
+            assessment-and-methods conversation into a broader set of people-context applications.
+            The signal is not that selection went away. It is that training, coaching, leadership,
+            culture, accessibility, and work design have become a more visible part of the AI
+            conversation.
+          </p>
+        </div>
+        <div class="closing-grid">
+          <article>
+            <span class="stat-label">What changed</span>
+            <strong>More volume, broader use cases</strong>
+            <p>AI-related language grows, while org-side contexts become easier to see in the program mix.</p>
+          </article>
+          <article>
+            <span class="stat-label">Why it matters</span>
+            <strong>The design problem changes</strong>
+            <p>O-side AI is less about one deterministic score and more about judgment, trust, learning, and context.</p>
+          </article>
+          <article>
+            <span class="stat-label">How to read it</span>
+            <strong>A program signal, not a causal claim</strong>
+            <p>The charts describe conference emphasis and examples, not definitive field-wide adoption.</p>
           </article>
         </div>
       </section>

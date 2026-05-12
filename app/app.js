@@ -83,7 +83,8 @@ let selectedTime = null;
 let replayTimer = null;
 let replayIndex = 0;
 let storyData;
-const SESSION_PREVIEW_LIMIT = 8;
+const SESSION_PREVIEW_LIMIT = 4;
+const SESSION_EXPANDED_LIMIT = 12;
 
 function percent(value) {
   return `${Math.round(value * 100)}%`;
@@ -242,7 +243,14 @@ function renderSessionDrilldown(targetSelector, lens) {
   const target = document.querySelector(targetSelector);
   if (!target || !storyData) return;
   const sessions = sessionsForLens(storyData, lens);
-  const preview = sessions.slice(0, SESSION_PREVIEW_LIMIT);
+  const lensKey = JSON.stringify(lens);
+  if (target.dataset.lensKey !== lensKey) {
+    target.dataset.expanded = "false";
+    target.dataset.lensKey = lensKey;
+  }
+  const isExpanded = target.dataset.expanded === "true";
+  const limit = isExpanded ? SESSION_EXPANDED_LIMIT : SESSION_PREVIEW_LIMIT;
+  const preview = sessions.slice(0, limit);
   const labelParts = [
     lens.year && lens.year !== "All" ? lens.year : "All years",
     lens.context && lens.context !== "All" ? shortContext(lens.context) : null,
@@ -250,6 +258,15 @@ function renderSessionDrilldown(targetSelector, lens) {
   ].filter(Boolean);
   const label = labelParts.join(" | ");
   const sessionWord = sessions.length === 1 ? "session" : "sessions";
+  const formats = countBy(sessions, (session) => session.session_format).slice(0, 2);
+  const tracks = countBy(
+    sessions.filter((session) => session.tracks && session.tracks !== "Untracked"),
+    (session) => session.tracks,
+  ).slice(0, 2);
+  const evidence = [
+    formats.length ? `Top formats: ${formats.map((item) => `${item.label} (${item.count})`).join(", ")}` : null,
+    tracks.length ? `Top tracks: ${tracks.map((item) => `${item.label} (${item.count})`).join(", ")}` : null,
+  ].filter(Boolean);
   const cards = preview
     .map((session) => {
       const displayedContext =
@@ -276,9 +293,10 @@ function renderSessionDrilldown(targetSelector, lens) {
   target.innerHTML = `
     <div class="drilldown-header">
       <div>
-        <span class="stat-label">Sessions behind this point</span>
+        <span class="stat-label">Sessions behind this signal</span>
         <strong>${escapeHtml(label || "Selected slice")}</strong>
-        <p>${sessions.length} matching ${sessionWord}. Showing ${Math.min(preview.length, SESSION_PREVIEW_LIMIT)}.</p>
+        <p>${sessions.length} matching ${sessionWord}. Showing ${preview.length}.</p>
+        ${evidence.length ? `<p class="slice-evidence">${escapeHtml(evidence.join(" | "))}</p>` : ""}
       </div>
       <button class="drilldown-clear" type="button">Clear</button>
     </div>
@@ -289,10 +307,22 @@ function renderSessionDrilldown(targetSelector, lens) {
           : '<div class="empty-state">No sessions match this slice.</div>'
       }
     </div>
+    ${
+      sessions.length > SESSION_PREVIEW_LIMIT
+        ? `<button class="show-more-sessions" type="button">${isExpanded ? "Show fewer" : `Show more (${Math.min(SESSION_EXPANDED_LIMIT, sessions.length) - SESSION_PREVIEW_LIMIT})`}</button>`
+        : ""
+    }
   `;
   target.querySelector(".drilldown-clear").addEventListener("click", () => {
     resetSessionDrilldown(targetSelector);
   });
+  const showMore = target.querySelector(".show-more-sessions");
+  if (showMore) {
+    showMore.addEventListener("click", () => {
+      target.dataset.expanded = isExpanded ? "false" : "true";
+      renderSessionDrilldown(targetSelector, lens);
+    });
+  }
   markPanelUpdated(target);
 }
 
@@ -448,7 +478,7 @@ function resetSessionDrilldown(targetSelector) {
       : "Click a bubble to see the sessions behind that year and context.";
   target.innerHTML = `
     <div>
-      <span class="stat-label">Session drilldown</span>
+      <span class="stat-label">Sessions behind this signal</span>
       <strong>${copy}</strong>
     </div>
   `;
@@ -745,7 +775,16 @@ function drawHeroSignalField(data) {
     .selectAll("g")
     .data(rows)
     .join("g")
-    .attr("class", (d) => `signal-node${d.conference_year === activeFocusYear ? " is-focus" : ""}`)
+    .attr(
+      "class",
+      (d) =>
+        `signal-node${d.conference_year === activeFocusYear ? " is-focus" : ""}${
+          d.conference_year === activeFocusYear &&
+          (activeContext === "All" || activeContext === d.ai_context_group)
+            ? " is-selected"
+            : ""
+        }`,
+    )
     .attr("transform", (d) => `translate(${d.x},${d.y})`)
     .on("mouseenter", (event, d) => {
       showTooltip(event, d.ai_context_group, `${d.sessions} AI-related session-context signals in ${d.conference_year}.`);
@@ -923,7 +962,7 @@ function drawSignalRiver(data) {
     .selectAll("path")
     .data(series)
     .join("path")
-    .attr("class", "river-band")
+    .attr("class", (d) => `river-band${activeContext === d.key ? " is-selected" : ""}`)
     .attr("d", area)
     .attr("fill", (d) => COLORS.contexts[d.key])
     .attr("opacity", (d) => (activeContext === "All" || activeContext === d.key ? 0.82 : 0.22))
@@ -1084,7 +1123,7 @@ function drawSideLaneChart(data) {
     .selectAll("circle")
     .data(rows)
     .join("circle")
-    .attr("class", "side-lane-node")
+    .attr("class", (d) => `side-lane-node${activeSide === d.side && activeFocusYear === d.year ? " is-selected" : ""}`)
     .attr("cx", (d) => x(d.year))
     .attr("cy", (d) => y(d.side))
     .attr("r", (d) => radius(d.sessions))
@@ -1334,7 +1373,7 @@ function drawUseCaseCompass(data) {
     .selectAll("g")
     .data(rows)
     .join("g")
-    .attr("class", "compass-node")
+    .attr("class", (d) => `compass-node${activeContext === d.ai_context_group ? " is-selected" : ""}`)
     .attr("transform", (d) => `translate(${x(d.x)},${y(d.y)})`)
     .on("mouseenter", (event, d) => {
       showTooltip(event, d.ai_context_group, `${d.sessions} AI-related context signals in ${activeFocusYear}.`);
