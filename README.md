@@ -1,6 +1,8 @@
 # SIOP Conference Data Viz
 
-Private working repo for comparing SIOP Annual Conference session data across years.
+Public portfolio data visualization comparing SIOP Annual Conference session data across years.
+
+Live site: https://tristowww.github.io/siop-conference-data-viz/
 
 ## Project goal
 
