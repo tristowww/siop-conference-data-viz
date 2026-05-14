@@ -75,9 +75,9 @@ const STORY_BEATS = [
 const GUIDE_STEPS = [
   { id: "home", label: "Home", hash: "#home-step" },
   { id: "overview", label: "Overview", hash: "#visibility-step" },
-  { id: "signal", label: "Signal", hash: "#shift-step" },
+  { id: "signal", label: "Topic mix", hash: "#shift-step" },
   { id: "meaning", label: "Meaning", hash: "#meaning-step" },
-  { id: "takeaway", label: "Takeaway", hash: "#takeaway-step" },
+  { id: "takeaway", label: "So what", hash: "#takeaway-step" },
 ];
 
 const HASH_TO_GUIDE_STEP = new Map([

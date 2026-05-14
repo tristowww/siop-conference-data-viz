@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260512-copy-pass" />
+    <link rel="stylesheet" href="styles.css?v=20260514-final-polish" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260512-copy-pass" defer></script>
+    <script src="app.js?v=20260514-final-polish" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -20,9 +20,9 @@
       <nav id="story-nav" class="nav-links" aria-label="Story sections">
         <button class="guide-nav active" type="button" data-guide-target="home">Home</button>
         <button class="guide-nav" type="button" data-guide-target="overview">Overview</button>
-        <button class="guide-nav" type="button" data-guide-target="signal">Signal</button>
+        <button class="guide-nav" type="button" data-guide-target="signal">Topic mix</button>
         <button class="guide-nav" type="button" data-guide-target="meaning">Meaning</button>
-        <button class="guide-nav" type="button" data-guide-target="takeaway">Takeaway</button>
+        <button class="guide-nav" type="button" data-guide-target="takeaway">So what</button>
         <a
           href="https://github.com/tristowww/siop-conference-data-viz/tree/main/data/raw"
           target="_blank"
@@ -53,7 +53,7 @@
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="signal">
             <span class="stat-label">Step 2</span>
-            <strong>Signal</strong>
+            <strong>Topic mix</strong>
             <span>Compare the main topic areas and the selection-vs-organization split.</span>
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="meaning">
@@ -63,7 +63,7 @@
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="takeaway">
             <span class="stat-label">Step 4</span>
-            <strong>Takeaway</strong>
+            <strong>So what</strong>
             <span>Close with the clearest read of what the conference pattern suggests.</span>
           </button>
         </div>
@@ -205,9 +205,9 @@
       </section>
 
       <section id="shift-step" class="section-band signal-river-band story-step guided-step" data-guide-step="signal" aria-labelledby="signal-river-title">
-        <div class="guide-step-label">Signal <span>3 of 5</span></div>
+        <div class="guide-step-label">Topic mix <span>3 of 5</span></div>
         <div class="section-heading">
-          <p class="eyebrow">Signal river</p>
+          <p class="eyebrow">Topic mix</p>
           <h2 id="signal-river-title">The mix changes over time.</h2>
           <p>
             This view tracks AI-related topic areas across the five-year dataset. Hover or click a
@@ -251,6 +251,10 @@
             In I-O psychology, the I-side often centers individual measurement and selection. The
             O-side often centers organizations, teams, culture, learning, and work experience. AI
             can support both, but the design questions and risks change.
+          </p>
+          <p class="microcopy">
+            Plainly: I-side is selection and assessment; O-side is teams, leadership, learning,
+            culture, and work design.
           </p>
         </div>
         <div class="compare-grid">
@@ -346,9 +350,9 @@
       </section>
 
       <section id="takeaway-step" class="section-band closing-band guided-step" data-guide-step="takeaway" aria-labelledby="closing-title">
-        <div class="guide-step-label">Takeaway <span>5 of 5</span></div>
+        <div class="guide-step-label">So what <span>5 of 5</span></div>
         <div class="section-heading">
-          <p class="eyebrow">Portfolio takeaway</p>
+          <p class="eyebrow">So what</p>
           <h2 id="closing-title">The sharper story is where AI is showing up.</h2>
           <p>
             Across the public SIOP program data, AI appears to be moving beyond a mostly
