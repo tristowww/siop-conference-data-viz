@@ -226,7 +226,7 @@ main {
 
 .home-step-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   width: min(1100px, 100%);
   margin-top: 20px;
@@ -744,6 +744,23 @@ main {
   font-size: 0.78rem;
   font-weight: 900;
   padding: 7px 10px;
+}
+
+.shift-play {
+  min-height: 38px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--plum), var(--teal));
+  box-shadow: 0 12px 26px rgba(109, 77, 247, 0.16);
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 950;
+  padding: 9px 14px;
+}
+
+.shift-play.active {
+  background: linear-gradient(135deg, var(--coral), var(--plum));
 }
 
 .shift-year.active {
@@ -2707,6 +2724,10 @@ select:focus {
   .shift-year {
     width: 100%;
     padding-inline: 6px;
+  }
+
+  .shift-play {
+    width: 100%;
   }
 
   .shift-panel-heading {

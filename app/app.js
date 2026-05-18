@@ -74,8 +74,7 @@ const STORY_BEATS = [
 
 const GUIDE_STEPS = [
   { id: "home", label: "Home", hash: "#home-step" },
-  { id: "overview", label: "Overview", hash: "#visibility-step" },
-  { id: "signal", label: "Shift map", hash: "#shift-step" },
+  { id: "overview", label: "Explore", hash: "#visibility-step" },
   { id: "meaning", label: "Meaning", hash: "#meaning-step" },
   { id: "takeaway", label: "So what", hash: "#takeaway-step" },
 ];
@@ -84,7 +83,7 @@ const HASH_TO_GUIDE_STEP = new Map([
   ["#home-step", "home"],
   ["#visibility-step", "overview"],
   ["#reading-step", "overview"],
-  ["#shift-step", "signal"],
+  ["#shift-step", "overview"],
   ["#meaning-step", "meaning"],
   ["#takeaway-step", "takeaway"],
 ]);
@@ -102,6 +101,8 @@ let selectedLink = null;
 let selectedTime = null;
 let replayTimer = null;
 let replayIndex = 0;
+let shiftReplayTimer = null;
+let shiftReplayIndex = 0;
 let activeGuideStep = "home";
 let storyData;
 const SESSION_PREVIEW_LIMIT = 4;
@@ -737,6 +738,17 @@ function shiftAxisPosition(context) {
   return positions[context] ?? 0.5;
 }
 
+function setShiftMapYear(data, year) {
+  activeFocusYear = Number(year);
+  activeNetworkYear = activeFocusYear;
+  activeShiftContext = null;
+  selectedLink = null;
+  selectedTime = null;
+  syncYearControls();
+  renderOverviewPlayground(data);
+  renderShiftMap(data);
+}
+
 function renderShiftYearControls(data) {
   const range = document.querySelector("#shift-year-range");
   const pills = document.querySelector("#shift-year-pills");
@@ -755,14 +767,8 @@ function renderShiftYearControls(data) {
       button.dataset.year = String(year);
       button.textContent = year;
       button.addEventListener("click", () => {
-        activeShiftContext = null;
-        activeFocusYear = Number(year);
-        activeNetworkYear = activeFocusYear;
-        selectedLink = null;
-        selectedTime = null;
-        syncYearControls();
-        renderOverviewPlayground(data);
-        renderShiftMap(data);
+        stopShiftReplay();
+        setShiftMapYear(data, year);
       });
       pills.appendChild(button);
     });
@@ -775,6 +781,39 @@ function syncShiftControls() {
   document.querySelectorAll(".shift-year").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
   });
+}
+
+function stopShiftReplay() {
+  if (shiftReplayTimer) {
+    window.clearInterval(shiftReplayTimer);
+    shiftReplayTimer = null;
+  }
+  const button = document.querySelector("#shift-play");
+  if (button) {
+    button.classList.remove("active");
+    button.textContent = "Play years";
+  }
+}
+
+function startShiftReplay(data) {
+  const years = getYears(data);
+  const button = document.querySelector("#shift-play");
+  if (!button || !years.length) return;
+  shiftReplayIndex = 0;
+  button.classList.add("active");
+  button.textContent = "Pause";
+
+  const advance = () => {
+    const year = years[shiftReplayIndex % years.length];
+    setShiftMapYear(data, year);
+    shiftReplayIndex += 1;
+    if (shiftReplayIndex >= years.length) {
+      stopShiftReplay();
+    }
+  };
+
+  advance();
+  shiftReplayTimer = window.setInterval(advance, 1150);
 }
 
 function renderShiftMapPanel(data) {
@@ -1067,14 +1106,18 @@ function wireShiftMap(data) {
   const range = document.querySelector("#shift-year-range");
   if (range) {
     range.addEventListener("input", () => {
-      activeFocusYear = Number(range.value);
-      activeNetworkYear = activeFocusYear;
-      activeShiftContext = null;
-      selectedLink = null;
-      selectedTime = null;
-      syncYearControls();
-      renderOverviewPlayground(data);
-      renderShiftMap(data);
+      stopShiftReplay();
+      setShiftMapYear(data, range.value);
+    });
+  }
+  const playButton = document.querySelector("#shift-play");
+  if (playButton) {
+    playButton.addEventListener("click", () => {
+      if (shiftReplayTimer) {
+        stopShiftReplay();
+      } else {
+        startShiftReplay(data);
+      }
     });
   }
   renderShiftMap(data);
@@ -1359,6 +1402,7 @@ function showGuideStep(stepId, { updateHash = true, resetScroll = true } = {}) {
   const step = GUIDE_STEPS.find((item) => item.id === stepId) || GUIDE_STEPS[0];
   activeGuideStep = step.id;
   stopReplay();
+  stopShiftReplay();
   hideTooltip();
 
   document.querySelectorAll(".guided-step").forEach((section) => {
@@ -1399,8 +1443,7 @@ function showGuideStep(stepId, { updateHash = true, resetScroll = true } = {}) {
 
 function storyBeatStep(beat) {
   if (beat.id === "meaning") return "meaning";
-  if (beat.id === "baseline") return "overview";
-  return "signal";
+  return "overview";
 }
 
 function wireGuideNavigation() {
