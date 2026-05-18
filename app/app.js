@@ -52,8 +52,8 @@ const STORY_BEATS = [
   },
   {
     id: "context",
-    step: "3. Use-case mix",
-    title: "Focus the org-side band",
+    step: "3. Shift map",
+    title: "Follow the center of gravity",
     copy: "2026 puts more attention on training, leadership, and work context.",
     year: 2026,
     riverMode: "contexts",
@@ -64,7 +64,7 @@ const STORY_BEATS = [
     id: "meaning",
     step: "4. Meaning",
     title: "Compare I-side and O-side",
-    copy: "The question becomes what kind of work AI is being used for.",
+    copy: "The question becomes what people are trying to use AI for.",
     year: 2026,
     riverMode: "sides",
     context: "All",
@@ -75,7 +75,7 @@ const STORY_BEATS = [
 const GUIDE_STEPS = [
   { id: "home", label: "Home", hash: "#home-step" },
   { id: "overview", label: "Overview", hash: "#visibility-step" },
-  { id: "signal", label: "Topic mix", hash: "#shift-step" },
+  { id: "signal", label: "Shift map", hash: "#shift-step" },
   { id: "meaning", label: "Meaning", hash: "#meaning-step" },
   { id: "takeaway", label: "So what", hash: "#takeaway-step" },
 ];
@@ -96,6 +96,7 @@ let activeNetworkYear = 2026;
 let activeFocusYear = 2026;
 let activeOverviewMode = "all";
 let activeOverviewContext = null;
+let activeShiftContext = null;
 let riverMode = "contexts";
 let selectedLink = null;
 let selectedTime = null;
@@ -725,6 +726,360 @@ function wireOverviewPlayground(data) {
   renderOverviewPlayground(data);
 }
 
+function shiftAxisPosition(context) {
+  const positions = {
+    "Selection/assessment/methods": 0.18,
+    "Explicit tech/AI": 0.47,
+    "Other/special": 0.55,
+    "Org/development/training": 0.74,
+    "DEI/accessibility": 0.88,
+  };
+  return positions[context] ?? 0.5;
+}
+
+function renderShiftYearControls(data) {
+  const range = document.querySelector("#shift-year-range");
+  const pills = document.querySelector("#shift-year-pills");
+  if (!range || !pills) return;
+
+  const years = getYears(data);
+  range.min = String(years[0]);
+  range.max = String(years.at(-1));
+  range.value = String(activeFocusYear);
+
+  if (!pills.childElementCount) {
+    years.forEach((year) => {
+      const button = document.createElement("button");
+      button.className = "shift-year";
+      button.type = "button";
+      button.dataset.year = String(year);
+      button.textContent = year;
+      button.addEventListener("click", () => {
+        activeShiftContext = null;
+        activeFocusYear = Number(year);
+        activeNetworkYear = activeFocusYear;
+        selectedLink = null;
+        selectedTime = null;
+        syncYearControls();
+        renderOverviewPlayground(data);
+        renderShiftMap(data);
+      });
+      pills.appendChild(button);
+    });
+  }
+}
+
+function syncShiftControls() {
+  const range = document.querySelector("#shift-year-range");
+  if (range) range.value = String(activeFocusYear);
+  document.querySelectorAll(".shift-year").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
+  });
+}
+
+function renderShiftMapPanel(data) {
+  const panel = document.querySelector("#shift-map-panel");
+  if (!panel || !data) return;
+
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const sideRows = getSideRowsForYear(data, activeFocusYear);
+  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
+  const oSide = sideRows.find((item) => item.side === "O-side org/development");
+  const balance = oSide.sessions - iSide.sessions;
+  const selectedRow = activeShiftContext ? contextRowFor(data, activeFocusYear, activeShiftContext) : null;
+  const sessions = activeShiftContext
+    ? sessionsForLens(data, { year: activeFocusYear, context: activeShiftContext })
+    : [];
+  const examples = sessions.slice(0, 3);
+  const title = selectedRow
+    ? `${activeFocusYear}: ${shortContext(activeShiftContext)}`
+    : `${activeFocusYear}: ${balance >= 0 ? "O-side leads" : "Selection leads"}`;
+  const copy = selectedRow
+    ? `${contextMicrocopy(activeShiftContext)} This slice has ${selectedRow.sessions} topic signals in ${activeFocusYear}.`
+    : balance >= 0
+      ? `AI is ${percent(current.ai_share)} of parsed sessions. Org-side people/work topics sit ${balance} signals above selection and assessment this year.`
+      : `AI is ${percent(current.ai_share)} of parsed sessions. Selection and assessment sit ${Math.abs(balance)} signals above org-side people/work topics this year.`;
+  const exampleHtml = examples
+    .map(
+      (session) => `
+        <article>
+          <span>${escapeHtml([session.year, shortContext(session.context), session.session_format || "Session"].join(" | "))}</span>
+          <strong>${escapeHtml(session.title)}</strong>
+          ${
+            session.speakers
+              ? `<p>${escapeHtml(`Authors: ${truncateText(session.speakers, 96)}`)}</p>`
+              : ""
+          }
+          <p>${escapeHtml(truncateText(session.description || sessionDescriptor(session), 128))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  panel.innerHTML = `
+    <div class="shift-panel-heading">
+      <div>
+        <span class="stat-label">${activeShiftContext ? "Selected topic" : "Year read"}</span>
+        <strong>${escapeHtml(title)}</strong>
+      </div>
+      ${
+        activeShiftContext
+          ? '<button class="shift-reset" type="button">Clear</button>'
+          : ""
+      }
+    </div>
+    <p>${escapeHtml(copy)}</p>
+    <div class="shift-panel-stats">
+      <article>
+        <span>AI sessions</span>
+        <strong>${current.ai_related_sessions}</strong>
+      </article>
+      <article>
+        <span>Selection</span>
+        <strong>${iSide.sessions}</strong>
+      </article>
+      <article>
+        <span>Org-side</span>
+        <strong>${oSide.sessions}</strong>
+      </article>
+    </div>
+    <div class="shift-panel-examples">
+      <span class="stat-label">${activeShiftContext ? "Examples" : "How to read it"}</span>
+      ${
+        activeShiftContext
+          ? exampleHtml || '<div class="shift-empty">No matching sessions found for this slice.</div>'
+          : '<div class="shift-empty">Use the slider first. Click a bubble only when you want the receipts behind a topic.</div>'
+      }
+    </div>
+  `;
+
+  const reset = panel.querySelector(".shift-reset");
+  if (reset) {
+    reset.addEventListener("click", () => {
+      activeShiftContext = null;
+      renderShiftMap(data);
+    });
+  }
+  markPanelUpdated(panel);
+}
+
+function drawShiftMap(data) {
+  const target = document.querySelector("#shift-map-canvas");
+  if (!target || !data) return;
+
+  const width = 1040;
+  const height = 560;
+  const margin = { top: 62, right: 82, bottom: 94, left: 92 };
+  const svg = makeSvg("#shift-map-canvas", width, height).attr("class", "shift-map-svg");
+  const years = getYears(data);
+  const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
+  const y = d3
+    .scaleLinear()
+    .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
+    .range([height - margin.bottom, margin.top + 54]);
+  const radius = d3
+    .scaleSqrt()
+    .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
+    .range([10, 52]);
+  const contextOffsets = {
+    "Explicit tech/AI": -12,
+    "Selection/assessment/methods": 16,
+    "Org/development/training": -6,
+    "DEI/accessibility": 24,
+    "Other/special": 32,
+  };
+  const currentRows = getContextRowsForYear(data, activeFocusYear).map((row) => ({
+    ...row,
+    x: x(shiftAxisPosition(row.context)),
+    y: y(row.sessions) + (contextOffsets[row.context] || 0),
+    color: COLORS.contexts[row.context],
+    selected: activeShiftContext === row.context,
+  }));
+  const sideRows = getSideRowsForYear(data, activeFocusYear);
+  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
+  const oSide = sideRows.find((item) => item.side === "O-side org/development");
+  const balanceRatio = iSide.sessions + oSide.sessions > 0 ? oSide.sessions / (iSide.sessions + oSide.sessions) : 0.5;
+  const balanceX = x(balanceRatio);
+  const balance = oSide.sessions - iSide.sessions;
+  const balanceY = margin.top + 28;
+
+  const defs = svg.append("defs");
+  const gradient = defs.append("linearGradient").attr("id", "shift-axis-gradient").attr("x1", "0%").attr("x2", "100%");
+  gradient.append("stop").attr("offset", "0%").attr("stop-color", "#f59a62");
+  gradient.append("stop").attr("offset", "54%").attr("stop-color", "#f7ecff");
+  gradient.append("stop").attr("offset", "100%").attr("stop-color", "#55acd0");
+
+  svg
+    .append("rect")
+    .attr("x", margin.left)
+    .attr("y", margin.top)
+    .attr("width", width - margin.left - margin.right)
+    .attr("height", height - margin.top - margin.bottom)
+    .attr("rx", 22)
+    .attr("class", "shift-map-field");
+
+  svg
+    .append("line")
+    .attr("class", "shift-axis-line")
+    .attr("x1", x(0))
+    .attr("x2", x(1))
+    .attr("y1", height - margin.bottom + 28)
+    .attr("y2", height - margin.bottom + 28);
+
+  svg
+    .append("text")
+    .attr("class", "shift-axis-label")
+    .attr("x", x(0))
+    .attr("y", height - margin.bottom + 58)
+    .text("structured selection / assessment");
+  svg
+    .append("text")
+    .attr("class", "shift-axis-label")
+    .attr("x", x(1))
+    .attr("y", height - margin.bottom + 58)
+    .attr("text-anchor", "end")
+    .text("people, learning, culture, work design");
+  svg
+    .append("text")
+    .attr("class", "shift-y-label")
+    .attr("x", margin.left)
+    .attr("y", margin.top - 20)
+    .text("More visible in the program");
+
+  CONTEXT_ORDER.forEach((context) => {
+    const trail = years.map((year) => {
+      const row = contextRowFor(data, year, context) || { sessions: 0 };
+      return {
+        year,
+        context,
+        sessions: row.sessions,
+        x: x(shiftAxisPosition(context)),
+        y: y(row.sessions) + (contextOffsets[context] || 0),
+      };
+    });
+    const line = d3
+      .line()
+      .x((item) => item.x)
+      .y((item) => item.y)
+      .curve(d3.curveCatmullRom.alpha(0.5));
+    svg
+      .append("path")
+      .datum(trail)
+      .attr("class", "shift-trail")
+      .attr("d", line)
+      .attr("stroke", COLORS.contexts[context]);
+    svg
+      .append("g")
+      .selectAll("circle")
+      .data(trail)
+      .join("circle")
+      .attr("class", (item) => `shift-trail-dot${item.year === activeFocusYear ? " active" : ""}`)
+      .attr("cx", (item) => item.x)
+      .attr("cy", (item) => item.y)
+      .attr("r", (item) => (item.year === activeFocusYear ? 5 : 3))
+      .attr("fill", COLORS.contexts[context]);
+  });
+
+  const balanceGroup = svg.append("g").attr("class", "shift-balance");
+  balanceGroup
+    .append("line")
+    .attr("x1", x(0))
+    .attr("x2", x(1))
+    .attr("y1", balanceY)
+    .attr("y2", balanceY);
+  balanceGroup
+    .append("circle")
+    .attr("cx", balanceX)
+    .attr("cy", balanceY)
+    .attr("r", 13);
+  balanceGroup
+    .append("text")
+    .attr("x", balanceX)
+    .attr("y", balanceY - 18)
+    .attr("text-anchor", "middle")
+    .text(`${activeFocusYear}: ${balance >= 0 ? "+" : ""}${balance} O-side balance`);
+
+  const nodes = svg
+    .append("g")
+    .selectAll("g")
+    .data(currentRows)
+    .join("g")
+    .attr("class", (d) => `shift-topic${d.selected ? " is-selected" : ""}`)
+    .attr("transform", (d) => `translate(${d.x},${d.y})`)
+    .attr("tabindex", "0")
+    .attr("role", "button")
+    .attr("aria-label", (d) => `${activeFocusYear} ${shortContext(d.context)} ${d.sessions} topic signals`)
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, `${activeFocusYear}: ${shortContext(d.context)}`, `${d.sessions} topic signals.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (event, d) => {
+      activeShiftContext = d.context;
+      activeContext = d.context;
+      activeSide = "All";
+      renderShiftMap(data);
+      renderOverviewPlayground(data);
+    })
+    .on("keydown", (event, d) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        activeShiftContext = d.context;
+        renderShiftMap(data);
+      }
+    });
+
+  nodes
+    .append("circle")
+    .attr("r", (d) => radius(d.sessions))
+    .attr("fill", (d) => d.color);
+  nodes
+    .append("circle")
+    .attr("class", "shift-topic-ring")
+    .attr("r", (d) => radius(d.sessions) + 6)
+    .attr("fill", "none");
+  nodes
+    .append("text")
+    .attr("class", "shift-topic-count")
+    .attr("text-anchor", "middle")
+    .attr("y", 5)
+    .text((d) => d.sessions);
+  nodes
+    .append("text")
+    .attr("class", "shift-topic-label")
+    .attr("text-anchor", "middle")
+    .attr("y", (d) =>
+      d.y > height - margin.bottom - 16 ? -radius(d.sessions) - 12 : radius(d.sessions) + 25,
+    )
+    .text((d) => shortContext(d.context));
+}
+
+function renderShiftMap(data) {
+  if (!document.querySelector("#shift-map") || !data) return;
+  renderShiftYearControls(data);
+  syncShiftControls();
+  drawShiftMap(data);
+  renderShiftMapPanel(data);
+}
+
+function wireShiftMap(data) {
+  renderShiftYearControls(data);
+  const range = document.querySelector("#shift-year-range");
+  if (range) {
+    range.addEventListener("input", () => {
+      activeFocusYear = Number(range.value);
+      activeNetworkYear = activeFocusYear;
+      activeShiftContext = null;
+      selectedLink = null;
+      selectedTime = null;
+      syncYearControls();
+      renderOverviewPlayground(data);
+      renderShiftMap(data);
+    });
+  }
+  renderShiftMap(data);
+}
+
 function renderDataLens({ year = activeFocusYear, context = "All", side = "All" } = {}) {
   hideTooltip();
   const target = document.querySelector("#meaning-data-lens");
@@ -880,8 +1235,10 @@ function resetExploration() {
   syncYearControls();
   activeOverviewMode = "all";
   activeOverviewContext = null;
+  activeShiftContext = null;
   drawHeroSignalField(storyData);
   renderOverviewPlayground(storyData);
+  renderShiftMap(storyData);
   drawSignalRiver(storyData);
   drawUseCaseCompass(storyData);
   renderStoryCaption(storyData);
@@ -910,6 +1267,7 @@ function focusYear(year, { updateExplorer = false } = {}) {
   syncYearControls();
   drawHeroSignalField(storyData);
   renderOverviewPlayground(storyData);
+  renderShiftMap(storyData);
   drawSignalRiver(storyData);
   drawUseCaseCompass(storyData);
   renderFocusInsights(storyData);
@@ -949,7 +1307,7 @@ function focusSide(side) {
 }
 
 function syncYearControls() {
-  document.querySelectorAll(".focus-year, .network-year, .compare-year, .overview-year").forEach((button) => {
+  document.querySelectorAll(".focus-year, .network-year, .compare-year, .overview-year, .shift-year").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
   });
   const years = getYears(storyData || { ai_summary: [] });
@@ -1035,6 +1393,7 @@ function showGuideStep(stepId, { updateHash = true, resetScroll = true } = {}) {
 
   if (resetScroll) {
     window.scrollTo({ top: 0, behavior: "auto" });
+    window.setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), 0);
   }
 }
 
@@ -2728,7 +3087,16 @@ function wireDataStoryCards(data) {
     const activate = () => {
       const year = Number(card.dataset.drillYear || getYears(data).at(-1));
       const context = card.dataset.drillContext || "All";
-      applyContextDrill({ year, context, targetSelector: "#river-session-drilldown" });
+      activeFocusYear = year;
+      activeNetworkYear = year;
+      activeShiftContext = context === "All" ? null : context;
+      activeContext = context;
+      activeSide = "All";
+      selectedLink = null;
+      selectedTime = null;
+      syncYearControls();
+      renderOverviewPlayground(data);
+      renderShiftMap(data);
       showGuideStep("signal");
     };
     card.addEventListener("click", activate);
@@ -2788,14 +3156,11 @@ async function init() {
     activeFocusYear = years.at(-1);
     activeNetworkYear = activeFocusYear;
     wireOverviewPlayground(storyData);
-    drawSignalRiver(storyData);
-    drawUseCaseCompass(storyData);
-    renderRiverInsights(storyData);
+    wireShiftMap(storyData);
     renderDynamicTakeaway(storyData);
     wireMetricButtons();
     renderStoryBeatControls();
     wireBaselineControls(storyData);
-    wireRiverModeToggle(storyData);
     wireNetworkButtons();
     wireDataStoryCards(storyData);
     wireSideDrillCards();

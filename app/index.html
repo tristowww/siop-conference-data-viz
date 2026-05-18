@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260518-playground" />
+    <link rel="stylesheet" href="styles.css?v=20260518-shift-map" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260518-playground" defer></script>
+    <script src="app.js?v=20260518-shift-map" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -20,7 +20,7 @@
       <nav id="story-nav" class="nav-links" aria-label="Story sections">
         <button class="guide-nav active" type="button" data-guide-target="home">Home</button>
         <button class="guide-nav" type="button" data-guide-target="overview">Overview</button>
-        <button class="guide-nav" type="button" data-guide-target="signal">Topic mix</button>
+        <button class="guide-nav" type="button" data-guide-target="signal">Shift map</button>
         <button class="guide-nav" type="button" data-guide-target="meaning">Meaning</button>
         <button class="guide-nav" type="button" data-guide-target="takeaway">So what</button>
         <a
@@ -53,8 +53,8 @@
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="signal">
             <span class="stat-label">Step 2</span>
-            <strong>Topic mix</strong>
-            <span>Compare the main topic areas and the selection-vs-organization split.</span>
+            <strong>Shift map</strong>
+            <span>Scrub the years to see where AI moves across selection, assessment, and org-side work.</span>
           </button>
           <button class="guide-nav home-step-card" type="button" data-guide-target="meaning">
             <span class="stat-label">Step 3</span>
@@ -125,13 +125,12 @@
       <section id="reading-step" class="section-band intro-band story-step guided-step" data-guide-step="overview" aria-labelledby="takeaways-title">
         <div class="section-heading">
           <p class="eyebrow">Reading the shift</p>
-          <h2 id="takeaways-title">The interesting part is not just that AI increased.</h2>
+          <h2 id="takeaways-title">The headline is not just more AI.</h2>
           <p>
-            The portfolio story is about where AI shows up. Selection and assessment remain a
-            natural home for AI because those use cases often involve prediction, validation,
-            scoring, and structured decision support. But by 2026, AI also appears more often in
-            work that is less rule-based and more dependent on context, judgment, learning, and
-            employee experience.
+            The more interesting read is where AI shows up. Selection and assessment still make
+            sense as an early home for AI because that work often involves prediction, scoring,
+            validation, and clear decision rules. By 2026, though, the program also shows more AI
+            activity around coaching, learning, leadership, culture, accessibility, and work design.
           </p>
         </div>
         <div class="insight-grid">
@@ -139,8 +138,7 @@
             <span class="pill">1</span>
             <h3>AI became more visible.</h3>
             <p>
-              Both the broad text pattern and the stricter title/track pattern rise across the
-              five-year view, suggesting AI is more visible in the public conference program.
+              Across the five-year view, AI becomes easier to see in the public program.
             </p>
           </article>
           <article class="data-story-card" data-drill-year="2026" data-drill-context="Selection/assessment/methods">
@@ -148,7 +146,7 @@
             <h3>The assessment story is still there.</h3>
             <p>
               Sessions still address cheating, faking, validation, measurement, and candidate
-              experience, which fits the more rule-based I-side tradition.
+              experience. That is the more rule-based I-side story.
             </p>
           </article>
           <article class="data-story-card" data-drill-year="2026" data-drill-context="Org/development/training">
@@ -156,152 +154,96 @@
             <h3>The org-side story is growing.</h3>
             <p>
               Training, coaching, leadership, culture, accessibility, and work design show AI moving
-              into more people-centered applications.
+              into more human-context work.
             </p>
           </article>
         </div>
       </section>
 
-      <section id="shift-step" class="section-band signal-river-band story-step guided-step" data-guide-step="signal" aria-labelledby="signal-river-title">
-        <div class="guide-step-label">Topic mix <span>3 of 5</span></div>
+      <section id="shift-step" class="section-band signal-river-band story-step guided-step" data-guide-step="signal" aria-labelledby="shift-map-title">
+        <div class="guide-step-label">Shift map <span>3 of 5</span></div>
         <div class="section-heading">
-          <p class="eyebrow">Topic mix</p>
-          <h2 id="signal-river-title">The mix changes over time.</h2>
+          <p class="eyebrow">One clear view</p>
+          <h2 id="shift-map-title">The story is a movement from scoring work toward people-context work.</h2>
           <p>
-            This view tracks AI-related topic areas across the five-year dataset. Hover or click a
-            band to focus on that part of the conference program.
+            This is the main point in one picture. Left is more structured selection and assessment.
+            Right is more org-side work: learning, coaching, leadership, culture, accessibility, and
+            work design. Scrub the year to watch the topic mix move.
           </p>
         </div>
-        <p id="river-mode-note" class="microcopy">
-          Five-band mode shows where AI appears in the program. Click a band to focus the view.
-        </p>
-        <p class="interaction-cue">Click a band, year marker, or lane dot. The panels below will update without jumping.</p>
-        <div class="view-toggle" aria-label="Choose signal view">
-          <button class="river-mode active" type="button" data-mode="contexts">Five context bands</button>
-          <button class="river-mode" type="button" data-mode="sides">I-side vs O-side</button>
-        </div>
-        <div
-          id="signal-river-chart"
-          class="chart signal-river-chart"
-          role="img"
-          aria-label="Stacked stream of AI-related contexts by year"
-        ></div>
-        <div
-          id="river-session-drilldown"
-          class="session-drilldown"
-          aria-live="polite"
-          aria-label="Sessions behind selected signal river point"
-        >
-          <div>
-            <span class="stat-label">Sessions behind this view</span>
-            <strong>Click a band, year marker, or lane dot to see the matching sessions.</strong>
+        <div id="shift-map" class="shift-map" aria-label="AI shift map">
+          <div class="shift-map-topline">
+            <div>
+              <span class="stat-label">Use-case center of gravity</span>
+              <strong>Scrub the year instead of reading another chart.</strong>
+              <p>
+                Bubble size is topic volume. The marker shows whether the year leans more toward
+                selection/assessment or org-side people/work contexts.
+              </p>
+            </div>
+            <div class="shift-map-controls">
+              <label for="shift-year-range">Year</label>
+              <input id="shift-year-range" type="range" min="2022" max="2026" step="1" value="2026" />
+              <div id="shift-year-pills" class="shift-year-pills" aria-label="Choose shift map year"></div>
+            </div>
+          </div>
+          <div class="shift-map-body">
+            <div
+              id="shift-map-canvas"
+              class="shift-map-canvas"
+              role="img"
+              aria-label="AI topics mapped from structured assessment to people and work context"
+            ></div>
+            <aside id="shift-map-panel" class="shift-map-panel" aria-live="polite">
+              <span class="stat-label">Start here</span>
+              <strong>Move the year slider to read the shift.</strong>
+              <p>
+                Click a bubble when you want examples, but the main story should be readable from
+                the motion across years.
+              </p>
+            </aside>
           </div>
         </div>
-        <div id="river-insights" class="river-insights" aria-label="Signal river interpretation"></div>
       </section>
 
       <section id="meaning-step" class="section-band story-step guided-step" data-guide-step="meaning" aria-labelledby="side-title">
         <div class="guide-step-label">Meaning <span>4 of 5</span></div>
         <div class="section-heading">
-          <p class="eyebrow">I-side and O-side</p>
-          <h2 id="side-title">Why the context shift matters.</h2>
+          <p class="eyebrow">Plain-English read</p>
+          <h2 id="side-title">Why I think the shift matters.</h2>
           <p>
-            In I-O psychology, the I-side often centers individual measurement and selection. The
-            O-side often centers organizations, teams, culture, learning, and work experience. AI
-            can support both, but the design questions and risks change.
+            I think the read is simple: this does not prove the whole field changed, but it does
+            show AI moving from "Can we score or predict this?" into "How do people actually use
+            this at work?"
           </p>
           <p class="microcopy">
-            Plainly: I-side is selection and assessment; O-side is teams, leadership, learning,
-            culture, and work design.
+            Plainly: I-side is selection and assessment. O-side is teams, leadership, learning,
+            culture, employee experience, and work design.
           </p>
         </div>
-        <div class="compare-grid">
-          <article class="side-drill-card" data-side="I-side selection/assessment">
-            <span class="compare-label">More rule-based</span>
-            <h3>I-side selection and assessment</h3>
-            <p>
-              Common AI questions include how to score, predict, validate, audit, and protect
-              assessments. These use cases usually need clear evidence, consistency, fairness checks,
-              and defensible decision rules.
-            </p>
-          </article>
-          <article class="side-drill-card" data-side="O-side org/development">
-            <span class="compare-label">More judgment-heavy</span>
-            <h3>O-side training and organization development</h3>
-            <p>
-              Common AI questions include how to coach, teach, personalize learning, improve
-              leadership, support teams, and redesign work. These use cases depend more on context,
-              sensemaking, trust, and human judgment.
-            </p>
-          </article>
-        </div>
-        <div class="side-thesis">
-          <p>
-            The clearest story is a shift from <strong>AI mainly as measurement technology</strong>
-            toward <strong>AI as support for learning, leadership, and organizational change</strong>.
-            The assessment conversation is still there, but it is no longer the whole story.
-          </p>
-        </div>
-        <div
-          id="use-case-compass"
-          class="chart compass-chart"
-          role="img"
-          aria-label="AI use-case compass from rule-based to judgment-rich and individual to organizational"
-        ></div>
-        <p class="interaction-cue">Click a bubble or comparison card to look more closely at that slice.</p>
-        <div id="meaning-data-lens" class="data-lens" aria-live="polite">
-          <div>
-            <span class="stat-label">Closer look</span>
-            <strong>Click a compass bubble or I-side/O-side card to inspect a slice.</strong>
-          </div>
-        </div>
-        <div
-          id="meaning-session-drilldown"
-          class="session-drilldown"
-          aria-live="polite"
-          aria-label="Sessions behind selected meaning section slice"
-        >
-          <div>
-            <span class="stat-label">Sessions behind this view</span>
-            <strong>Click a compass bubble or side card to see the matching sessions.</strong>
-          </div>
-        </div>
-        <div class="side-matrix" aria-label="I-side and O-side AI comparison">
+        <div class="meaning-summary-grid" aria-label="What the shift means">
           <article>
-            <span class="matrix-label">Risk questions</span>
-            <h3>Fairness and validity vs. trust and autonomy</h3>
+            <span class="compare-label">What stays</span>
+            <h3>Selection and assessment still matter.</h3>
             <p>
-              I-side use cases often foreground adverse impact, construct validity, transparency,
-              cheating, and legal defensibility. O-side use cases add concerns about surveillance,
-              psychological safety, deskilling, credibility, and whether AI changes the employee
-              experience.
+              AI still shows up in the expected I-side places: scoring, prediction, validation,
+              fairness, cheating, and assessment design.
             </p>
           </article>
           <article>
-            <span class="matrix-label">Evaluation standard</span>
-            <h3>Prediction quality vs. contextual usefulness</h3>
+            <span class="compare-label">What changes</span>
+            <h3>The newer story is more human-contextual.</h3>
             <p>
-              Selection AI tends to be judged by whether it predicts job-relevant outcomes fairly
-              and consistently. O-side AI is more likely to be judged by whether it helps people
-              learn, reflect, decide, coordinate, or change behavior in context.
+              Training, coaching, leadership, culture, accessibility, and work design depend more on
+              judgment, trust, timing, and the messiness of real work.
             </p>
           </article>
           <article>
-            <span class="matrix-label">Product role</span>
-            <h3>Decision automation vs. decision support</h3>
+            <span class="compare-label">Why it matters</span>
+            <h3>The design problem changes.</h3>
             <p>
-              I-side tools may sit close to consequential employment decisions. O-side tools more
-              often look like augmentation: coaching, summarizing, scenario practice, nudging,
-              sensemaking, and personalized development.
-            </p>
-          </article>
-          <article>
-            <span class="matrix-label">Who is affected</span>
-            <h3>Applicants vs. employees, managers, and teams</h3>
-            <p>
-              The target population changes the design problem. Candidate-facing AI raises questions
-              about procedural justice and defensible evaluation. Employee-facing AI raises questions
-              about consent, power, role clarity, and how work systems absorb the tool.
+              Once AI moves into coaching, leadership, and culture, the question is less "Did the
+              model get the score right?" and more "Did this help people make better sense of work?"
             </p>
           </article>
         </div>
