@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260514-final-polish" />
+    <link rel="stylesheet" href="styles.css?v=20260518-playground" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260514-final-polish" defer></script>
+    <script src="app.js?v=20260518-playground" defer></script>
   </head>
   <body>
     <header class="site-nav" aria-label="Site navigation">
@@ -78,89 +78,47 @@
           also showing up in a wider mix of work: training, coaching, leadership, culture, employee
           experience, accessibility, selection, and assessment.
         </p>
-        <div class="source-links" aria-label="Project source links">
-          <a
-            href="https://github.com/tristowww/siop-conference-data-viz/tree/main/data/raw"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View raw data on GitHub
-          </a>
-        </div>
-        <div class="hero-grid" aria-label="Key findings">
-          <div>
-            <span class="stat-label">Sessions mentioning AI</span>
-            <strong id="ai-language-stat">...</strong>
-            <span id="ai-language-detail">Loading comparison</span>
-          </div>
-          <div>
-            <span class="stat-label">Visible AI mentions</span>
-            <strong id="visible-ai-stat">...</strong>
-            <span id="visible-ai-detail">Loading comparison</span>
-          </div>
-          <div>
-            <span class="stat-label">Use-case shift</span>
-            <strong id="context-stat">...</strong>
-            <span>Selection and methods still matter, but the five-year pattern points to a wider set of use cases.</span>
-          </div>
-        </div>
-        <div class="story-path" aria-label="Story path">
-          <span>1. AI shows up more</span>
-          <span>2. The use cases broaden</span>
-          <span>3. Why it matters</span>
-        </div>
-        <div class="story-beats" aria-label="Follow the story">
-          <div>
-            <span class="stat-label">Follow the story</span>
-            <strong>Choose a beat to focus the charts.</strong>
-          </div>
-          <div id="story-beat-controls" class="story-beat-controls"></div>
-        </div>
-        <div class="signal-stage" aria-label="Interactive AI topic view">
-          <p class="interaction-cue">Click any bubble to see the sessions behind that year and topic area.</p>
-          <div
-            id="hero-signal-field"
-            class="hero-signal-field"
-            role="img"
-            aria-label="AI topic view by year and context"
-          ></div>
-          <div id="year-scrubber" class="year-scrubber" aria-label="Focus year"></div>
-          <div class="hero-control-row">
-            <div id="baseline-current" class="baseline-current" aria-label="Compare baseline and current year"></div>
-            <button id="reset-exploration" class="reset-story-button" type="button">Back to overview</button>
-          </div>
-          <div class="replay-controls" aria-label="Replay the year sequence">
-            <button id="replay-years" class="replay-button" type="button">Play year replay</button>
-            <div class="replay-track" aria-hidden="true">
-              <span id="replay-progress"></span>
-            </div>
-          </div>
-          <p id="story-caption" class="story-caption">
-            Choose a year to see how the AI conversation changes.
-          </p>
-          <div id="focus-insights" class="focus-insights" aria-label="Focused year insights"></div>
-          <div
-            id="hero-session-drilldown"
-            class="session-drilldown"
-            aria-live="polite"
-            aria-label="Sessions behind selected context"
-          >
+        <div id="overview-playground" class="overview-playground" aria-label="AI Topic Playground">
+          <div class="playground-header">
             <div>
-              <span class="stat-label">Sessions behind this view</span>
-              <strong>Click a bubble to see the matching sessions.</strong>
+              <span class="stat-label">AI Topic Playground</span>
+              <strong>Pick a year, then click a topic.</strong>
+              <p>
+                Bubble size shows how often each topic appears in AI-related sessions. The point is
+                not just more AI; it is where AI is showing up.
+              </p>
+            </div>
+            <div class="playground-controls" aria-label="Overview playground controls">
+              <div class="playground-control-group">
+                <span>Year</span>
+                <div id="overview-year-controls" class="overview-year-controls" aria-label="Choose year"></div>
+              </div>
+              <div class="playground-control-group">
+                <span>View</span>
+                <div id="overview-mode-controls" class="overview-mode-controls" aria-label="Choose topic view">
+                  <button class="overview-mode active" type="button" data-mode="all">All AI topics</button>
+                  <button class="overview-mode" type="button" data-mode="iside">I-side</button>
+                  <button class="overview-mode" type="button" data-mode="oside">O-side</button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="exploration-lens" aria-live="polite">
-          <div>
-            <span class="stat-label">Current view</span>
-            <strong id="active-lens-title">2026 conference pattern</strong>
-            <span id="active-lens-detail">Use the year buttons and chart views to compare how the topic mix changes.</span>
+          <div class="playground-body">
+            <div
+              id="overview-topic-map"
+              class="overview-topic-map"
+              role="img"
+              aria-label="Interactive AI topic map by year and I-side/O-side context"
+            ></div>
+            <aside id="overview-detail-panel" class="overview-detail-panel" aria-live="polite">
+              <span class="stat-label">Start here</span>
+              <strong>Choose a year or topic to read the pattern.</strong>
+              <p>
+                This view keeps the overview simple: one canvas, one set of controls, and examples
+                only when you ask for them.
+              </p>
+            </aside>
           </div>
-        </div>
-        <div class="story-takeaway" aria-live="polite">
-          <span class="stat-label">Story takeaway</span>
-          <strong id="dynamic-takeaway">Choose a year or topic area to read the pattern.</strong>
         </div>
       </section>
 

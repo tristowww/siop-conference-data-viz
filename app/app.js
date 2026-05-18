@@ -94,6 +94,8 @@ let activeContext = "All";
 let activeSide = "All";
 let activeNetworkYear = 2026;
 let activeFocusYear = 2026;
+let activeOverviewMode = "all";
+let activeOverviewContext = null;
 let riverMode = "contexts";
 let selectedLink = null;
 let selectedTime = null;
@@ -256,6 +258,12 @@ function sessionsForLens(data, { year = "All", context = "All", side = "All" } =
   });
 }
 
+function truncateText(value, maxLength = 150) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trim()}...`;
+}
+
 function renderSessionDrilldown(targetSelector, lens) {
   hideTooltip();
   const target = document.querySelector(targetSelector);
@@ -382,6 +390,339 @@ function trajectoryForLens(data, { context = "All", side = "All" } = {}) {
     const row = data.ai_summary.find((item) => item.year === year);
     return { year, sessions: row ? row.ai_related_sessions : 0 };
   });
+}
+
+function overviewModeSide(mode = activeOverviewMode) {
+  if (mode === "iside") return "I-side selection/assessment";
+  if (mode === "oside") return "O-side org/development";
+  return "All";
+}
+
+function overviewModeTitle(mode = activeOverviewMode) {
+  if (mode === "iside") return "I-side selection and assessment";
+  if (mode === "oside") return "O-side people and work contexts";
+  return "All AI topics";
+}
+
+function overviewContextAllowed(context, mode = activeOverviewMode) {
+  const side = overviewModeSide(mode);
+  return side === "All" || sideForContext(context) === side;
+}
+
+function overviewLens() {
+  const side = overviewModeSide();
+  if (activeOverviewContext) {
+    return { year: activeFocusYear, context: activeOverviewContext, side: "All" };
+  }
+  if (side !== "All") {
+    return { year: activeFocusYear, context: "All", side };
+  }
+  return { year: activeFocusYear, context: "All", side: "All" };
+}
+
+function renderOverviewYearControls(data) {
+  const container = document.querySelector("#overview-year-controls");
+  if (!container || container.childElementCount) return;
+  getYears(data).forEach((year) => {
+    const button = document.createElement("button");
+    button.className = "overview-year";
+    button.type = "button";
+    button.dataset.year = String(year);
+    button.textContent = year;
+    button.addEventListener("click", () => {
+      activeOverviewContext = null;
+      focusYear(year);
+    });
+    container.appendChild(button);
+  });
+}
+
+function syncOverviewControls() {
+  document.querySelectorAll(".overview-year").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
+  });
+  document.querySelectorAll(".overview-mode").forEach((button) => {
+    button.classList.toggle("active", button.dataset.mode === activeOverviewMode);
+  });
+}
+
+function renderOverviewDetail(data) {
+  const panel = document.querySelector("#overview-detail-panel");
+  if (!panel || !data) return;
+
+  const years = getYears(data);
+  const first = data.ai_summary.find((item) => item.year === years[0]);
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const contextRows = getContextRowsForYear(data, activeFocusYear);
+  const selection = contextRows.find((item) => item.context === "Selection/assessment/methods");
+  const org = contextRows.find((item) => item.context === "Org/development/training");
+  const sideRows = getSideRowsForYear(data, activeFocusYear);
+  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
+  const oSide = sideRows.find((item) => item.side === "O-side org/development");
+  const selectedContext = activeOverviewContext
+    ? contextRows.find((item) => item.context === activeOverviewContext)
+    : null;
+  const side = overviewModeSide();
+  const lens = overviewLens();
+  const sessions = sessionsForLens(data, lens);
+  const showExamples = Boolean(activeOverviewContext || side !== "All");
+  const examples = showExamples ? sessions.slice(0, 3) : [];
+
+  const title = selectedContext
+    ? `${activeFocusYear}: ${shortContext(selectedContext.context)}`
+    : side !== "All"
+      ? `${activeFocusYear}: ${overviewModeTitle()}`
+      : `${activeFocusYear}: AI is easier to see`;
+  const copy = selectedContext
+    ? `${contextMicrocopy(selectedContext.context)} This topic has ${selectedContext.sessions} AI-related topic signals in ${activeFocusYear}.`
+    : side !== "All"
+      ? `${overviewModeTitle()} includes ${side === "I-side selection/assessment" ? iSide.sessions : oSide.sessions} AI-related topic signals in ${activeFocusYear}. Use this view to compare where AI is closer to structured assessment versus people and work systems.`
+      : `AI is showing up more often: ${percent(first.ai_share)} of parsed sessions in ${first.year} and ${percent(current.ai_share)} in ${activeFocusYear}. The more interesting shift is where it shows up: selection remains important, while org-side topics become more visible.`;
+  const balance = oSide.sessions - iSide.sessions;
+  const balanceCopy =
+    balance >= 0
+      ? `O-side topics are ${balance} signals above selection in ${activeFocusYear}.`
+      : `Selection is ${Math.abs(balance)} signals above O-side topics in ${activeFocusYear}.`;
+
+  const exampleHtml = examples
+    .map(
+      (session) => `
+        <article>
+          <span>${escapeHtml([session.year, shortContext(session.context), session.session_format || "Session"].filter(Boolean).join(" | "))}</span>
+          <strong>${escapeHtml(session.title)}</strong>
+          ${
+            session.speakers
+              ? `<p>${escapeHtml(`Authors: ${truncateText(session.speakers, 96)}`)}</p>`
+              : ""
+          }
+          <p>${escapeHtml(truncateText(session.description || sessionDescriptor(session), 132))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  panel.innerHTML = `
+    <div class="overview-detail-heading">
+      <div>
+        <span class="stat-label">${escapeHtml(activeOverviewContext ? "Clicked topic" : overviewModeTitle())}</span>
+        <strong>${escapeHtml(title)}</strong>
+      </div>
+      ${
+        activeOverviewContext || activeOverviewMode !== "all"
+          ? '<button class="overview-reset" type="button">Reset</button>'
+          : ""
+      }
+    </div>
+    <p>${escapeHtml(copy)}</p>
+    <div class="playground-stat-strip" aria-label="Focused year stats">
+      <article>
+        <span>AI sessions</span>
+        <strong>${current.ai_related_sessions}</strong>
+        <p>${percent(current.ai_share)} of parsed sessions</p>
+      </article>
+      <article>
+        <span>Selection</span>
+        <strong>${selection.sessions}</strong>
+        <p>I-side assessment signals</p>
+      </article>
+      <article>
+        <span>Org-side</span>
+        <strong>${oSide.sessions}</strong>
+        <p>${escapeHtml(balanceCopy)}</p>
+      </article>
+    </div>
+    <div class="playground-examples">
+      <span class="stat-label">${showExamples ? "Session examples" : "How to use it"}</span>
+      ${
+        showExamples
+          ? exampleHtml || '<div class="playground-empty">No matching session examples found for this slice.</div>'
+          : '<div class="playground-empty">Click a topic bubble, or switch to I-side/O-side, to open matching session examples here.</div>'
+      }
+    </div>
+  `;
+
+  const resetButton = panel.querySelector(".overview-reset");
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      activeOverviewMode = "all";
+      activeOverviewContext = null;
+      renderOverviewPlayground(data);
+    });
+  }
+  markPanelUpdated(panel);
+}
+
+function drawOverviewTopicMap(data) {
+  const target = document.querySelector("#overview-topic-map");
+  if (!target || !data) return;
+
+  const width = 980;
+  const height = 540;
+  const svg = makeSvg("#overview-topic-map", width, height).attr("class", "overview-topic-svg");
+  const center = { x: width / 2, y: height / 2 + 10 };
+  const positions = {
+    "Explicit tech/AI": { x: 492, y: 126 },
+    "Selection/assessment/methods": { x: 265, y: 275 },
+    "Org/development/training": { x: 676, y: 282 },
+    "DEI/accessibility": { x: 790, y: 145 },
+    "Other/special": { x: 496, y: 422 },
+  };
+  const rows = getContextRowsForYear(data, activeFocusYear).map((row) => ({
+    ...row,
+    x: positions[row.context].x,
+    y: positions[row.context].y,
+    color: COLORS.contexts[row.context],
+    side: sideForContext(row.context),
+    allowed: overviewContextAllowed(row.context),
+    selected: activeOverviewContext === row.context,
+  }));
+  const radius = d3
+    .scaleSqrt()
+    .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
+    .range([18, 74]);
+
+  svg
+    .append("defs")
+    .append("filter")
+    .attr("id", "overview-soft-shadow")
+    .append("feDropShadow")
+    .attr("dx", 0)
+    .attr("dy", 10)
+    .attr("stdDeviation", 11)
+    .attr("flood-color", "#1b2250")
+    .attr("flood-opacity", 0.14);
+
+  const grid = svg.append("g").attr("class", "overview-grid");
+  [118, 194, 270].forEach((r) => {
+    grid
+      .append("circle")
+      .attr("cx", center.x)
+      .attr("cy", center.y)
+      .attr("r", r)
+      .attr("class", "overview-orbit");
+  });
+
+  svg
+    .append("text")
+    .attr("class", "overview-side-label")
+    .attr("x", 142)
+    .attr("y", 84)
+    .text("I-side: selection and assessment");
+  svg
+    .append("text")
+    .attr("class", "overview-side-label")
+    .attr("x", width - 150)
+    .attr("y", 84)
+    .attr("text-anchor", "end")
+    .text("O-side: people and work context");
+
+  svg
+    .append("g")
+    .selectAll("path")
+    .data(rows)
+    .join("path")
+    .attr("class", (d) => `overview-link${d.allowed ? "" : " is-muted"}`)
+    .attr("d", (d) => {
+      const midX = (center.x + d.x) / 2;
+      const midY = (center.y + d.y) / 2 - 20;
+      return `M${center.x},${center.y} Q${midX},${midY} ${d.x},${d.y}`;
+    })
+    .attr("stroke", (d) => d.color);
+
+  const centerGroup = svg.append("g").attr("class", "overview-center").attr("transform", `translate(${center.x},${center.y})`);
+  centerGroup.append("circle").attr("r", 64);
+  centerGroup.append("text").attr("y", -5).attr("text-anchor", "middle").text("AI");
+  centerGroup.append("text").attr("y", 20).attr("text-anchor", "middle").text(activeFocusYear);
+
+  const nodes = svg
+    .append("g")
+    .selectAll("g")
+    .data(rows)
+    .join("g")
+    .attr(
+      "class",
+      (d) =>
+        `overview-node${d.allowed ? "" : " is-muted"}${d.selected ? " is-selected" : ""}`,
+    )
+    .attr("transform", (d) => `translate(${d.x},${d.y})`)
+    .attr("tabindex", "0")
+    .attr("role", "button")
+    .attr("aria-label", (d) => `${activeFocusYear} ${shortContext(d.context)} ${d.sessions} topic signals`)
+    .on("mouseenter", (event, d) => {
+      if (!d.allowed) return;
+      showTooltip(
+        event,
+        `${activeFocusYear}: ${shortContext(d.context)}`,
+        `${d.sessions} topic signals. Click to see examples.`,
+      );
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (event, d) => {
+      if (!d.allowed) return;
+      activeOverviewContext = d.context;
+      activeContext = d.context;
+      activeSide = "All";
+      selectedLink = null;
+      selectedTime = null;
+      renderOverviewPlayground(data);
+      renderRiverInsights(data);
+      renderDynamicTakeaway(data);
+    })
+    .on("keydown", (event, d) => {
+      if ((event.key === "Enter" || event.key === " ") && d.allowed) {
+        event.preventDefault();
+        activeOverviewContext = d.context;
+        activeContext = d.context;
+        activeSide = "All";
+        renderOverviewPlayground(data);
+      }
+    });
+
+  nodes
+    .append("circle")
+    .attr("r", (d) => radius(d.sessions))
+    .attr("fill", (d) => d.color)
+    .attr("filter", "url(#overview-soft-shadow)");
+  nodes
+    .append("circle")
+    .attr("class", "overview-node-ring")
+    .attr("r", (d) => radius(d.sessions) + 6)
+    .attr("fill", "none");
+  nodes
+    .append("text")
+    .attr("class", "overview-count")
+    .attr("text-anchor", "middle")
+    .attr("y", 5)
+    .text((d) => d.sessions);
+  nodes
+    .append("text")
+    .attr("class", "overview-node-label")
+    .attr("text-anchor", "middle")
+    .attr("y", (d) => radius(d.sessions) + 26)
+    .text((d) => shortContext(d.context));
+}
+
+function renderOverviewPlayground(data) {
+  if (!document.querySelector("#overview-playground") || !data) return;
+  renderOverviewYearControls(data);
+  syncOverviewControls();
+  drawOverviewTopicMap(data);
+  renderOverviewDetail(data);
+}
+
+function wireOverviewPlayground(data) {
+  renderOverviewYearControls(data);
+  document.querySelectorAll(".overview-mode").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeOverviewMode = button.dataset.mode || "all";
+      if (activeOverviewMode === "all" || (activeOverviewContext && !overviewContextAllowed(activeOverviewContext))) {
+        activeOverviewContext = null;
+      }
+      renderOverviewPlayground(data);
+    });
+  });
+  renderOverviewPlayground(data);
 }
 
 function renderDataLens({ year = activeFocusYear, context = "All", side = "All" } = {}) {
@@ -537,7 +878,10 @@ function resetExploration() {
   if (searchInput) searchInput.value = "";
   syncRiverModeControls();
   syncYearControls();
+  activeOverviewMode = "all";
+  activeOverviewContext = null;
   drawHeroSignalField(storyData);
+  renderOverviewPlayground(storyData);
   drawSignalRiver(storyData);
   drawUseCaseCompass(storyData);
   renderStoryCaption(storyData);
@@ -565,6 +909,7 @@ function focusYear(year, { updateExplorer = false } = {}) {
   selectedTime = null;
   syncYearControls();
   drawHeroSignalField(storyData);
+  renderOverviewPlayground(storyData);
   drawSignalRiver(storyData);
   drawUseCaseCompass(storyData);
   renderFocusInsights(storyData);
@@ -604,7 +949,7 @@ function focusSide(side) {
 }
 
 function syncYearControls() {
-  document.querySelectorAll(".focus-year, .network-year, .compare-year").forEach((button) => {
+  document.querySelectorAll(".focus-year, .network-year, .compare-year, .overview-year").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
   });
   const years = getYears(storyData || { ai_summary: [] });
@@ -793,6 +1138,7 @@ function renderStoryBeatControls() {
 }
 
 function setHeroStats(data) {
+  if (!document.querySelector("#ai-language-stat")) return;
   const years = getYears(data);
   activeFocusYear = years[years.length - 1];
   activeNetworkYear = activeFocusYear;
@@ -821,6 +1167,7 @@ function statShift(from, to) {
 }
 
 function drawHeroSignalField(data) {
+  if (!document.querySelector("#hero-signal-field")) return;
   const width = 1080;
   const height = 360;
   const margin = { top: 42, right: 42, bottom: 48, left: 28 };
@@ -1812,6 +2159,7 @@ function renderNetworkInsights(data, nodes, links) {
 }
 
 function renderFocusInsights(data) {
+  if (!document.querySelector("#focus-insights")) return;
   const yearSummary = data.ai_summary.find((item) => item.year === activeFocusYear);
   const contextRows = data.context_summary.filter((item) => item.conference_year === activeFocusYear);
   const topContext = [...contextRows].sort((a, b) => b.sessions - a.sessions)[0];
@@ -1862,6 +2210,8 @@ function getContextRowsForYear(data, year) {
 }
 
 function renderStoryCaption(data) {
+  const target = document.querySelector("#story-caption");
+  if (!target) return;
   const years = getYears(data);
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
   const previousYear = years[years.indexOf(activeFocusYear) - 1];
@@ -1873,7 +2223,7 @@ function renderStoryCaption(data) {
     delta === null
       ? "This is the baseline year for the story."
       : `${delta >= 0 ? "+" : ""}${delta} AI-related sessions versus ${previousYear}.`;
-  document.querySelector("#story-caption").textContent =
+  target.textContent =
     `${activeFocusYear}: ${current.ai_related_sessions} AI-related sessions. ` +
     `${deltaText} ${shortContext(topContext.context)} is the largest topic area.`;
 }
@@ -2088,6 +2438,7 @@ function renderFormatSummary(data) {
 
 function wireYearScrubber(data) {
   const scrubber = document.querySelector("#year-scrubber");
+  if (!scrubber) return;
   scrubber.innerHTML = "";
   [...getYears(data)].reverse().forEach((year) => {
     const button = document.createElement("button");
@@ -2158,6 +2509,7 @@ function startReplay(data) {
   const years = getYears(data);
   replayIndex = 0;
   const button = document.querySelector("#replay-years");
+  if (!button) return;
   button.classList.add("active");
   button.textContent = "Pause replay";
 
@@ -2176,6 +2528,7 @@ function startReplay(data) {
 
 function wireReplayControls(data) {
   const button = document.querySelector("#replay-years");
+  if (!button) return;
   button.addEventListener("click", () => {
     if (replayTimer) {
       stopReplay();
@@ -2252,6 +2605,9 @@ function filteredSessions(data) {
 
 function renderActiveLens(data = storyData) {
   if (!data) return;
+  const titleTarget = document.querySelector("#active-lens-title");
+  const detailTarget = document.querySelector("#active-lens-detail");
+  if (!titleTarget || !detailTarget) return;
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
   const title =
     activeContext !== "All"
@@ -2265,8 +2621,8 @@ function renderActiveLens(data = storyData) {
       : activeSide !== "All"
         ? "This view simplifies the story into the I-side/O-side distinction."
         : `${current.ai_related_sessions} AI-related sessions, ${percent(current.ai_share)} of sessions in the dataset. Use the controls to compare years and topic areas.`;
-  document.querySelector("#active-lens-title").textContent = title;
-  document.querySelector("#active-lens-detail").textContent = detail;
+  titleTarget.textContent = title;
+  detailTarget.textContent = detail;
 }
 
 function renderSessionExplorer(data) {
@@ -2428,27 +2784,25 @@ async function init() {
   try {
     const response = await fetch("data/siop_ai_story.json");
     storyData = await response.json();
-    setHeroStats(storyData);
-    drawHeroSignalField(storyData);
+    const years = getYears(storyData);
+    activeFocusYear = years.at(-1);
+    activeNetworkYear = activeFocusYear;
+    wireOverviewPlayground(storyData);
     drawSignalRiver(storyData);
     drawUseCaseCompass(storyData);
-    renderFocusInsights(storyData);
-    renderStoryCaption(storyData);
     renderRiverInsights(storyData);
     renderDynamicTakeaway(storyData);
     wireMetricButtons();
     renderStoryBeatControls();
-    wireYearScrubber(storyData);
     wireBaselineControls(storyData);
     wireRiverModeToggle(storyData);
-    wireReplayControls(storyData);
     wireNetworkButtons();
-    wireSessionExplorer(storyData);
     wireDataStoryCards(storyData);
     wireSideDrillCards();
     wireTooltipCleanup();
     wireGuideNavigation();
-    document.querySelector("#reset-exploration").addEventListener("click", resetExploration);
+    const resetButton = document.querySelector("#reset-exploration");
+    if (resetButton) resetButton.addEventListener("click", resetExploration);
   } catch (error) {
     document.body.insertAdjacentHTML(
       "afterbegin",
