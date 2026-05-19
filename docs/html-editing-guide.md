@@ -21,7 +21,7 @@ These `data-edit-id` values are stable handles for comments and review notes:
 | --- | --- |
 | Navigation | `site-nav`, `nav-brand` |
 | Home | `section-home`, `home-title`, `home-intro-copy`, `home-story-path` |
-| Explore | `section-explore`, `explore-title`, `explore-intro-copy`, `explore-map-intro`, `explore-detail-panel` |
+| Explore | `section-explore`, `explore-title`, `explore-intro-copy`, `explore-map-intro`, `explore-quick-read`, `explore-detail-panel` |
 | Meaning | `section-meaning`, `meaning-title`, `meaning-main-copy`, `meaning-side-definition`, `meaning-summary-cards` |
 | So what | `section-takeaway`, `takeaway-title`, `takeaway-main-copy`, `takeaway-summary-cards` |
 
@@ -43,6 +43,9 @@ shift-map
 shift-year-range
 shift-year-pills
 shift-play
+shift-mode-controls
+shift-topic-chips
+shift-quick-read
 shift-map-canvas
 shift-map-panel
 guide-prev

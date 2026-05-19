@@ -96,6 +96,7 @@ let activeFocusYear = 2026;
 let activeOverviewMode = "all";
 let activeOverviewContext = null;
 let activeShiftContext = null;
+let activeShiftMode = "all";
 let riverMode = "contexts";
 let selectedLink = null;
 let selectedTime = null;
@@ -738,6 +739,23 @@ function shiftAxisPosition(context) {
   return positions[context] ?? 0.5;
 }
 
+function shiftModeSide(mode = activeShiftMode) {
+  if (mode === "iside") return "I-side selection/assessment";
+  if (mode === "oside") return "O-side org/development";
+  return "All";
+}
+
+function shiftModeTitle(mode = activeShiftMode) {
+  if (mode === "iside") return "I-side selection and assessment";
+  if (mode === "oside") return "O-side people and work contexts";
+  return "All AI topics";
+}
+
+function shiftContextAllowed(context, mode = activeShiftMode) {
+  const side = shiftModeSide(mode);
+  return side === "All" || sideForContext(context) === side;
+}
+
 function setShiftMapYear(data, year) {
   activeFocusYear = Number(year);
   activeNetworkYear = activeFocusYear;
@@ -775,11 +793,77 @@ function renderShiftYearControls(data) {
   }
 }
 
+function syncShiftModeControls() {
+  document.querySelectorAll(".shift-mode").forEach((button) => {
+    button.classList.toggle("active", button.dataset.shiftMode === activeShiftMode);
+  });
+}
+
 function syncShiftControls() {
   const range = document.querySelector("#shift-year-range");
   if (range) range.value = String(activeFocusYear);
   document.querySelectorAll(".shift-year").forEach((button) => {
     button.classList.toggle("active", Number(button.dataset.year) === activeFocusYear);
+  });
+}
+
+function renderShiftQuickRead(data) {
+  const target = document.querySelector("#shift-quick-read");
+  if (!target || !data) return;
+
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const sideRows = getSideRowsForYear(data, activeFocusYear);
+  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
+  const oSide = sideRows.find((item) => item.side === "O-side org/development");
+  const balance = oSide.sessions - iSide.sessions;
+  const balanceText =
+    balance >= 0
+      ? `O-side is ${balance} topic signals above selection.`
+      : `Selection is ${Math.abs(balance)} topic signals above O-side.`;
+  const actionText = activeShiftContext
+    ? `${shortContext(activeShiftContext)} is open.`
+    : activeShiftMode === "all"
+      ? "Click a bubble or chip to open examples."
+      : `${shiftModeTitle()} is highlighted.`;
+
+  target.innerHTML = `
+    <span>${activeFocusYear}</span>
+    <strong>${current.ai_related_sessions} AI-related sessions, ${percent(current.ai_share)} of the parsed program.</strong>
+    <p>${escapeHtml(`${balanceText} ${actionText}`)}</p>
+  `;
+}
+
+function renderShiftTopicChips(data) {
+  const container = document.querySelector("#shift-topic-chips");
+  if (!container || !data) return;
+
+  const rows = getContextRowsForYear(data, activeFocusYear);
+  container.innerHTML = "";
+  rows.forEach((row) => {
+    const allowed = shiftContextAllowed(row.context);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `shift-topic-chip${activeShiftContext === row.context ? " active" : ""}${
+      allowed ? "" : " is-muted"
+    }`;
+    button.dataset.context = row.context;
+    button.title = contextMicrocopy(row.context);
+    button.innerHTML = `
+      <span class="shift-topic-dot" style="--chip-color: ${COLORS.contexts[row.context]}"></span>
+      <span>${escapeHtml(shortContext(row.context))}</span>
+      <strong>${row.sessions}</strong>
+    `;
+    button.addEventListener("click", () => {
+      stopShiftReplay();
+      if (!allowed) {
+        activeShiftMode = "all";
+      }
+      activeShiftContext = row.context;
+      activeContext = row.context;
+      activeSide = "All";
+      renderShiftMap(data);
+    });
+    container.appendChild(button);
   });
 }
 
@@ -828,19 +912,26 @@ function renderShiftMapPanel(data) {
   const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
   const oSide = sideRows.find((item) => item.side === "O-side org/development");
   const balance = oSide.sessions - iSide.sessions;
+  const side = shiftModeSide();
   const selectedRow = activeShiftContext ? contextRowFor(data, activeFocusYear, activeShiftContext) : null;
   const sessions = activeShiftContext
     ? sessionsForLens(data, { year: activeFocusYear, context: activeShiftContext })
-    : [];
-  const examples = sessions.slice(0, 3);
+    : side !== "All"
+      ? sessionsForLens(data, { year: activeFocusYear, side })
+      : [];
+  const examples = sessions.slice(0, 4);
   const title = selectedRow
     ? `${activeFocusYear}: ${shortContext(activeShiftContext)}`
+    : side !== "All"
+      ? `${activeFocusYear}: ${shiftModeTitle()}`
     : `${activeFocusYear}: ${balance >= 0 ? "O-side leads" : "Selection leads"}`;
   const copy = selectedRow
     ? `${contextMicrocopy(activeShiftContext)} This slice has ${selectedRow.sessions} topic signals in ${activeFocusYear}.`
+    : side !== "All"
+      ? `${shiftModeTitle()} has ${side === "I-side selection/assessment" ? iSide.sessions : oSide.sessions} AI-related topic signals in ${activeFocusYear}. Click a topic chip or bubble to open a narrower slice.`
     : balance >= 0
-      ? `AI is ${percent(current.ai_share)} of parsed sessions. Org-side people/work topics sit ${balance} signals above selection and assessment this year.`
-      : `AI is ${percent(current.ai_share)} of parsed sessions. Selection and assessment sit ${Math.abs(balance)} signals above org-side people/work topics this year.`;
+      ? `AI is ${percent(current.ai_share)} of parsed sessions. Org-side people/work topics sit ${balance} signals above selection and assessment this year. Start by clicking O-side, I-side, or a topic chip.`
+      : `AI is ${percent(current.ai_share)} of parsed sessions. Selection and assessment sit ${Math.abs(balance)} signals above org-side people/work topics this year. Start by clicking O-side, I-side, or a topic chip.`;
   const exampleHtml = examples
     .map(
       (session) => `
@@ -861,11 +952,11 @@ function renderShiftMapPanel(data) {
   panel.innerHTML = `
     <div class="shift-panel-heading">
       <div>
-        <span class="stat-label">${activeShiftContext ? "Selected topic" : "Year read"}</span>
+        <span class="stat-label">${activeShiftContext ? "Selected topic" : side !== "All" ? "Selected lens" : "Year read"}</span>
         <strong>${escapeHtml(title)}</strong>
       </div>
       ${
-        activeShiftContext
+        activeShiftContext || activeShiftMode !== "all"
           ? '<button class="shift-reset" type="button">Clear</button>'
           : ""
       }
@@ -886,11 +977,11 @@ function renderShiftMapPanel(data) {
       </article>
     </div>
     <div class="shift-panel-examples">
-      <span class="stat-label">${activeShiftContext ? "Examples" : "How to read it"}</span>
+      <span class="stat-label">${activeShiftContext || side !== "All" ? "Session examples" : "Try this"}</span>
       ${
-        activeShiftContext
+        activeShiftContext || side !== "All"
           ? exampleHtml || '<div class="shift-empty">No matching sessions found for this slice.</div>'
-          : '<div class="shift-empty">Use the slider first. Click a bubble only when you want the receipts behind a topic.</div>'
+          : '<div class="shift-empty"><strong>Make it move:</strong> choose I-side or O-side, scrub the year, or click a topic chip to see the sessions underneath the pattern.</div>'
       }
     </div>
   `;
@@ -899,6 +990,7 @@ function renderShiftMapPanel(data) {
   if (reset) {
     reset.addEventListener("click", () => {
       activeShiftContext = null;
+      activeShiftMode = "all";
       renderShiftMap(data);
     });
   }
@@ -910,19 +1002,19 @@ function drawShiftMap(data) {
   if (!target || !data) return;
 
   const width = 1040;
-  const height = 560;
-  const margin = { top: 62, right: 82, bottom: 94, left: 92 };
+  const height = 500;
+  const margin = { top: 56, right: 82, bottom: 82, left: 92 };
   const svg = makeSvg("#shift-map-canvas", width, height).attr("class", "shift-map-svg");
   const years = getYears(data);
   const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
   const y = d3
     .scaleLinear()
     .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
-    .range([height - margin.bottom, margin.top + 54]);
+    .range([height - margin.bottom, margin.top + 48]);
   const radius = d3
     .scaleSqrt()
     .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
-    .range([10, 52]);
+    .range([12, 46]);
   const contextOffsets = {
     "Explicit tech/AI": -12,
     "Selection/assessment/methods": 16,
@@ -936,6 +1028,7 @@ function drawShiftMap(data) {
     y: y(row.sessions) + (contextOffsets[row.context] || 0),
     color: COLORS.contexts[row.context],
     selected: activeShiftContext === row.context,
+    allowed: shiftContextAllowed(row.context),
   }));
   const sideRows = getSideRowsForYear(data, activeFocusYear);
   const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
@@ -1007,7 +1100,7 @@ function drawShiftMap(data) {
     svg
       .append("path")
       .datum(trail)
-      .attr("class", "shift-trail")
+      .attr("class", `shift-trail${shiftContextAllowed(context) ? "" : " is-muted"}`)
       .attr("d", line)
       .attr("stroke", COLORS.contexts[context]);
     svg
@@ -1015,7 +1108,13 @@ function drawShiftMap(data) {
       .selectAll("circle")
       .data(trail)
       .join("circle")
-      .attr("class", (item) => `shift-trail-dot${item.year === activeFocusYear ? " active" : ""}`)
+      .attr(
+        "class",
+        (item) =>
+          `shift-trail-dot${item.year === activeFocusYear ? " active" : ""}${
+            shiftContextAllowed(item.context) ? "" : " is-muted"
+          }`,
+      )
       .attr("cx", (item) => item.x)
       .attr("cy", (item) => item.y)
       .attr("r", (item) => (item.year === activeFocusYear ? 5 : 3))
@@ -1046,17 +1145,20 @@ function drawShiftMap(data) {
     .selectAll("g")
     .data(currentRows)
     .join("g")
-    .attr("class", (d) => `shift-topic${d.selected ? " is-selected" : ""}`)
+    .attr("class", (d) => `shift-topic${d.selected ? " is-selected" : ""}${d.allowed ? "" : " is-muted"}`)
     .attr("transform", (d) => `translate(${d.x},${d.y})`)
     .attr("tabindex", "0")
     .attr("role", "button")
-    .attr("aria-label", (d) => `${activeFocusYear} ${shortContext(d.context)} ${d.sessions} topic signals`)
+    .attr("aria-label", (d) => `${activeFocusYear} ${shortContext(d.context)} ${d.sessions} topic signals. Click to inspect.`)
     .on("mouseenter", (event, d) => {
-      showTooltip(event, `${activeFocusYear}: ${shortContext(d.context)}`, `${d.sessions} topic signals.`);
+      showTooltip(event, `${activeFocusYear}: ${shortContext(d.context)}`, `${d.sessions} topic signals. Click to see examples.`);
     })
     .on("mousemove", moveTooltip)
     .on("mouseleave", hideTooltip)
     .on("click", (event, d) => {
+      if (!d.allowed) {
+        activeShiftMode = "all";
+      }
       activeShiftContext = d.context;
       activeContext = d.context;
       activeSide = "All";
@@ -1066,6 +1168,9 @@ function drawShiftMap(data) {
     .on("keydown", (event, d) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
+        if (!d.allowed) {
+          activeShiftMode = "all";
+        }
         activeShiftContext = d.context;
         renderShiftMap(data);
       }
@@ -1100,6 +1205,9 @@ function renderShiftMap(data) {
   if (!document.querySelector("#shift-map") || !data) return;
   renderShiftYearControls(data);
   syncShiftControls();
+  syncShiftModeControls();
+  renderShiftQuickRead(data);
+  renderShiftTopicChips(data);
   drawShiftMap(data);
   renderShiftMapPanel(data);
 }
@@ -1123,6 +1231,16 @@ function wireShiftMap(data) {
       }
     });
   }
+  document.querySelectorAll(".shift-mode").forEach((button) => {
+    button.addEventListener("click", () => {
+      stopShiftReplay();
+      activeShiftMode = button.dataset.shiftMode || "all";
+      if (activeShiftContext && !shiftContextAllowed(activeShiftContext)) {
+        activeShiftContext = null;
+      }
+      renderShiftMap(data);
+    });
+  });
   renderShiftMap(data);
 }
 
