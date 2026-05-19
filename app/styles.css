@@ -969,6 +969,16 @@ main {
   opacity: 0.18;
 }
 
+.shift-trail.is-selected {
+  stroke-linecap: round;
+  stroke-width: 5;
+  opacity: 0.78;
+}
+
+.shift-trail.is-background {
+  opacity: 0.045;
+}
+
 .shift-trail.is-muted {
   opacity: 0.055;
 }
@@ -981,8 +991,29 @@ main {
   opacity: 0.86;
 }
 
+.shift-trail-dot.is-selected {
+  opacity: 0.95;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.shift-trail-dot.is-background {
+  opacity: 0.075;
+}
+
 .shift-trail-dot.is-muted {
   opacity: 0.08;
+}
+
+.shift-trail-year {
+  fill: var(--ink);
+  font-size: 12px;
+  font-weight: 950;
+  paint-order: stroke;
+  pointer-events: none;
+  stroke: rgba(255, 255, 255, 0.86);
+  stroke-linejoin: round;
+  stroke-width: 5px;
 }
 
 .shift-balance line {
@@ -1116,6 +1147,60 @@ main {
 .shift-panel-stats strong {
   color: var(--plum);
   font-size: 1.28rem;
+}
+
+.shift-trend-strip {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(220, 228, 239, 0.9);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(238, 234, 255, 0.62), rgba(231, 245, 255, 0.58)),
+    rgba(255, 255, 255, 0.78);
+  padding: 12px;
+}
+
+.shift-trend-heading strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 0.94rem;
+  line-height: 1.25;
+}
+
+.shift-trend-years {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.shift-trend-years span {
+  display: grid;
+  gap: 3px;
+  justify-items: center;
+  border: 1px solid rgba(220, 228, 239, 0.88);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #8ca0b8;
+  font-size: 0.68rem;
+  font-weight: 950;
+  padding: 7px 5px;
+}
+
+.shift-trend-years span.active {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--plum), var(--teal));
+  color: #ffffff;
+}
+
+.shift-trend-years strong {
+  color: var(--ink);
+  font-size: 0.98rem;
+}
+
+.shift-trend-years span.active strong {
+  color: #ffffff;
 }
 
 .shift-panel-examples {

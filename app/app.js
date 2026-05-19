@@ -920,6 +920,35 @@ function renderShiftMapPanel(data) {
       ? sessionsForLens(data, { year: activeFocusYear, side })
       : [];
   const examples = sessions.slice(0, 4);
+  const trendRows = activeShiftContext
+    ? getYears(data).map((year) => {
+        const row = contextRowFor(data, year, activeShiftContext);
+        return { year, sessions: row ? row.sessions : 0 };
+      })
+    : [];
+  const trendDelta = trendRows.length ? trendRows.at(-1).sessions - trendRows[0].sessions : 0;
+  const trendHtml = activeShiftContext
+    ? `
+      <div class="shift-trend-strip" aria-label="${escapeHtml(shortContext(activeShiftContext))} five-year trail">
+        <div class="shift-trend-heading">
+          <span class="stat-label">Five-year trail</span>
+          <strong>${trendDelta >= 0 ? "+" : ""}${trendDelta} topic signals from ${trendRows[0].year} to ${trendRows.at(-1).year}</strong>
+        </div>
+        <div class="shift-trend-years">
+          ${trendRows
+            .map(
+              (row) => `
+                <span class="${row.year === activeFocusYear ? "active" : ""}">
+                  ${row.year}
+                  <strong>${row.sessions}</strong>
+                </span>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    `
+    : "";
   const title = selectedRow
     ? `${activeFocusYear}: ${shortContext(activeShiftContext)}`
     : side !== "All"
@@ -976,6 +1005,7 @@ function renderShiftMapPanel(data) {
         <strong>${oSide.sessions}</strong>
       </article>
     </div>
+    ${trendHtml}
     <div class="shift-panel-examples">
       <span class="stat-label">${activeShiftContext || side !== "All" ? "Session examples" : "Try this"}</span>
       ${
@@ -1082,6 +1112,9 @@ function drawShiftMap(data) {
     .text("More visible in the program");
 
   CONTEXT_ORDER.forEach((context) => {
+    const isSelectedTrail = activeShiftContext === context;
+    const isBackgroundTrail = Boolean(activeShiftContext && !isSelectedTrail);
+    const isAllowedTrail = shiftContextAllowed(context);
     const trail = years.map((year) => {
       const row = contextRowFor(data, year, context) || { sessions: 0 };
       return {
@@ -1100,10 +1133,15 @@ function drawShiftMap(data) {
     svg
       .append("path")
       .datum(trail)
-      .attr("class", `shift-trail${shiftContextAllowed(context) ? "" : " is-muted"}`)
+      .attr(
+        "class",
+        `shift-trail${isSelectedTrail ? " is-selected" : ""}${isBackgroundTrail ? " is-background" : ""}${
+          isAllowedTrail ? "" : " is-muted"
+        }`,
+      )
       .attr("d", line)
       .attr("stroke", COLORS.contexts[context]);
-    svg
+    const trailDots = svg
       .append("g")
       .selectAll("circle")
       .data(trail)
@@ -1112,13 +1150,26 @@ function drawShiftMap(data) {
         "class",
         (item) =>
           `shift-trail-dot${item.year === activeFocusYear ? " active" : ""}${
-            shiftContextAllowed(item.context) ? "" : " is-muted"
-          }`,
+            isSelectedTrail ? " is-selected" : ""
+          }${isBackgroundTrail ? " is-background" : ""}${isAllowedTrail ? "" : " is-muted"}`,
       )
       .attr("cx", (item) => item.x)
       .attr("cy", (item) => item.y)
-      .attr("r", (item) => (item.year === activeFocusYear ? 5 : 3))
+      .attr("r", (item) => (isSelectedTrail ? (item.year === activeFocusYear ? 8 : 5) : item.year === activeFocusYear ? 5 : 3))
       .attr("fill", COLORS.contexts[context]);
+
+    if (isSelectedTrail) {
+      svg
+        .append("g")
+        .selectAll("text")
+        .data(trail)
+        .join("text")
+        .attr("class", "shift-trail-year")
+        .attr("x", (item) => item.x + 17)
+        .attr("y", (item) => item.y + 5)
+        .text((item) => item.year);
+      trailDots.raise();
+    }
   });
 
   const balanceGroup = svg.append("g").attr("class", "shift-balance");
