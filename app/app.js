@@ -816,6 +816,9 @@ function startShiftReplay(data) {
   shiftReplayTimer = window.setInterval(advance, 1150);
 }
 
+// EDITING NOTE:
+// This writes the changing copy in the Explore detail panel. Static section copy
+// lives in index.html; topic-specific interpretation comes from contextMicrocopy().
 function renderShiftMapPanel(data) {
   const panel = document.querySelector("#shift-map-panel");
   if (!panel || !data) return;

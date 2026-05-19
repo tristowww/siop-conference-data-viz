@@ -45,6 +45,30 @@ body {
   padding-bottom: 82px;
 }
 
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 30;
+  transform: translateY(-160%);
+  border: 1px solid rgba(109, 77, 247, 0.22);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--plum);
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+  font-size: 0.82rem;
+  font-weight: 850;
+  text-decoration: none;
+  transition: transform 160ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 3px solid rgba(109, 77, 247, 0.26);
+  outline-offset: 3px;
+}
+
 main {
   width: 100%;
   margin: 0;

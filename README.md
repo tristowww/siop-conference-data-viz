@@ -22,8 +22,13 @@ where available.
   when the OCR includes a reliable title match; schedule-only rows may still have blank authors.
 - The public app does not currently include talk-level browsing; missing author names are queued in
   `data/processed/siop_ai_missing_authors.csv` for a focused recovery pass before that feature returns.
-- The app emphasizes aggregate exploration with a sticky story rail, baseline/current year controls,
-  dynamic takeaways, and a signal-river toggle between five context bands and I-side/O-side lanes.
+- The app now uses a four-step guided story with one main Explore map for the I-side to O-side AI
+  shift, plus stable HTML annotation anchors for review and copy edits.
+
+## Editing the app
+
+Use `docs/html-editing-guide.md` when annotating or editing the static page. The main story copy is
+in `app/index.html`; the changing Explore panel copy is generated in `app/app.js`.
 
 ## Data workflow
 

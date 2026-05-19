@@ -4,15 +4,28 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260518-explore" />
+    <link rel="stylesheet" href="styles.css?v=20260519-editable" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260518-explore" defer></script>
+    <script src="app.js?v=20260519-editable" defer></script>
   </head>
   <body>
-    <header class="site-nav" aria-label="Site navigation">
+    <a class="skip-link" href="#home-step">Skip to story</a>
+
+    <!--
+      EDITING MAP
+      Most visible page copy lives in this file. Search for data-edit-id values when
+      annotating or revising a specific section.
+
+      Do not rename IDs used by JavaScript unless you also update app.js:
+      shift-map, shift-year-range, shift-year-pills, shift-play, shift-map-canvas,
+      shift-map-panel, guide-prev, guide-next, guide-progress, tooltip.
+    -->
+
+    <!-- EDIT SECTION: Navigation. Labels here should stay short because this header is compact on mobile. -->
+    <header class="site-nav" aria-label="Site navigation" data-edit-id="site-nav">
       <a class="brand-mark guide-nav" href="#home-step" data-guide-target="home" aria-label="SIOP AI Shift home">
         <span aria-hidden="true"></span>
-        <strong>SIOP AI Shift</strong>
+        <strong data-edit-id="nav-brand">SIOP AI Shift</strong>
       </a>
       <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="story-nav">
         Story menu
@@ -32,30 +45,37 @@
       </nav>
     </header>
     <main class="guide-main">
-      <section id="home-step" class="home-panel guided-step is-active" data-guide-step="home" aria-labelledby="home-title">
-        <div class="guide-step-label">Home <span>1 of 4</span></div>
-        <p class="eyebrow">SIOP 2022 to 2026 program analysis</p>
-        <h1 id="home-title">A guided look at where AI is showing up at SIOP.</h1>
-        <p class="hero-copy">
+      <!-- EDIT SECTION: Home. This is the opening frame before the interactive explore map. -->
+      <section
+        id="home-step"
+        class="home-panel guided-step is-active"
+        data-guide-step="home"
+        data-edit-id="section-home"
+        aria-labelledby="home-title"
+      >
+        <div class="guide-step-label" data-edit-id="home-step-label">Home <span>1 of 4</span></div>
+        <p class="eyebrow" data-edit-id="home-eyebrow">SIOP 2022 to 2026 program analysis</p>
+        <h1 id="home-title" data-edit-id="home-title">A guided look at where AI is showing up at SIOP.</h1>
+        <p class="hero-copy" data-edit-id="home-intro-copy">
           Start with how often AI appears, then look at where it appears: selection and assessment,
           training and coaching, leadership, culture, accessibility, and work design.
         </p>
-        <div class="home-actions" aria-label="Start guided story">
+        <div class="home-actions" aria-label="Start guided story" data-edit-id="home-actions">
           <button class="primary-guide-button guide-nav" type="button" data-guide-target="overview">Start the story</button>
           <button class="guide-nav secondary-guide-button" type="button" data-guide-target="meaning">Jump to meaning</button>
         </div>
-        <div class="home-step-grid" aria-label="Guided story path">
-          <button class="guide-nav home-step-card" type="button" data-guide-target="overview">
+        <div class="home-step-grid" aria-label="Guided story path" data-edit-id="home-story-path">
+          <button class="guide-nav home-step-card" type="button" data-guide-target="overview" data-edit-id="home-card-explore">
             <span class="stat-label">Step 1</span>
             <strong>Explore</strong>
             <span>Scrub the years to see AI move across selection, assessment, and org-side work.</span>
           </button>
-          <button class="guide-nav home-step-card" type="button" data-guide-target="meaning">
+          <button class="guide-nav home-step-card" type="button" data-guide-target="meaning" data-edit-id="home-card-meaning">
             <span class="stat-label">Step 2</span>
             <strong>Meaning</strong>
             <span>See why rule-based assessment work differs from more judgment-heavy org work.</span>
           </button>
-          <button class="guide-nav home-step-card" type="button" data-guide-target="takeaway">
+          <button class="guide-nav home-step-card" type="button" data-guide-target="takeaway" data-edit-id="home-card-takeaway">
             <span class="stat-label">Step 3</span>
             <strong>So what</strong>
             <span>Close with the clearest read of what the conference pattern suggests.</span>
@@ -63,17 +83,24 @@
         </div>
       </section>
 
-      <section id="visibility-step" class="hero story-step guided-step" data-guide-step="overview" aria-labelledby="page-title">
-        <div class="guide-step-label">Explore <span>2 of 4</span></div>
-        <p class="eyebrow">One clear view</p>
-        <h1 id="page-title">AI is becoming a broader I-O conversation.</h1>
-        <p class="hero-copy">
+      <!-- EDIT SECTION: Explore. Static intro copy is here; the changing panel copy is in renderShiftMapPanel() in app.js. -->
+      <section
+        id="visibility-step"
+        class="hero story-step guided-step"
+        data-guide-step="overview"
+        data-edit-id="section-explore"
+        aria-labelledby="page-title"
+      >
+        <div class="guide-step-label" data-edit-id="explore-step-label">Explore <span>2 of 4</span></div>
+        <p class="eyebrow" data-edit-id="explore-eyebrow">One clear view</p>
+        <h1 id="page-title" data-edit-id="explore-title">AI is becoming a broader I-O conversation.</h1>
+        <p class="hero-copy" data-edit-id="explore-intro-copy">
           The interesting part is not just that AI appears more often. It is where AI shows up:
           still in selection and assessment, but increasingly around training, coaching, leadership,
           culture, accessibility, employee experience, and work design.
         </p>
-        <div id="shift-map" class="shift-map" aria-label="AI shift map">
-          <div class="shift-map-topline">
+        <div id="shift-map" class="shift-map" aria-label="AI shift map" data-edit-id="explore-shift-map">
+          <div class="shift-map-topline" data-edit-id="explore-map-intro">
             <div>
               <span class="stat-label">Use-case center of gravity</span>
               <strong>Play the years, or scrub them yourself.</strong>
@@ -90,13 +117,15 @@
             </div>
           </div>
           <div class="shift-map-body">
+            <!-- Dynamic chart target. The bubbles and axes are generated in app.js. -->
             <div
               id="shift-map-canvas"
               class="shift-map-canvas"
               role="img"
               aria-label="AI topics mapped from structured assessment to people and work context"
             ></div>
-            <aside id="shift-map-panel" class="shift-map-panel" aria-live="polite">
+            <!-- Dynamic detail panel. This placeholder is replaced when app.js loads. -->
+            <aside id="shift-map-panel" class="shift-map-panel" aria-live="polite" data-edit-id="explore-detail-panel">
               <span class="stat-label">Start here</span>
               <strong>Watch the balance move across years.</strong>
               <p>
@@ -108,23 +137,30 @@
         </div>
       </section>
 
-      <section id="meaning-step" class="section-band story-step guided-step" data-guide-step="meaning" aria-labelledby="side-title">
-        <div class="guide-step-label">Meaning <span>3 of 4</span></div>
-        <div class="section-heading">
-          <p class="eyebrow">Plain-English read</p>
-          <h2 id="side-title">Why I think the shift matters.</h2>
-          <p>
+      <!-- EDIT SECTION: Meaning. This is the plain-language interpretation after the explore map. -->
+      <section
+        id="meaning-step"
+        class="section-band story-step guided-step"
+        data-guide-step="meaning"
+        data-edit-id="section-meaning"
+        aria-labelledby="side-title"
+      >
+        <div class="guide-step-label" data-edit-id="meaning-step-label">Meaning <span>3 of 4</span></div>
+        <div class="section-heading" data-edit-id="meaning-heading">
+          <p class="eyebrow" data-edit-id="meaning-eyebrow">Plain-English read</p>
+          <h2 id="side-title" data-edit-id="meaning-title">Why I think the shift matters.</h2>
+          <p data-edit-id="meaning-main-copy">
             I think the read is simple: this does not prove the whole field changed, but it does
             show AI moving from "Can we score or predict this?" into "How do people actually use
             this at work?"
           </p>
-          <p class="microcopy">
+          <p class="microcopy" data-edit-id="meaning-side-definition">
             Plainly: I-side is selection and assessment. O-side is teams, leadership, learning,
             culture, employee experience, and work design.
           </p>
         </div>
-        <div class="meaning-summary-grid" aria-label="What the shift means">
-          <article>
+        <div class="meaning-summary-grid" aria-label="What the shift means" data-edit-id="meaning-summary-cards">
+          <article data-edit-id="meaning-card-what-stays">
             <span class="compare-label">What stays</span>
             <h3>Selection and assessment still matter.</h3>
             <p>
@@ -132,7 +168,7 @@
               fairness, cheating, and assessment design.
             </p>
           </article>
-          <article>
+          <article data-edit-id="meaning-card-what-changes">
             <span class="compare-label">What changes</span>
             <h3>The newer story is more human-contextual.</h3>
             <p>
@@ -140,7 +176,7 @@
               judgment, trust, timing, and the messiness of real work.
             </p>
           </article>
-          <article>
+          <article data-edit-id="meaning-card-why-it-matters">
             <span class="compare-label">Why it matters</span>
             <h3>The design problem changes.</h3>
             <p>
@@ -151,30 +187,37 @@
         </div>
       </section>
 
-      <section id="takeaway-step" class="section-band closing-band guided-step" data-guide-step="takeaway" aria-labelledby="closing-title">
-        <div class="guide-step-label">So what <span>4 of 4</span></div>
-        <div class="section-heading">
-          <p class="eyebrow">So what</p>
-          <h2 id="closing-title">The sharper story is where AI is showing up.</h2>
-          <p>
+      <!-- EDIT SECTION: So what. This is the final portfolio takeaway. -->
+      <section
+        id="takeaway-step"
+        class="section-band closing-band guided-step"
+        data-guide-step="takeaway"
+        data-edit-id="section-takeaway"
+        aria-labelledby="closing-title"
+      >
+        <div class="guide-step-label" data-edit-id="takeaway-step-label">So what <span>4 of 4</span></div>
+        <div class="section-heading" data-edit-id="takeaway-heading">
+          <p class="eyebrow" data-edit-id="takeaway-eyebrow">So what</p>
+          <h2 id="closing-title" data-edit-id="takeaway-title">The sharper story is where AI is showing up.</h2>
+          <p data-edit-id="takeaway-main-copy">
             Across the public SIOP program data, AI appears to be moving beyond a mostly
             assessment-and-methods conversation into a broader set of people-centered applications.
             Selection did not disappear. The newer pattern is that training, coaching, leadership,
             culture, accessibility, and work design are becoming easier to see in the AI conversation.
           </p>
         </div>
-        <div class="closing-grid">
-          <article>
+        <div class="closing-grid" data-edit-id="takeaway-summary-cards">
+          <article data-edit-id="takeaway-card-what-changed">
             <span class="stat-label">What changed</span>
             <strong>More volume, broader use cases</strong>
             <p>More sessions mention AI, and org-side topics become easier to see in the program mix.</p>
           </article>
-          <article>
+          <article data-edit-id="takeaway-card-why-it-matters">
             <span class="stat-label">Why it matters</span>
             <strong>The design problem changes</strong>
             <p>O-side AI is less about one score and more about judgment, trust, learning, and context.</p>
           </article>
-          <article>
+          <article data-edit-id="takeaway-card-how-to-read-it">
             <span class="stat-label">How to read it</span>
             <strong>A conference pattern, not a causal claim</strong>
             <p>The charts describe conference sessions and examples, not definitive field-wide adoption.</p>
