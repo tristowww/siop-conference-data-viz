@@ -29,6 +29,39 @@ const CONTEXT_ORDER = [
 
 const SIDE_ORDER = ["I-side selection/assessment", "O-side org/development"];
 
+const THEME_ORDER = [
+  "Assessment automation",
+  "Selection and hiring",
+  "Learning, coaching, and development",
+  "Leadership, culture, and teams",
+  "Future of work and job design",
+  "AI governance, ethics, and trust",
+  "Education, methods, and research tools",
+  "DEI, accessibility, and fairness",
+];
+
+const THEME_COLORS = {
+  "Assessment automation": "#f59a62",
+  "Selection and hiring": "#f15a2a",
+  "Learning, coaching, and development": "#55acd0",
+  "Leadership, culture, and teams": "#10b981",
+  "Future of work and job design": "#0891b2",
+  "AI governance, ethics, and trust": "#6b5cff",
+  "Education, methods, and research tools": "#1d63d6",
+  "DEI, accessibility, and fairness": "#8b5cf6",
+};
+
+const THEME_SIDE_LEAN = {
+  "Assessment automation": "I-side selection/assessment",
+  "Selection and hiring": "I-side selection/assessment",
+  "Learning, coaching, and development": "O-side org/development",
+  "Leadership, culture, and teams": "O-side org/development",
+  "Future of work and job design": "O-side org/development",
+  "AI governance, ethics, and trust": "Cross-cutting",
+  "Education, methods, and research tools": "Cross-cutting",
+  "DEI, accessibility, and fairness": "O-side org/development",
+};
+
 const STORY_BEATS = [
   {
     id: "baseline",
@@ -95,7 +128,9 @@ let activeNetworkYear = 2026;
 let activeFocusYear = 2026;
 let activeOverviewMode = "all";
 let activeOverviewContext = null;
+let activeShiftView = "contexts";
 let activeShiftContext = null;
+let activeShiftTheme = null;
 let activeShiftMode = "all";
 let riverMode = "contexts";
 let selectedLink = null;
@@ -130,6 +165,20 @@ function shortContext(context) {
     .replace("Other/special", "Other");
 }
 
+function shortTheme(theme) {
+  const labels = {
+    "Assessment automation": "Assessment automation",
+    "Selection and hiring": "Selection / hiring",
+    "Learning, coaching, and development": "Learning / coaching",
+    "Leadership, culture, and teams": "Leadership / culture",
+    "Future of work and job design": "Future of work",
+    "AI governance, ethics, and trust": "Governance / trust",
+    "Education, methods, and research tools": "Methods / education",
+    "DEI, accessibility, and fairness": "DEI / fairness",
+  };
+  return labels[theme] || theme || "Theme";
+}
+
 function contextMicrocopy(context) {
   const copy = {
     "Explicit tech/AI": "General AI and technology language, often before the specific use case is clear.",
@@ -141,12 +190,38 @@ function contextMicrocopy(context) {
   return copy[context] || "AI-related topic area.";
 }
 
+function themeMicrocopy(theme) {
+  const copy = {
+    "Assessment automation":
+      "AI used to build, score, evaluate, or improve assessments and measurement work.",
+    "Selection and hiring":
+      "AI in hiring, interviews, recruiting, candidate experience, and personnel selection.",
+    "Learning, coaching, and development":
+      "AI around training, coaching, feedback, careers, and employee development.",
+    "Leadership, culture, and teams":
+      "AI connected to leadership, collaboration, team dynamics, culture, engagement, and wellbeing.",
+    "Future of work and job design":
+      "AI as a work-design question: skills, jobs, tasks, automation, and how work changes.",
+    "AI governance, ethics, and trust":
+      "Responsible AI themes: trust, ethics, accountability, transparency, privacy, and oversight.",
+    "Education, methods, and research tools":
+      "AI as a research, teaching, methods, NLP, or LLM tool for I-O work.",
+    "DEI, accessibility, and fairness":
+      "AI tied to fairness, bias, inclusion, accessibility, equity, and adverse impact.",
+  };
+  return copy[theme] || "Exploratory AI theme cluster.";
+}
+
 function sideForContext(context) {
   if (context === "Selection/assessment/methods") return "I-side selection/assessment";
   if (context === "Org/development/training" || context === "DEI/accessibility") {
     return "O-side org/development";
   }
   return "Cross-cutting";
+}
+
+function sideForTheme(theme) {
+  return THEME_SIDE_LEAN[theme] || "Cross-cutting";
 }
 
 function sessionMatchesSide(session, side) {
@@ -251,13 +326,15 @@ function sessionDescriptor(session) {
   return pieces.join(" | ");
 }
 
-function sessionsForLens(data, { year = "All", context = "All", side = "All" } = {}) {
+function sessionsForLens(data, { year = "All", context = "All", side = "All", theme = "All" } = {}) {
   return data.session_explorer.filter((session) => {
     const groups = session.context_groups || [session.context];
+    const secondaryThemes = session.secondary_themes || [];
     const matchesYear = year === "All" || Number(session.year) === Number(year);
     const matchesContext = context === "All" || groups.includes(context);
     const matchesSide = side === "All" || sessionMatchesSide(session, side);
-    return matchesYear && matchesContext && matchesSide;
+    const matchesTheme = theme === "All" || session.theme === theme || secondaryThemes.includes(theme);
+    return matchesYear && matchesContext && matchesSide && matchesTheme;
   });
 }
 
@@ -378,6 +455,29 @@ function contextRowFor(data, year, context) {
   return data.context_summary.find(
     (item) => item.conference_year === Number(year) && item.ai_context_group === context,
   );
+}
+
+function themeRowFor(data, year, theme) {
+  return data.theme_summary?.find((item) => item.conference_year === Number(year) && item.theme === theme);
+}
+
+function getThemeRowsForYear(data, year) {
+  return THEME_ORDER.map((theme, index) => {
+    const row = themeRowFor(data, year, theme);
+    return {
+      conference_year: Number(year),
+      theme,
+      sessions: row ? row.sessions : 0,
+      share: row ? row.share : 0,
+      side_lean: row ? row.side_lean : sideForTheme(theme),
+      sort_order: row ? row.sort_order : index + 1,
+    };
+  });
+}
+
+function themeTermsFor(data, theme) {
+  const row = data.theme_terms?.find((item) => item.theme === theme);
+  return row ? row.terms || [] : [];
 }
 
 function trajectoryForLens(data, { context = "All", side = "All" } = {}) {
@@ -739,6 +839,20 @@ function shiftAxisPosition(context) {
   return positions[context] ?? 0.5;
 }
 
+function themeAxisPosition(theme) {
+  const positions = {
+    "Selection and hiring": 0.14,
+    "Assessment automation": 0.24,
+    "Education, methods, and research tools": 0.41,
+    "AI governance, ethics, and trust": 0.52,
+    "Future of work and job design": 0.66,
+    "Learning, coaching, and development": 0.76,
+    "Leadership, culture, and teams": 0.86,
+    "DEI, accessibility, and fairness": 0.94,
+  };
+  return positions[theme] ?? 0.5;
+}
+
 function shiftModeSide(mode = activeShiftMode) {
   if (mode === "iside") return "I-side selection/assessment";
   if (mode === "oside") return "O-side org/development";
@@ -756,10 +870,16 @@ function shiftContextAllowed(context, mode = activeShiftMode) {
   return side === "All" || sideForContext(context) === side;
 }
 
+function shiftThemeAllowed(theme, mode = activeShiftMode) {
+  const side = shiftModeSide(mode);
+  return side === "All" || sideForTheme(theme) === side;
+}
+
 function setShiftMapYear(data, year) {
   activeFocusYear = Number(year);
   activeNetworkYear = activeFocusYear;
   activeShiftContext = null;
+  activeShiftTheme = null;
   selectedLink = null;
   selectedTime = null;
   syncYearControls();
@@ -799,6 +919,12 @@ function syncShiftModeControls() {
   });
 }
 
+function syncShiftViewControls() {
+  document.querySelectorAll(".shift-view").forEach((button) => {
+    button.classList.toggle("active", button.dataset.shiftView === activeShiftView);
+  });
+}
+
 function syncShiftControls() {
   const range = document.querySelector("#shift-year-range");
   if (range) range.value = String(activeFocusYear);
@@ -812,6 +938,28 @@ function renderShiftQuickRead(data) {
   if (!target || !data) return;
 
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  if (activeShiftView === "themes") {
+    const themeRows = getThemeRowsForYear(data, activeFocusYear);
+    const visibleRows = themeRows.filter((row) => shiftThemeAllowed(row.theme));
+    const topTheme = [...visibleRows].sort((a, b) => b.sessions - a.sessions)[0] || themeRows[0];
+    const selectedRow = activeShiftTheme ? themeRowFor(data, activeFocusYear, activeShiftTheme) : null;
+    const actionText = activeShiftTheme
+      ? `${shortTheme(activeShiftTheme)} is open.`
+      : activeShiftMode === "all"
+        ? "Click a theme bubble or chip to see terms and sessions."
+        : `${shiftModeTitle()} themes are highlighted.`;
+    const mainText = selectedRow
+      ? `${selectedRow.sessions} ${shortTheme(activeShiftTheme)} sessions in ${activeFocusYear}.`
+      : `${topTheme.sessions} sessions in the biggest visible theme: ${shortTheme(topTheme.theme)}.`;
+
+    target.innerHTML = `
+      <span>${activeFocusYear}</span>
+      <strong>${current.ai_related_sessions} AI-related sessions. ${escapeHtml(mainText)}</strong>
+      <p>${escapeHtml(actionText)}</p>
+    `;
+    return;
+  }
+
   const sideRows = getSideRowsForYear(data, activeFocusYear);
   const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
   const oSide = sideRows.find((item) => item.side === "O-side org/development");
@@ -837,20 +985,26 @@ function renderShiftTopicChips(data) {
   const container = document.querySelector("#shift-topic-chips");
   if (!container || !data) return;
 
-  const rows = getContextRowsForYear(data, activeFocusYear);
+  const rows =
+    activeShiftView === "themes" ? getThemeRowsForYear(data, activeFocusYear) : getContextRowsForYear(data, activeFocusYear);
   container.innerHTML = "";
   rows.forEach((row) => {
-    const allowed = shiftContextAllowed(row.context);
+    const isThemeView = activeShiftView === "themes";
+    const key = isThemeView ? row.theme : row.context;
+    const allowed = isThemeView ? shiftThemeAllowed(key) : shiftContextAllowed(key);
+    const active = isThemeView ? activeShiftTheme === key : activeShiftContext === key;
+    const color = isThemeView ? THEME_COLORS[key] : COLORS.contexts[key];
+    const label = isThemeView ? shortTheme(key) : shortContext(key);
+    const title = isThemeView ? themeMicrocopy(key) : contextMicrocopy(key);
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `shift-topic-chip${activeShiftContext === row.context ? " active" : ""}${
-      allowed ? "" : " is-muted"
-    }`;
-    button.dataset.context = row.context;
-    button.title = contextMicrocopy(row.context);
+    button.className = `shift-topic-chip${active ? " active" : ""}${allowed ? "" : " is-muted"}`;
+    button.dataset.context = isThemeView ? "" : key;
+    button.dataset.theme = isThemeView ? key : "";
+    button.title = title;
     button.innerHTML = `
-      <span class="shift-topic-dot" style="--chip-color: ${COLORS.contexts[row.context]}"></span>
-      <span>${escapeHtml(shortContext(row.context))}</span>
+      <span class="shift-topic-dot" style="--chip-color: ${color}"></span>
+      <span>${escapeHtml(label)}</span>
       <strong>${row.sessions}</strong>
     `;
     button.addEventListener("click", () => {
@@ -858,9 +1012,15 @@ function renderShiftTopicChips(data) {
       if (!allowed) {
         activeShiftMode = "all";
       }
-      activeShiftContext = row.context;
-      activeContext = row.context;
-      activeSide = "All";
+      if (isThemeView) {
+        activeShiftTheme = key;
+        activeShiftContext = null;
+      } else {
+        activeShiftContext = key;
+        activeShiftTheme = null;
+        activeContext = key;
+        activeSide = "All";
+      }
       renderShiftMap(data);
     });
     container.appendChild(button);
@@ -903,9 +1063,155 @@ function startShiftReplay(data) {
 // EDITING NOTE:
 // This writes the changing copy in the Explore detail panel. Static section copy
 // lives in index.html; topic-specific interpretation comes from contextMicrocopy().
+function themeSessionsForLens(data, { year = activeFocusYear, theme = "All", side = "All" } = {}) {
+  return data.session_explorer.filter((session) => {
+    const matchesYear = year === "All" || Number(session.year) === Number(year);
+    const matchesTheme = theme === "All" || session.theme === theme;
+    const matchesSide = side === "All" || sideForTheme(session.theme) === side;
+    return matchesYear && matchesTheme && matchesSide;
+  });
+}
+
+function renderThemeMapPanel(data) {
+  const panel = document.querySelector("#shift-map-panel");
+  if (!panel || !data) return;
+
+  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
+  const themeRows = getThemeRowsForYear(data, activeFocusYear);
+  const topTheme = [...themeRows].filter((row) => shiftThemeAllowed(row.theme)).sort((a, b) => b.sessions - a.sessions)[0];
+  const side = shiftModeSide();
+  const selectedRow = activeShiftTheme ? themeRowFor(data, activeFocusYear, activeShiftTheme) : null;
+  const sessions = activeShiftTheme
+    ? themeSessionsForLens(data, { year: activeFocusYear, theme: activeShiftTheme })
+    : side !== "All"
+      ? themeSessionsForLens(data, { year: activeFocusYear, side })
+      : [];
+  const examples = sessions.slice(0, 4);
+  const trendRows = activeShiftTheme
+    ? getYears(data).map((year) => {
+        const row = themeRowFor(data, year, activeShiftTheme);
+        return { year, sessions: row ? row.sessions : 0 };
+      })
+    : [];
+  const trendDelta = trendRows.length ? trendRows.at(-1).sessions - trendRows[0].sessions : 0;
+  const terms = activeShiftTheme ? themeTermsFor(data, activeShiftTheme) : [];
+  const trendHtml = activeShiftTheme
+    ? `
+      <div class="shift-trend-strip" aria-label="${escapeHtml(shortTheme(activeShiftTheme))} five-year trail">
+        <div class="shift-trend-heading">
+          <span class="stat-label">Theme trail</span>
+          <strong>${trendDelta >= 0 ? "+" : ""}${trendDelta} sessions from ${trendRows[0].year} to ${trendRows.at(-1).year}</strong>
+        </div>
+        <div class="shift-trend-years">
+          ${trendRows
+            .map(
+              (row) => `
+                <span class="${row.year === activeFocusYear ? "active" : ""}">
+                  ${row.year}
+                  <strong>${row.sessions}</strong>
+                </span>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    `
+    : "";
+  const termsHtml =
+    activeShiftTheme && terms.length
+      ? `
+        <div class="shift-theme-terms">
+          <span class="stat-label">Top terms</span>
+          <div>
+            ${terms.map((term) => `<span>${escapeHtml(term)}</span>`).join("")}
+          </div>
+        </div>
+      `
+      : "";
+  const title = selectedRow
+    ? `${activeFocusYear}: ${shortTheme(activeShiftTheme)}`
+    : side !== "All"
+      ? `${activeFocusYear}: ${shiftModeTitle()} themes`
+      : `${activeFocusYear}: theme clusters`;
+  const copy = selectedRow
+    ? `${themeMicrocopy(activeShiftTheme)} This cluster has ${selectedRow.sessions} sessions in ${activeFocusYear}.`
+    : side !== "All"
+      ? `${shiftModeTitle()} is highlighted. The theme layer keeps the main I/O story, then lets you see what the sessions are actually about.`
+      : `The biggest visible cluster is ${shortTheme(topTheme.theme)} with ${topTheme.sessions} sessions. Click a theme to see the trail, common terms, and examples underneath it.`;
+  const exampleHtml = examples
+    .map(
+      (session) => `
+        <article>
+          <span>${escapeHtml([session.year, shortTheme(session.theme), session.session_format || "Session"].join(" | "))}</span>
+          <strong>${escapeHtml(session.title)}</strong>
+          ${
+            session.speakers
+              ? `<p>${escapeHtml(`Authors: ${truncateText(session.speakers, 96)}`)}</p>`
+              : ""
+          }
+          <p>${escapeHtml(truncateText(session.description || sessionDescriptor(session), 128))}</p>
+        </article>
+      `,
+    )
+    .join("");
+
+  panel.innerHTML = `
+    <div class="shift-panel-heading">
+      <div>
+        <span class="stat-label">${activeShiftTheme ? "Selected theme" : side !== "All" ? "Selected lens" : "Theme view"}</span>
+        <strong>${escapeHtml(title)}</strong>
+      </div>
+      ${
+        activeShiftTheme || activeShiftMode !== "all"
+          ? '<button class="shift-reset" type="button">Clear</button>'
+          : ""
+      }
+    </div>
+    <p>${escapeHtml(copy)}</p>
+    <div class="shift-panel-stats">
+      <article>
+        <span>AI sessions</span>
+        <strong>${current.ai_related_sessions}</strong>
+      </article>
+      <article>
+        <span>Top theme</span>
+        <strong>${topTheme.sessions}</strong>
+      </article>
+      <article>
+        <span>Selected slice</span>
+        <strong>${activeShiftTheme || side !== "All" ? sessions.length : topTheme.sessions}</strong>
+      </article>
+    </div>
+    ${trendHtml}
+    ${termsHtml}
+    <div class="shift-panel-examples">
+      <span class="stat-label">${activeShiftTheme || side !== "All" ? "Session examples" : "Try this"}</span>
+      ${
+        activeShiftTheme || side !== "All"
+          ? exampleHtml || '<div class="shift-empty">No matching sessions found for this slice.</div>'
+          : '<div class="shift-empty"><strong>Make it move:</strong> switch between I-side and O-side, then click a theme bubble to see its five-year trail.</div>'
+      }
+    </div>
+  `;
+
+  const reset = panel.querySelector(".shift-reset");
+  if (reset) {
+    reset.addEventListener("click", () => {
+      activeShiftTheme = null;
+      activeShiftMode = "all";
+      renderShiftMap(data);
+    });
+  }
+  markPanelUpdated(panel);
+}
+
 function renderShiftMapPanel(data) {
   const panel = document.querySelector("#shift-map-panel");
   if (!panel || !data) return;
+  if (activeShiftView === "themes") {
+    renderThemeMapPanel(data);
+    return;
+  }
 
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
   const sideRows = getSideRowsForYear(data, activeFocusYear);
@@ -1027,9 +1333,217 @@ function renderShiftMapPanel(data) {
   markPanelUpdated(panel);
 }
 
+function drawThemeMap(data) {
+  const target = document.querySelector("#shift-map-canvas");
+  if (!target || !data) return;
+
+  const width = 1040;
+  const height = 520;
+  const margin = { top: 58, right: 76, bottom: 92, left: 86 };
+  const svg = makeSvg("#shift-map-canvas", width, height).attr("class", "shift-map-svg shift-theme-svg");
+  const years = getYears(data);
+  const maxSessions = d3.max(data.theme_summary || [], (item) => item.sessions) || 1;
+  const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
+  const y = d3
+    .scaleLinear()
+    .domain([0, maxSessions])
+    .range([height - margin.bottom, margin.top + 54]);
+  const radius = d3.scaleSqrt().domain([0, maxSessions]).range([9, 39]);
+  const themeOffsets = {
+    "Assessment automation": 16,
+    "Selection and hiring": -8,
+    "Learning, coaching, and development": -14,
+    "Leadership, culture, and teams": 12,
+    "Future of work and job design": 22,
+    "AI governance, ethics, and trust": -16,
+    "Education, methods, and research tools": 4,
+    "DEI, accessibility, and fairness": 28,
+  };
+  const currentRows = getThemeRowsForYear(data, activeFocusYear).map((row) => ({
+    ...row,
+    x: x(themeAxisPosition(row.theme)),
+    y: y(row.sessions) + (themeOffsets[row.theme] || 0),
+    color: THEME_COLORS[row.theme],
+    selected: activeShiftTheme === row.theme,
+    allowed: shiftThemeAllowed(row.theme),
+  }));
+
+  const defs = svg.append("defs");
+  const gradient = defs.append("linearGradient").attr("id", "shift-axis-gradient").attr("x1", "0%").attr("x2", "100%");
+  gradient.append("stop").attr("offset", "0%").attr("stop-color", "#f59a62");
+  gradient.append("stop").attr("offset", "38%").attr("stop-color", "#e8eaff");
+  gradient.append("stop").attr("offset", "70%").attr("stop-color", "#55acd0");
+  gradient.append("stop").attr("offset", "100%").attr("stop-color", "#10b981");
+
+  svg
+    .append("rect")
+    .attr("x", margin.left)
+    .attr("y", margin.top)
+    .attr("width", width - margin.left - margin.right)
+    .attr("height", height - margin.top - margin.bottom)
+    .attr("rx", 22)
+    .attr("class", "shift-map-field theme-field");
+
+  svg
+    .append("line")
+    .attr("class", "shift-axis-line")
+    .attr("x1", x(0))
+    .attr("x2", x(1))
+    .attr("y1", height - margin.bottom + 31)
+    .attr("y2", height - margin.bottom + 31)
+    .attr("stroke", "url(#shift-axis-gradient)");
+
+  svg
+    .append("text")
+    .attr("class", "shift-axis-label")
+    .attr("x", x(0))
+    .attr("y", height - margin.bottom + 62)
+    .text("assessment, selection, methods");
+  svg
+    .append("text")
+    .attr("class", "shift-axis-label")
+    .attr("x", x(1))
+    .attr("y", height - margin.bottom + 62)
+    .attr("text-anchor", "end")
+    .text("people, work, culture, development");
+  svg
+    .append("text")
+    .attr("class", "shift-y-label")
+    .attr("x", margin.left)
+    .attr("y", margin.top - 22)
+    .text("Theme visibility in the program");
+
+  const background = svg.append("g").attr("class", "theme-trails");
+  THEME_ORDER.forEach((theme) => {
+    const isSelectedTrail = activeShiftTheme === theme;
+    const isBackgroundTrail = Boolean(activeShiftTheme && !isSelectedTrail);
+    const isAllowedTrail = shiftThemeAllowed(theme);
+    const trail = years.map((year) => {
+      const row = themeRowFor(data, year, theme) || { sessions: 0 };
+      return {
+        year,
+        theme,
+        sessions: row.sessions,
+        x: x(themeAxisPosition(theme)),
+        y: y(row.sessions) + (themeOffsets[theme] || 0),
+      };
+    });
+    const line = d3
+      .line()
+      .x((item) => item.x)
+      .y((item) => item.y)
+      .curve(d3.curveCatmullRom.alpha(0.5));
+    background
+      .append("path")
+      .datum(trail)
+      .attr(
+        "class",
+        `shift-trail${isSelectedTrail ? " is-selected" : ""}${isBackgroundTrail ? " is-background" : ""}${
+          isAllowedTrail ? "" : " is-muted"
+        }`,
+      )
+      .attr("d", line)
+      .attr("stroke", THEME_COLORS[theme]);
+    const trailDots = background
+      .append("g")
+      .selectAll("circle")
+      .data(trail)
+      .join("circle")
+      .attr(
+        "class",
+        (item) =>
+          `shift-trail-dot${item.year === activeFocusYear ? " active" : ""}${
+            isSelectedTrail ? " is-selected" : ""
+          }${isBackgroundTrail ? " is-background" : ""}${isAllowedTrail ? "" : " is-muted"}`,
+      )
+      .attr("cx", (item) => item.x)
+      .attr("cy", (item) => item.y)
+      .attr("r", (item) => (isSelectedTrail ? (item.year === activeFocusYear ? 8 : 5) : item.year === activeFocusYear ? 5 : 3))
+      .attr("fill", THEME_COLORS[theme]);
+
+    if (isSelectedTrail) {
+      background
+        .append("g")
+        .selectAll("text")
+        .data(trail)
+        .join("text")
+        .attr("class", "shift-trail-year")
+        .attr("x", (item) => item.x + (themeAxisPosition(theme) > 0.86 ? -18 : 17))
+        .attr("y", (item) => item.y + 5)
+        .attr("text-anchor", themeAxisPosition(theme) > 0.86 ? "end" : "start")
+        .text((item) => item.year);
+      trailDots.raise();
+    }
+  });
+
+  const nodes = svg
+    .append("g")
+    .selectAll("g")
+    .data(currentRows)
+    .join("g")
+    .attr("class", (d) => `shift-topic shift-theme${d.selected ? " is-selected" : ""}${d.allowed ? "" : " is-muted"}`)
+    .attr("transform", (d) => `translate(${d.x},${d.y})`)
+    .attr("tabindex", "0")
+    .attr("role", "button")
+    .attr("aria-label", (d) => `${activeFocusYear} ${shortTheme(d.theme)} ${d.sessions} sessions. Click to inspect.`)
+    .on("mouseenter", (event, d) => {
+      showTooltip(event, `${activeFocusYear}: ${shortTheme(d.theme)}`, `${d.sessions} sessions. Click to see the trail and terms.`);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip)
+    .on("click", (event, d) => {
+      if (!d.allowed) {
+        activeShiftMode = "all";
+      }
+      activeShiftTheme = d.theme;
+      activeShiftContext = null;
+      renderShiftMap(data);
+    })
+    .on("keydown", (event, d) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (!d.allowed) {
+          activeShiftMode = "all";
+        }
+        activeShiftTheme = d.theme;
+        activeShiftContext = null;
+        renderShiftMap(data);
+      }
+    });
+
+  nodes
+    .append("circle")
+    .attr("r", (d) => radius(d.sessions))
+    .attr("fill", (d) => d.color);
+  nodes
+    .append("circle")
+    .attr("class", "shift-topic-ring")
+    .attr("r", (d) => radius(d.sessions) + 6)
+    .attr("fill", "none");
+  nodes
+    .append("text")
+    .attr("class", "shift-topic-count")
+    .attr("text-anchor", "middle")
+    .attr("y", 5)
+    .text((d) => d.sessions);
+  nodes
+    .append("text")
+    .attr("class", "shift-topic-label")
+    .attr("text-anchor", (d) => (themeAxisPosition(d.theme) > 0.86 ? "end" : "middle"))
+    .attr("x", (d) => (themeAxisPosition(d.theme) > 0.86 ? radius(d.sessions) : 0))
+    .attr("y", (d) =>
+      d.y > height - margin.bottom - 18 ? -radius(d.sessions) - 12 : radius(d.sessions) + 24,
+    )
+    .text((d) => shortTheme(d.theme));
+}
+
 function drawShiftMap(data) {
   const target = document.querySelector("#shift-map-canvas");
   if (!target || !data) return;
+  if (activeShiftView === "themes") {
+    drawThemeMap(data);
+    return;
+  }
 
   const width = 1040;
   const height = 500;
@@ -1256,6 +1770,7 @@ function renderShiftMap(data) {
   if (!document.querySelector("#shift-map") || !data) return;
   renderShiftYearControls(data);
   syncShiftControls();
+  syncShiftViewControls();
   syncShiftModeControls();
   renderShiftQuickRead(data);
   renderShiftTopicChips(data);
@@ -1286,9 +1801,22 @@ function wireShiftMap(data) {
     button.addEventListener("click", () => {
       stopShiftReplay();
       activeShiftMode = button.dataset.shiftMode || "all";
-      if (activeShiftContext && !shiftContextAllowed(activeShiftContext)) {
+      if (activeShiftView === "themes" && activeShiftTheme && !shiftThemeAllowed(activeShiftTheme)) {
+        activeShiftTheme = null;
+      }
+      if (activeShiftView !== "themes" && activeShiftContext && !shiftContextAllowed(activeShiftContext)) {
         activeShiftContext = null;
       }
+      renderShiftMap(data);
+    });
+  });
+  document.querySelectorAll(".shift-view").forEach((button) => {
+    button.addEventListener("click", () => {
+      stopShiftReplay();
+      activeShiftView = button.dataset.shiftView || "contexts";
+      activeShiftContext = null;
+      activeShiftTheme = null;
+      activeShiftMode = "all";
       renderShiftMap(data);
     });
   });
@@ -1609,7 +2137,9 @@ function showGuideStep(stepId, { updateHash = true, resetScroll = true } = {}) {
 
   if (resetScroll) {
     window.scrollTo({ top: 0, behavior: "auto" });
-    window.setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), 0);
+    [0, 60, 180].forEach((delay) => {
+      window.setTimeout(() => window.scrollTo({ top: 0, behavior: "auto" }), delay);
+    });
   }
 }
 

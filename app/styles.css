@@ -79,6 +79,7 @@ main {
 
 .guided-step {
   display: none;
+  scroll-margin-top: 156px;
 }
 
 .guided-step[hidden] {
@@ -103,8 +104,8 @@ main {
   display: flex;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  justify-content: flex-start;
+  gap: 18px;
   padding: 13px var(--frame-pad);
   border-bottom: 1px solid rgba(220, 228, 239, 0.72);
   background: rgba(248, 251, 255, 0.84);
@@ -115,6 +116,10 @@ main {
 .nav-links {
   display: flex;
   align-items: center;
+}
+
+.nav-links {
+  margin-left: auto;
 }
 
 .brand-mark {
@@ -290,13 +295,10 @@ main {
 }
 
 .guide-controls {
-  position: fixed;
-  right: var(--frame-pad);
-  bottom: 18px;
-  z-index: 12;
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 0 0 auto;
   border: 1px solid rgba(220, 228, 239, 0.86);
   border-radius: 999px;
   background: rgba(248, 251, 255, 0.88);
@@ -799,6 +801,17 @@ main {
   gap: 6px;
 }
 
+.shift-view-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  border: 1px solid rgba(220, 228, 239, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 4px;
+}
+
+.shift-view,
 .shift-mode {
   min-height: 34px;
   border: 1px solid rgba(220, 228, 239, 0.95);
@@ -811,6 +824,11 @@ main {
   padding: 7px 9px;
 }
 
+.shift-view {
+  border-color: transparent;
+}
+
+.shift-view.active,
 .shift-mode.active {
   border-color: transparent;
   background: #111827;
@@ -859,7 +877,7 @@ main {
 
 .shift-topic-chips {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
   gap: 8px;
   margin-bottom: 12px;
 }
@@ -946,6 +964,10 @@ main {
   fill: url(#shift-axis-gradient);
   opacity: 0.28;
   stroke: rgba(109, 77, 247, 0.12);
+}
+
+.shift-map-field.theme-field {
+  opacity: 0.22;
 }
 
 .shift-axis-line {
@@ -1070,6 +1092,10 @@ main {
   font-size: 13px;
   font-weight: 950;
   pointer-events: none;
+}
+
+.shift-theme .shift-topic-label {
+  font-size: 12px;
 }
 
 .shift-map-panel {
@@ -1201,6 +1227,32 @@ main {
 
 .shift-trend-years span.active strong {
   color: #ffffff;
+}
+
+.shift-theme-terms {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(220, 228, 239, 0.9);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.74);
+  padding: 12px;
+}
+
+.shift-theme-terms div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shift-theme-terms span:not(.stat-label) {
+  border: 1px solid rgba(220, 228, 239, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #516075;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 6px 8px;
 }
 
 .shift-panel-examples {
@@ -1362,7 +1414,7 @@ main {
   gap: 12px;
   margin: 0;
   overflow: hidden;
-  padding: clamp(86px, 10vh, 116px) var(--frame-pad) 56px;
+  padding: clamp(148px, 14vh, 168px) var(--frame-pad) 56px;
   border-bottom: 1px solid rgba(31, 31, 31, 0.1);
   background:
     radial-gradient(circle at 20% 22%, rgba(109, 77, 247, 0.13), transparent 32%),
@@ -2720,9 +2772,11 @@ select:focus {
   }
 
   .guide-controls {
+    top: auto;
     right: 14px;
     bottom: 14px;
     left: 14px;
+    width: 100%;
     justify-content: space-between;
     gap: 6px;
     padding: 6px;
@@ -2758,6 +2812,11 @@ select:focus {
 
   .shift-mode-controls {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .shift-view-controls {
+    grid-template-columns: 1fr;
+    border-radius: 8px;
   }
 
   .shift-quick-read {
@@ -3011,6 +3070,7 @@ select:focus {
   }
 
   .guide-controls {
+    top: auto;
     right: 10px;
     bottom: 10px;
     left: 10px;

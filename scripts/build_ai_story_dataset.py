@@ -8,6 +8,8 @@ import re
 from pathlib import Path
 
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 AI_PATTERN = re.compile(
@@ -68,6 +70,202 @@ CONTEXT_ORDER = [
     "Other/special",
 ]
 
+THEME_DEFINITIONS = [
+    {
+        "theme": "Assessment automation",
+        "side_lean": "I-side selection/assessment",
+        "seed_terms": [
+            "assessment automation",
+            "item generation",
+            "test development",
+            "psychometric",
+            "scoring",
+            "readability",
+            "validity",
+            "measurement",
+            "automated assessment",
+        ],
+    },
+    {
+        "theme": "Selection and hiring",
+        "side_lean": "I-side selection/assessment",
+        "seed_terms": [
+            "selection",
+            "hiring",
+            "applicant",
+            "candidate",
+            "interview",
+            "recruiting",
+            "staffing",
+            "personnel selection",
+            "assessment center",
+        ],
+    },
+    {
+        "theme": "Learning, coaching, and development",
+        "side_lean": "O-side org/development",
+        "seed_terms": [
+            "training",
+            "learning",
+            "coaching",
+            "mentoring",
+            "development",
+            "career",
+            "feedback",
+            "graduate education",
+            "employee development",
+        ],
+    },
+    {
+        "theme": "Leadership, culture, and teams",
+        "side_lean": "O-side org/development",
+        "seed_terms": [
+            "leadership",
+            "leader",
+            "culture",
+            "teams",
+            "teamwork",
+            "engagement",
+            "employee experience",
+            "psychological safety",
+            "wellbeing",
+        ],
+    },
+    {
+        "theme": "Future of work and job design",
+        "side_lean": "O-side org/development",
+        "seed_terms": [
+            "future of work",
+            "job design",
+            "work design",
+            "skills",
+            "reskilling",
+            "workforce",
+            "task analysis",
+            "automation impact",
+            "job redesign",
+        ],
+    },
+    {
+        "theme": "AI governance, ethics, and trust",
+        "side_lean": "Cross-cutting",
+        "seed_terms": [
+            "governance",
+            "ethics",
+            "ethical ai",
+            "trust",
+            "privacy",
+            "accountability",
+            "transparency",
+            "human oversight",
+            "responsible ai",
+        ],
+    },
+    {
+        "theme": "Education, methods, and research tools",
+        "side_lean": "Cross-cutting",
+        "seed_terms": [
+            "methods",
+            "research",
+            "teaching",
+            "education",
+            "graduate education",
+            "tutorial",
+            "text analysis",
+            "natural language processing",
+            "large language models",
+        ],
+    },
+    {
+        "theme": "DEI, accessibility, and fairness",
+        "side_lean": "O-side org/development",
+        "seed_terms": [
+            "diversity",
+            "equity",
+            "inclusion",
+            "accessibility",
+            "fairness",
+            "bias",
+            "adverse impact",
+            "deia",
+            "inclusive",
+        ],
+    },
+]
+
+THEME_ORDER = [definition["theme"] for definition in THEME_DEFINITIONS]
+THEME_SIDE_LEAN = {definition["theme"]: definition["side_lean"] for definition in THEME_DEFINITIONS}
+THEME_SEED_DOCS = [
+    " ".join([definition["theme"], *definition["seed_terms"]]) for definition in THEME_DEFINITIONS
+]
+THEME_PATTERNS = {
+    "Assessment automation": re.compile(
+        r"\b(?:assessment|assessments|automated assessment|item generation|item refinement|"
+        r"psychometric|scoring|score|measurement|test development|testing|validity|validation|"
+        r"readability|factor analysis|fairness audit)\b",
+        re.IGNORECASE,
+    ),
+    "Selection and hiring": re.compile(
+        r"\b(?:selection|hiring|applicant|candidate|interview|interviews|recruiting|recruitment|"
+        r"staffing|talent acquisition|personnel selection)\b",
+        re.IGNORECASE,
+    ),
+    "Learning, coaching, and development": re.compile(
+        r"\b(?:training|learning|coaching|coach|mentoring|development|career|feedback|"
+        r"graduate education|student|students|education|teaching)\b",
+        re.IGNORECASE,
+    ),
+    "Leadership, culture, and teams": re.compile(
+        r"\b(?:leadership|leader|leaders|culture|teams|team|teamwork|collaboration|engagement|"
+        r"employee experience|psychological safety|wellbeing|well-being|loneliness)\b",
+        re.IGNORECASE,
+    ),
+    "Future of work and job design": re.compile(
+        r"\b(?:future of work|job design|work design|workforce|skills|skill|reskilling|"
+        r"task analysis|job redesign|automation impact|remote work|working from home|work technology|"
+        r"technology rollout|talent practices)\b",
+        re.IGNORECASE,
+    ),
+    "AI governance, ethics, and trust": re.compile(
+        r"\b(?:governance|ethic|ethical|trust|privacy|accountability|transparency|"
+        r"human oversight|responsible ai|explainable|adoption|acceptance|fear|risk)\b",
+        re.IGNORECASE,
+    ),
+    "Education, methods, and research tools": re.compile(
+        r"\b(?:research|methods|method|tutorial|computational|text analysis|sentiment analysis|"
+        r"natural language processing|nlp|large language model|large language models|llm|llms|"
+        r"language model|models|modeling|summarization)\b",
+        re.IGNORECASE,
+    ),
+    "DEI, accessibility, and fairness": re.compile(
+        r"\b(?:diversity|equity|inclusion|accessibility|fairness|bias|biased|adverse impact|"
+        r"deia|dei|inclusive)\b",
+        re.IGNORECASE,
+    ),
+}
+THEME_TERM_EXCLUDE = {
+    "ai",
+    "artificial",
+    "artificial intelligence",
+    "conference",
+    "industrial",
+    "intelligence",
+    "io",
+    "organizational",
+    "psychological",
+    "psychologists",
+    "psychology",
+    "panel",
+    "poster",
+    "session",
+    "sessions",
+    "siop",
+    "society",
+    "technology",
+    "united",
+    "workplace",
+}
+
 
 def clean_text(value: object) -> str:
     return re.sub(r"\s+", " ", "" if pd.isna(value) else str(value)).strip()
@@ -92,6 +290,79 @@ def classify_context(text: str) -> str:
         if pattern.search(text):
             return group
     return "Other/special"
+
+
+def theme_model_text(row: pd.Series) -> str:
+    return " ".join(
+        clean_text(row.get(column, ""))
+        for column in ["title", "description", "tracks", "session_format", "normalized_tracks"]
+    )
+
+
+def assign_guided_themes(df: pd.DataFrame) -> tuple[pd.DataFrame, list[dict[str, object]]]:
+    df = df.copy()
+    df["guided_ai_theme"] = ""
+    df["guided_ai_secondary_themes"] = ""
+    df["guided_ai_theme_score"] = 0.0
+    ai_index = df.index[df["is_ai_related"]].tolist()
+    if not ai_index:
+        return df, [{"theme": theme, "terms": []} for theme in THEME_ORDER]
+
+    ai_texts = [theme_model_text(df.loc[index]) for index in ai_index]
+    vectorizer = TfidfVectorizer(
+        stop_words="english",
+        ngram_range=(1, 2),
+        min_df=1,
+        max_df=0.92,
+        max_features=3200,
+    )
+    matrix = vectorizer.fit_transform(ai_texts + THEME_SEED_DOCS)
+    session_matrix = matrix[: len(ai_texts)]
+    seed_matrix = matrix[len(ai_texts) :]
+    similarities = cosine_similarity(session_matrix, seed_matrix)
+
+    for row_offset, index in enumerate(ai_index):
+        raw_scores = similarities[row_offset]
+        scores = raw_scores.copy()
+        text = ai_texts[row_offset]
+        for theme_index, theme in enumerate(THEME_ORDER):
+            if THEME_PATTERNS[theme].search(text):
+                scores[theme_index] += 0.18
+        ranked = sorted(range(len(THEME_ORDER)), key=lambda theme_index: scores[theme_index], reverse=True)
+        primary_index = ranked[0]
+        primary_score = float(scores[primary_index])
+        secondary = [
+            THEME_ORDER[theme_index]
+            for theme_index in ranked[1:3]
+            if float(scores[theme_index]) >= max(0.08, primary_score * 0.72)
+        ]
+        df.at[index, "guided_ai_theme"] = THEME_ORDER[primary_index]
+        df.at[index, "guided_ai_secondary_themes"] = " | ".join(secondary)
+        df.at[index, "guided_ai_theme_score"] = round(primary_score, 4)
+
+    feature_names = vectorizer.get_feature_names_out()
+    theme_terms = []
+    ai_df = df.loc[ai_index]
+    for theme in THEME_ORDER:
+        theme_offsets = [
+            offset for offset, (_, row) in enumerate(ai_df.iterrows()) if row["guided_ai_theme"] == theme
+        ]
+        if not theme_offsets:
+            theme_terms.append({"theme": theme, "terms": []})
+            continue
+        weights = session_matrix[theme_offsets].sum(axis=0).A1
+        ranked_term_indices = weights.argsort()[::-1]
+        terms = []
+        for term_index in ranked_term_indices:
+            term = clean_text(feature_names[term_index])
+            if not term or term in THEME_TERM_EXCLUDE or weights[term_index] <= 0:
+                continue
+            terms.append(term)
+            if len(terms) >= 8:
+                break
+        theme_terms.append({"theme": theme, "terms": terms})
+
+    return df, theme_terms
 
 
 def primary_context(row: pd.Series) -> str:
@@ -167,6 +438,37 @@ def summarize_contexts(context_df: pd.DataFrame) -> list[dict[str, object]]:
     counts["sort_order"] = counts["ai_context_group"].map({name: index for index, name in enumerate(CONTEXT_ORDER)})
     counts = counts.sort_values(["sort_order", "conference_year"])
     return counts.drop(columns=["sort_order"]).to_dict(orient="records")
+
+
+def summarize_themes(df: pd.DataFrame) -> list[dict[str, object]]:
+    ai_df = df[df["is_ai_related"]].copy()
+    if ai_df.empty:
+        return []
+    counts = (
+        ai_df.groupby(["conference_year", "guided_ai_theme"])["session_id"]
+        .nunique()
+        .reset_index(name="sessions")
+    )
+    totals = ai_df.groupby("conference_year")["session_id"].nunique().to_dict()
+    count_lookup = {
+        (int(row["conference_year"]), row["guided_ai_theme"]): int(row["sessions"])
+        for _, row in counts.iterrows()
+    }
+    rows = []
+    for year in sorted(totals):
+        for sort_order, theme in enumerate(THEME_ORDER):
+            sessions = count_lookup.get((int(year), theme), 0)
+            rows.append(
+                {
+                    "conference_year": int(year),
+                    "theme": theme,
+                    "sessions": sessions,
+                    "share": round(sessions / totals[year], 4) if totals[year] else 0,
+                    "side_lean": THEME_SIDE_LEAN[theme],
+                    "sort_order": sort_order,
+                }
+            )
+    return rows
 
 
 def build_context_network(df: pd.DataFrame) -> dict[str, list[dict[str, object]]]:
@@ -275,6 +577,12 @@ def session_explorer_rows(df: pd.DataFrame) -> list[dict[str, object]]:
             "title": row["title"],
             "context": row["primary_ai_context_group"],
             "context_groups": sorted(context_set(row), key=lambda group: CONTEXT_ORDER.index(group)),
+            "theme": clean_text(row.get("guided_ai_theme", "")),
+            "secondary_themes": [
+                theme
+                for theme in clean_text(row.get("guided_ai_secondary_themes", "")).split(" | ")
+                if theme
+            ],
             "tracks": row["normalized_tracks"],
             "session_format": row["normalized_session_format"],
             "date": clean_text(row.get("date", "")),
@@ -336,6 +644,7 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object], pd.D
     df["normalized_session_format"] = df["session_format"].map(normalized_format)
     df["description"] = df["description"].map(clean_text)
     df["speaker_affiliations"] = df.get("speaker_affiliations", "").map(clean_text)
+    df, theme_terms = assign_guided_themes(df)
 
     public_columns = [
         "conference_year",
@@ -355,6 +664,8 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object], pd.D
         "is_ai_related",
         "has_visible_ai_signal",
         "primary_ai_context_group",
+        "guided_ai_theme",
+        "guided_ai_secondary_themes",
         "source",
     ]
     story_sessions = df[public_columns].copy()
@@ -363,6 +674,8 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object], pd.D
             "normalized_tracks": "tracks",
             "normalized_session_format": "session_format",
             "primary_ai_context_group": "ai_context_group",
+            "guided_ai_theme": "theme",
+            "guided_ai_secondary_themes": "secondary_themes",
         }
     )
 
@@ -376,7 +689,8 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object], pd.D
             "method_note": (
                 "AI-related sessions are flagged from public title, description, track, and format text. "
                 "Visible AI signals are flagged only from title, track, and format text. "
-                "Context groups use public track labels and may count a session once in more than one context."
+                "Context groups use public track labels and may count a session once in more than one context. "
+                "Guided themes use TF-IDF similarity to human-labeled seed themes for exploratory clustering."
             ),
             "row_counts": {
                 "combined": int(len(df)),
@@ -392,6 +706,8 @@ def build_story(input_path: Path) -> tuple[pd.DataFrame, dict[str, object], pd.D
         },
         "ai_summary": summarize_ai(df),
         "context_summary": summarize_contexts(contexts),
+        "theme_summary": summarize_themes(df),
+        "theme_terms": theme_terms,
         "context_network": build_context_network(df),
         "track_summary": summarize_tracks(df),
         "format_summary": summarize_formats(df),

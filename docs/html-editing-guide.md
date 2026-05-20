@@ -8,8 +8,8 @@ or a code review without needing to understand every D3 function first.
 | What you want to change | File | Search for |
 | --- | --- | --- |
 | Main story copy, section titles, nav labels | `app/index.html` | `data-edit-id` |
-| Explore panel text that changes by year/topic | `app/app.js` | `renderShiftMapPanel` |
-| Topic interpretation snippets | `app/app.js` | `contextMicrocopy` |
+| Explore panel text that changes by year/topic or theme | `app/app.js` | `renderShiftMapPanel`, `renderThemeMapPanel` |
+| Topic interpretation snippets | `app/app.js` | `contextMicrocopy`, `themeMicrocopy` |
 | Visual spacing, colors, layout | `app/styles.css` | the class name from the HTML |
 | Counts, session examples, topic rows | `app/data/siop_ai_story.json` | the year or topic name |
 
@@ -21,7 +21,7 @@ These `data-edit-id` values are stable handles for comments and review notes:
 | --- | --- |
 | Navigation | `site-nav`, `nav-brand` |
 | Home | `section-home`, `home-title`, `home-intro-copy`, `home-story-path` |
-| Explore | `section-explore`, `explore-title`, `explore-intro-copy`, `explore-map-intro`, `explore-quick-read`, `explore-detail-panel` |
+| Explore | `section-explore`, `explore-title`, `explore-intro-copy`, `explore-map-intro`, `explore-view-controls`, `explore-quick-read`, `explore-detail-panel` |
 | Meaning | `section-meaning`, `meaning-title`, `meaning-main-copy`, `meaning-side-definition`, `meaning-summary-cards` |
 | So what | `section-takeaway`, `takeaway-title`, `takeaway-main-copy`, `takeaway-summary-cards` |
 
@@ -43,6 +43,7 @@ shift-map
 shift-year-range
 shift-year-pills
 shift-play
+shift-view-controls
 shift-mode-controls
 shift-topic-chips
 shift-quick-read
