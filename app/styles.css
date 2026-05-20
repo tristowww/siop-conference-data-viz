@@ -801,17 +801,6 @@ main {
   gap: 6px;
 }
 
-.shift-view-controls {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  border: 1px solid rgba(220, 228, 239, 0.92);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  padding: 4px;
-}
-
-.shift-view,
 .shift-mode {
   min-height: 34px;
   border: 1px solid rgba(220, 228, 239, 0.95);
@@ -824,11 +813,6 @@ main {
   padding: 7px 9px;
 }
 
-.shift-view {
-  border-color: transparent;
-}
-
-.shift-view.active,
 .shift-mode.active {
   border-color: transparent;
   background: #111827;
@@ -875,68 +859,6 @@ main {
   line-height: 1.35;
 }
 
-.shift-topic-chips {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.shift-topic-chip {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 7px;
-  align-items: center;
-  min-height: 42px;
-  border: 1px solid rgba(220, 228, 239, 0.92);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--ink);
-  cursor: pointer;
-  padding: 9px 10px;
-  text-align: left;
-  transition:
-    border-color 140ms ease,
-    box-shadow 140ms ease,
-    transform 140ms ease,
-    opacity 140ms ease;
-}
-
-.shift-topic-chip:hover,
-.shift-topic-chip:focus-visible,
-.shift-topic-chip.active {
-  border-color: rgba(109, 77, 247, 0.38);
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
-  transform: translateY(-1px);
-}
-
-.shift-topic-chip.is-muted {
-  opacity: 0.45;
-}
-
-.shift-topic-dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 999px;
-  background: var(--chip-color);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--chip-color), transparent 78%);
-}
-
-.shift-topic-chip span:nth-child(2) {
-  overflow: hidden;
-  color: #516075;
-  font-size: 0.78rem;
-  font-weight: 900;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.shift-topic-chip strong {
-  color: var(--ink);
-  font-size: 0.96rem;
-  font-weight: 950;
-}
-
 .shift-map-body {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(310px, 0.72fr);
@@ -944,7 +866,7 @@ main {
 }
 
 .shift-map-canvas {
-  min-height: 500px;
+  min-height: 560px;
   overflow: hidden;
   border: 1px solid rgba(220, 228, 239, 0.86);
   border-radius: 8px;
@@ -968,6 +890,28 @@ main {
 
 .shift-map-field.theme-field {
   opacity: 0.22;
+}
+
+.shift-io-band {
+  opacity: 0.36;
+  stroke: rgba(255, 255, 255, 0.7);
+  stroke-width: 1;
+}
+
+.shift-io-band-label {
+  fill: rgba(15, 23, 42, 0.7);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+  text-transform: uppercase;
+}
+
+.shift-io-band-copy {
+  fill: rgba(81, 96, 117, 0.76);
+  font-size: 11px;
+  font-weight: 850;
+  pointer-events: none;
 }
 
 .shift-axis-line {
@@ -2814,11 +2758,6 @@ select:focus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .shift-view-controls {
-    grid-template-columns: 1fr;
-    border-radius: 8px;
-  }
-
   .shift-quick-read {
     grid-template-columns: 1fr;
   }
@@ -2828,10 +2767,6 @@ select:focus {
     width: fit-content;
     min-height: 34px;
     padding: 0 12px;
-  }
-
-  .shift-topic-chips {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .overview-topic-map {

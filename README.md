@@ -22,8 +22,7 @@ where available.
   when the OCR includes a reliable title match; schedule-only rows may still have blank authors.
 - The public app does not currently include talk-level browsing; missing author names are queued in
   `data/processed/siop_ai_missing_authors.csv` for a focused recovery pass before that feature returns.
-- The app now uses a four-step guided story with one main Explore map, year/lens controls, and
-  topic chips for the I-side to O-side AI shift. Explore also includes a theme-cluster view with
+- The app now uses a four-step guided story with one main Explore constellation, year/lens controls,
   seeded TF-IDF topic labels, five-year theme trails, top terms, and session examples.
 - Stable HTML annotation anchors are included for review and copy edits.
 

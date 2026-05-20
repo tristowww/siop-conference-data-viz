@@ -128,8 +128,6 @@ let activeNetworkYear = 2026;
 let activeFocusYear = 2026;
 let activeOverviewMode = "all";
 let activeOverviewContext = null;
-let activeShiftView = "contexts";
-let activeShiftContext = null;
 let activeShiftTheme = null;
 let activeShiftMode = "all";
 let riverMode = "contexts";
@@ -878,8 +876,6 @@ function shiftThemeAllowed(theme, mode = activeShiftMode) {
 function setShiftMapYear(data, year) {
   activeFocusYear = Number(year);
   activeNetworkYear = activeFocusYear;
-  activeShiftContext = null;
-  activeShiftTheme = null;
   selectedLink = null;
   selectedTime = null;
   syncYearControls();
@@ -919,12 +915,6 @@ function syncShiftModeControls() {
   });
 }
 
-function syncShiftViewControls() {
-  document.querySelectorAll(".shift-view").forEach((button) => {
-    button.classList.toggle("active", button.dataset.shiftView === activeShiftView);
-  });
-}
-
 function syncShiftControls() {
   const range = document.querySelector("#shift-year-range");
   if (range) range.value = String(activeFocusYear);
@@ -938,93 +928,24 @@ function renderShiftQuickRead(data) {
   if (!target || !data) return;
 
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
-  if (activeShiftView === "themes") {
-    const themeRows = getThemeRowsForYear(data, activeFocusYear);
-    const visibleRows = themeRows.filter((row) => shiftThemeAllowed(row.theme));
-    const topTheme = [...visibleRows].sort((a, b) => b.sessions - a.sessions)[0] || themeRows[0];
-    const selectedRow = activeShiftTheme ? themeRowFor(data, activeFocusYear, activeShiftTheme) : null;
-    const actionText = activeShiftTheme
+  const themeRows = getThemeRowsForYear(data, activeFocusYear);
+  const visibleRows = themeRows.filter((row) => shiftThemeAllowed(row.theme));
+  const topTheme = [...visibleRows].sort((a, b) => b.sessions - a.sessions)[0] || themeRows[0];
+  const selectedRow = activeShiftTheme ? themeRowFor(data, activeFocusYear, activeShiftTheme) : null;
+  const actionText = activeShiftTheme
       ? `${shortTheme(activeShiftTheme)} is open.`
       : activeShiftMode === "all"
-        ? "Click a theme bubble or chip to see terms and sessions."
-        : `${shiftModeTitle()} themes are highlighted.`;
-    const mainText = selectedRow
-      ? `${selectedRow.sessions} ${shortTheme(activeShiftTheme)} sessions in ${activeFocusYear}.`
-      : `${topTheme.sessions} sessions in the biggest visible theme: ${shortTheme(topTheme.theme)}.`;
-
-    target.innerHTML = `
-      <span>${activeFocusYear}</span>
-      <strong>${current.ai_related_sessions} AI-related sessions. ${escapeHtml(mainText)}</strong>
-      <p>${escapeHtml(actionText)}</p>
-    `;
-    return;
-  }
-
-  const sideRows = getSideRowsForYear(data, activeFocusYear);
-  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
-  const oSide = sideRows.find((item) => item.side === "O-side org/development");
-  const balance = oSide.sessions - iSide.sessions;
-  const balanceText =
-    balance >= 0
-      ? `O-side is ${balance} topic signals above selection.`
-      : `Selection is ${Math.abs(balance)} topic signals above O-side.`;
-  const actionText = activeShiftContext
-    ? `${shortContext(activeShiftContext)} is open.`
-    : activeShiftMode === "all"
-      ? "Click a bubble or chip to open examples."
-      : `${shiftModeTitle()} is highlighted.`;
+        ? "Click a theme bubble to see terms and sessions."
+        : `${shiftModeTitle()} is highlighted.`;
+  const mainText = selectedRow
+    ? `${selectedRow.sessions} ${shortTheme(activeShiftTheme)} sessions in ${activeFocusYear}.`
+    : `${topTheme.sessions} sessions in the biggest visible theme: ${shortTheme(topTheme.theme)}.`;
 
   target.innerHTML = `
     <span>${activeFocusYear}</span>
-    <strong>${current.ai_related_sessions} AI-related sessions, ${percent(current.ai_share)} of the parsed program.</strong>
-    <p>${escapeHtml(`${balanceText} ${actionText}`)}</p>
+    <strong>${current.ai_related_sessions} AI-related sessions. ${escapeHtml(mainText)}</strong>
+    <p>${escapeHtml(actionText)}</p>
   `;
-}
-
-function renderShiftTopicChips(data) {
-  const container = document.querySelector("#shift-topic-chips");
-  if (!container || !data) return;
-
-  const rows =
-    activeShiftView === "themes" ? getThemeRowsForYear(data, activeFocusYear) : getContextRowsForYear(data, activeFocusYear);
-  container.innerHTML = "";
-  rows.forEach((row) => {
-    const isThemeView = activeShiftView === "themes";
-    const key = isThemeView ? row.theme : row.context;
-    const allowed = isThemeView ? shiftThemeAllowed(key) : shiftContextAllowed(key);
-    const active = isThemeView ? activeShiftTheme === key : activeShiftContext === key;
-    const color = isThemeView ? THEME_COLORS[key] : COLORS.contexts[key];
-    const label = isThemeView ? shortTheme(key) : shortContext(key);
-    const title = isThemeView ? themeMicrocopy(key) : contextMicrocopy(key);
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `shift-topic-chip${active ? " active" : ""}${allowed ? "" : " is-muted"}`;
-    button.dataset.context = isThemeView ? "" : key;
-    button.dataset.theme = isThemeView ? key : "";
-    button.title = title;
-    button.innerHTML = `
-      <span class="shift-topic-dot" style="--chip-color: ${color}"></span>
-      <span>${escapeHtml(label)}</span>
-      <strong>${row.sessions}</strong>
-    `;
-    button.addEventListener("click", () => {
-      stopShiftReplay();
-      if (!allowed) {
-        activeShiftMode = "all";
-      }
-      if (isThemeView) {
-        activeShiftTheme = key;
-        activeShiftContext = null;
-      } else {
-        activeShiftContext = key;
-        activeShiftTheme = null;
-        activeContext = key;
-        activeSide = "All";
-      }
-      renderShiftMap(data);
-    });
-    container.appendChild(button);
-  });
 }
 
 function stopShiftReplay() {
@@ -1131,13 +1052,13 @@ function renderThemeMapPanel(data) {
   const title = selectedRow
     ? `${activeFocusYear}: ${shortTheme(activeShiftTheme)}`
     : side !== "All"
-      ? `${activeFocusYear}: ${shiftModeTitle()} themes`
-      : `${activeFocusYear}: theme clusters`;
+      ? `${activeFocusYear}: ${shiftModeTitle()}`
+      : `${activeFocusYear}: AI shift constellation`;
   const copy = selectedRow
     ? `${themeMicrocopy(activeShiftTheme)} This cluster has ${selectedRow.sessions} sessions in ${activeFocusYear}.`
     : side !== "All"
-      ? `${shiftModeTitle()} is highlighted. The theme layer keeps the main I/O story, then lets you see what the sessions are actually about.`
-      : `The biggest visible cluster is ${shortTheme(topTheme.theme)} with ${topTheme.sessions} sessions. Click a theme to see the trail, common terms, and examples underneath it.`;
+      ? `${shiftModeTitle()} is highlighted inside the same constellation. Click any bright theme bubble to open a focused read.`
+      : `The biggest visible theme is ${shortTheme(topTheme.theme)} with ${topTheme.sessions} sessions. Click a theme to see its trail, common terms, and examples.`;
   const exampleHtml = examples
     .map(
       (session) => `
@@ -1158,7 +1079,7 @@ function renderThemeMapPanel(data) {
   panel.innerHTML = `
     <div class="shift-panel-heading">
       <div>
-        <span class="stat-label">${activeShiftTheme ? "Selected theme" : side !== "All" ? "Selected lens" : "Theme view"}</span>
+        <span class="stat-label">${activeShiftTheme ? "Selected theme" : side !== "All" ? "Selected lens" : "Focus tray"}</span>
         <strong>${escapeHtml(title)}</strong>
       </div>
       ${
@@ -1189,7 +1110,7 @@ function renderThemeMapPanel(data) {
       ${
         activeShiftTheme || side !== "All"
           ? exampleHtml || '<div class="shift-empty">No matching sessions found for this slice.</div>'
-          : '<div class="shift-empty"><strong>Make it move:</strong> switch between I-side and O-side, then click a theme bubble to see its five-year trail.</div>'
+          : '<div class="shift-empty"><strong>Make it move:</strong> scrub the year, switch I-side/O-side, or click a theme bubble to see its five-year trail.</div>'
       }
     </div>
   `;
@@ -1208,129 +1129,7 @@ function renderThemeMapPanel(data) {
 function renderShiftMapPanel(data) {
   const panel = document.querySelector("#shift-map-panel");
   if (!panel || !data) return;
-  if (activeShiftView === "themes") {
-    renderThemeMapPanel(data);
-    return;
-  }
-
-  const current = data.ai_summary.find((item) => item.year === activeFocusYear);
-  const sideRows = getSideRowsForYear(data, activeFocusYear);
-  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
-  const oSide = sideRows.find((item) => item.side === "O-side org/development");
-  const balance = oSide.sessions - iSide.sessions;
-  const side = shiftModeSide();
-  const selectedRow = activeShiftContext ? contextRowFor(data, activeFocusYear, activeShiftContext) : null;
-  const sessions = activeShiftContext
-    ? sessionsForLens(data, { year: activeFocusYear, context: activeShiftContext })
-    : side !== "All"
-      ? sessionsForLens(data, { year: activeFocusYear, side })
-      : [];
-  const examples = sessions.slice(0, 4);
-  const trendRows = activeShiftContext
-    ? getYears(data).map((year) => {
-        const row = contextRowFor(data, year, activeShiftContext);
-        return { year, sessions: row ? row.sessions : 0 };
-      })
-    : [];
-  const trendDelta = trendRows.length ? trendRows.at(-1).sessions - trendRows[0].sessions : 0;
-  const trendHtml = activeShiftContext
-    ? `
-      <div class="shift-trend-strip" aria-label="${escapeHtml(shortContext(activeShiftContext))} five-year trail">
-        <div class="shift-trend-heading">
-          <span class="stat-label">Five-year trail</span>
-          <strong>${trendDelta >= 0 ? "+" : ""}${trendDelta} topic signals from ${trendRows[0].year} to ${trendRows.at(-1).year}</strong>
-        </div>
-        <div class="shift-trend-years">
-          ${trendRows
-            .map(
-              (row) => `
-                <span class="${row.year === activeFocusYear ? "active" : ""}">
-                  ${row.year}
-                  <strong>${row.sessions}</strong>
-                </span>
-              `,
-            )
-            .join("")}
-        </div>
-      </div>
-    `
-    : "";
-  const title = selectedRow
-    ? `${activeFocusYear}: ${shortContext(activeShiftContext)}`
-    : side !== "All"
-      ? `${activeFocusYear}: ${shiftModeTitle()}`
-    : `${activeFocusYear}: ${balance >= 0 ? "O-side leads" : "Selection leads"}`;
-  const copy = selectedRow
-    ? `${contextMicrocopy(activeShiftContext)} This slice has ${selectedRow.sessions} topic signals in ${activeFocusYear}.`
-    : side !== "All"
-      ? `${shiftModeTitle()} has ${side === "I-side selection/assessment" ? iSide.sessions : oSide.sessions} AI-related topic signals in ${activeFocusYear}. Click a topic chip or bubble to open a narrower slice.`
-    : balance >= 0
-      ? `AI is ${percent(current.ai_share)} of parsed sessions. Org-side people/work topics sit ${balance} signals above selection and assessment this year. Start by clicking O-side, I-side, or a topic chip.`
-      : `AI is ${percent(current.ai_share)} of parsed sessions. Selection and assessment sit ${Math.abs(balance)} signals above org-side people/work topics this year. Start by clicking O-side, I-side, or a topic chip.`;
-  const exampleHtml = examples
-    .map(
-      (session) => `
-        <article>
-          <span>${escapeHtml([session.year, shortContext(session.context), session.session_format || "Session"].join(" | "))}</span>
-          <strong>${escapeHtml(session.title)}</strong>
-          ${
-            session.speakers
-              ? `<p>${escapeHtml(`Authors: ${truncateText(session.speakers, 96)}`)}</p>`
-              : ""
-          }
-          <p>${escapeHtml(truncateText(session.description || sessionDescriptor(session), 128))}</p>
-        </article>
-      `,
-    )
-    .join("");
-
-  panel.innerHTML = `
-    <div class="shift-panel-heading">
-      <div>
-        <span class="stat-label">${activeShiftContext ? "Selected topic" : side !== "All" ? "Selected lens" : "Year read"}</span>
-        <strong>${escapeHtml(title)}</strong>
-      </div>
-      ${
-        activeShiftContext || activeShiftMode !== "all"
-          ? '<button class="shift-reset" type="button">Clear</button>'
-          : ""
-      }
-    </div>
-    <p>${escapeHtml(copy)}</p>
-    <div class="shift-panel-stats">
-      <article>
-        <span>AI sessions</span>
-        <strong>${current.ai_related_sessions}</strong>
-      </article>
-      <article>
-        <span>Selection</span>
-        <strong>${iSide.sessions}</strong>
-      </article>
-      <article>
-        <span>Org-side</span>
-        <strong>${oSide.sessions}</strong>
-      </article>
-    </div>
-    ${trendHtml}
-    <div class="shift-panel-examples">
-      <span class="stat-label">${activeShiftContext || side !== "All" ? "Session examples" : "Try this"}</span>
-      ${
-        activeShiftContext || side !== "All"
-          ? exampleHtml || '<div class="shift-empty">No matching sessions found for this slice.</div>'
-          : '<div class="shift-empty"><strong>Make it move:</strong> choose I-side or O-side, scrub the year, or click a topic chip to see the sessions underneath the pattern.</div>'
-      }
-    </div>
-  `;
-
-  const reset = panel.querySelector(".shift-reset");
-  if (reset) {
-    reset.addEventListener("click", () => {
-      activeShiftContext = null;
-      activeShiftMode = "all";
-      renderShiftMap(data);
-    });
-  }
-  markPanelUpdated(panel);
+  renderThemeMapPanel(data);
 }
 
 function drawThemeMap(data) {
@@ -1383,6 +1182,57 @@ function drawThemeMap(data) {
     .attr("height", height - margin.top - margin.bottom)
     .attr("rx", 22)
     .attr("class", "shift-map-field theme-field");
+
+  const bands = [
+    {
+      label: "I-side",
+      copy: "selection / assessment",
+      x0: 0,
+      x1: 0.34,
+      fill: "rgba(245, 154, 98, 0.20)",
+    },
+    {
+      label: "Cross-cutting",
+      copy: "methods / governance",
+      x0: 0.34,
+      x1: 0.58,
+      fill: "rgba(109, 77, 247, 0.12)",
+    },
+    {
+      label: "O-side",
+      copy: "people / work context",
+      x0: 0.58,
+      x1: 1,
+      fill: "rgba(85, 172, 208, 0.18)",
+    },
+  ];
+  const bandTop = margin.top + 12;
+  const bandHeight = height - margin.top - margin.bottom - 24;
+  const bandGroup = svg.append("g").attr("class", "shift-io-bands");
+  bands.forEach((band) => {
+    const bandX = x(band.x0);
+    const bandWidth = x(band.x1) - x(band.x0);
+    bandGroup
+      .append("rect")
+      .attr("class", "shift-io-band")
+      .attr("x", bandX)
+      .attr("y", bandTop)
+      .attr("width", bandWidth)
+      .attr("height", bandHeight)
+      .attr("fill", band.fill);
+    bandGroup
+      .append("text")
+      .attr("class", "shift-io-band-label")
+      .attr("x", bandX + 16)
+      .attr("y", bandTop + 25)
+      .text(band.label);
+    bandGroup
+      .append("text")
+      .attr("class", "shift-io-band-copy")
+      .attr("x", bandX + 16)
+      .attr("y", bandTop + 44)
+      .text(band.copy);
+  });
 
   svg
     .append("line")
@@ -1496,7 +1346,6 @@ function drawThemeMap(data) {
         activeShiftMode = "all";
       }
       activeShiftTheme = d.theme;
-      activeShiftContext = null;
       renderShiftMap(data);
     })
     .on("keydown", (event, d) => {
@@ -1506,7 +1355,6 @@ function drawThemeMap(data) {
           activeShiftMode = "all";
         }
         activeShiftTheme = d.theme;
-        activeShiftContext = null;
         renderShiftMap(data);
       }
     });
@@ -1540,240 +1388,15 @@ function drawThemeMap(data) {
 function drawShiftMap(data) {
   const target = document.querySelector("#shift-map-canvas");
   if (!target || !data) return;
-  if (activeShiftView === "themes") {
-    drawThemeMap(data);
-    return;
-  }
-
-  const width = 1040;
-  const height = 500;
-  const margin = { top: 56, right: 82, bottom: 82, left: 92 };
-  const svg = makeSvg("#shift-map-canvas", width, height).attr("class", "shift-map-svg");
-  const years = getYears(data);
-  const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
-  const y = d3
-    .scaleLinear()
-    .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
-    .range([height - margin.bottom, margin.top + 48]);
-  const radius = d3
-    .scaleSqrt()
-    .domain([0, d3.max(data.context_summary, (item) => item.sessions) || 1])
-    .range([12, 46]);
-  const contextOffsets = {
-    "Explicit tech/AI": -12,
-    "Selection/assessment/methods": 16,
-    "Org/development/training": -6,
-    "DEI/accessibility": 24,
-    "Other/special": 32,
-  };
-  const currentRows = getContextRowsForYear(data, activeFocusYear).map((row) => ({
-    ...row,
-    x: x(shiftAxisPosition(row.context)),
-    y: y(row.sessions) + (contextOffsets[row.context] || 0),
-    color: COLORS.contexts[row.context],
-    selected: activeShiftContext === row.context,
-    allowed: shiftContextAllowed(row.context),
-  }));
-  const sideRows = getSideRowsForYear(data, activeFocusYear);
-  const iSide = sideRows.find((item) => item.side === "I-side selection/assessment");
-  const oSide = sideRows.find((item) => item.side === "O-side org/development");
-  const balanceRatio = iSide.sessions + oSide.sessions > 0 ? oSide.sessions / (iSide.sessions + oSide.sessions) : 0.5;
-  const balanceX = x(balanceRatio);
-  const balance = oSide.sessions - iSide.sessions;
-  const balanceY = margin.top + 28;
-
-  const defs = svg.append("defs");
-  const gradient = defs.append("linearGradient").attr("id", "shift-axis-gradient").attr("x1", "0%").attr("x2", "100%");
-  gradient.append("stop").attr("offset", "0%").attr("stop-color", "#f59a62");
-  gradient.append("stop").attr("offset", "54%").attr("stop-color", "#f7ecff");
-  gradient.append("stop").attr("offset", "100%").attr("stop-color", "#55acd0");
-
-  svg
-    .append("rect")
-    .attr("x", margin.left)
-    .attr("y", margin.top)
-    .attr("width", width - margin.left - margin.right)
-    .attr("height", height - margin.top - margin.bottom)
-    .attr("rx", 22)
-    .attr("class", "shift-map-field");
-
-  svg
-    .append("line")
-    .attr("class", "shift-axis-line")
-    .attr("x1", x(0))
-    .attr("x2", x(1))
-    .attr("y1", height - margin.bottom + 28)
-    .attr("y2", height - margin.bottom + 28);
-
-  svg
-    .append("text")
-    .attr("class", "shift-axis-label")
-    .attr("x", x(0))
-    .attr("y", height - margin.bottom + 58)
-    .text("structured selection / assessment");
-  svg
-    .append("text")
-    .attr("class", "shift-axis-label")
-    .attr("x", x(1))
-    .attr("y", height - margin.bottom + 58)
-    .attr("text-anchor", "end")
-    .text("people, learning, culture, work design");
-  svg
-    .append("text")
-    .attr("class", "shift-y-label")
-    .attr("x", margin.left)
-    .attr("y", margin.top - 20)
-    .text("More visible in the program");
-
-  CONTEXT_ORDER.forEach((context) => {
-    const isSelectedTrail = activeShiftContext === context;
-    const isBackgroundTrail = Boolean(activeShiftContext && !isSelectedTrail);
-    const isAllowedTrail = shiftContextAllowed(context);
-    const trail = years.map((year) => {
-      const row = contextRowFor(data, year, context) || { sessions: 0 };
-      return {
-        year,
-        context,
-        sessions: row.sessions,
-        x: x(shiftAxisPosition(context)),
-        y: y(row.sessions) + (contextOffsets[context] || 0),
-      };
-    });
-    const line = d3
-      .line()
-      .x((item) => item.x)
-      .y((item) => item.y)
-      .curve(d3.curveCatmullRom.alpha(0.5));
-    svg
-      .append("path")
-      .datum(trail)
-      .attr(
-        "class",
-        `shift-trail${isSelectedTrail ? " is-selected" : ""}${isBackgroundTrail ? " is-background" : ""}${
-          isAllowedTrail ? "" : " is-muted"
-        }`,
-      )
-      .attr("d", line)
-      .attr("stroke", COLORS.contexts[context]);
-    const trailDots = svg
-      .append("g")
-      .selectAll("circle")
-      .data(trail)
-      .join("circle")
-      .attr(
-        "class",
-        (item) =>
-          `shift-trail-dot${item.year === activeFocusYear ? " active" : ""}${
-            isSelectedTrail ? " is-selected" : ""
-          }${isBackgroundTrail ? " is-background" : ""}${isAllowedTrail ? "" : " is-muted"}`,
-      )
-      .attr("cx", (item) => item.x)
-      .attr("cy", (item) => item.y)
-      .attr("r", (item) => (isSelectedTrail ? (item.year === activeFocusYear ? 8 : 5) : item.year === activeFocusYear ? 5 : 3))
-      .attr("fill", COLORS.contexts[context]);
-
-    if (isSelectedTrail) {
-      svg
-        .append("g")
-        .selectAll("text")
-        .data(trail)
-        .join("text")
-        .attr("class", "shift-trail-year")
-        .attr("x", (item) => item.x + 17)
-        .attr("y", (item) => item.y + 5)
-        .text((item) => item.year);
-      trailDots.raise();
-    }
-  });
-
-  const balanceGroup = svg.append("g").attr("class", "shift-balance");
-  balanceGroup
-    .append("line")
-    .attr("x1", x(0))
-    .attr("x2", x(1))
-    .attr("y1", balanceY)
-    .attr("y2", balanceY);
-  balanceGroup
-    .append("circle")
-    .attr("cx", balanceX)
-    .attr("cy", balanceY)
-    .attr("r", 13);
-  balanceGroup
-    .append("text")
-    .attr("x", balanceX)
-    .attr("y", balanceY - 18)
-    .attr("text-anchor", "middle")
-    .text(`${activeFocusYear}: ${balance >= 0 ? "+" : ""}${balance} O-side balance`);
-
-  const nodes = svg
-    .append("g")
-    .selectAll("g")
-    .data(currentRows)
-    .join("g")
-    .attr("class", (d) => `shift-topic${d.selected ? " is-selected" : ""}${d.allowed ? "" : " is-muted"}`)
-    .attr("transform", (d) => `translate(${d.x},${d.y})`)
-    .attr("tabindex", "0")
-    .attr("role", "button")
-    .attr("aria-label", (d) => `${activeFocusYear} ${shortContext(d.context)} ${d.sessions} topic signals. Click to inspect.`)
-    .on("mouseenter", (event, d) => {
-      showTooltip(event, `${activeFocusYear}: ${shortContext(d.context)}`, `${d.sessions} topic signals. Click to see examples.`);
-    })
-    .on("mousemove", moveTooltip)
-    .on("mouseleave", hideTooltip)
-    .on("click", (event, d) => {
-      if (!d.allowed) {
-        activeShiftMode = "all";
-      }
-      activeShiftContext = d.context;
-      activeContext = d.context;
-      activeSide = "All";
-      renderShiftMap(data);
-      renderOverviewPlayground(data);
-    })
-    .on("keydown", (event, d) => {
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        if (!d.allowed) {
-          activeShiftMode = "all";
-        }
-        activeShiftContext = d.context;
-        renderShiftMap(data);
-      }
-    });
-
-  nodes
-    .append("circle")
-    .attr("r", (d) => radius(d.sessions))
-    .attr("fill", (d) => d.color);
-  nodes
-    .append("circle")
-    .attr("class", "shift-topic-ring")
-    .attr("r", (d) => radius(d.sessions) + 6)
-    .attr("fill", "none");
-  nodes
-    .append("text")
-    .attr("class", "shift-topic-count")
-    .attr("text-anchor", "middle")
-    .attr("y", 5)
-    .text((d) => d.sessions);
-  nodes
-    .append("text")
-    .attr("class", "shift-topic-label")
-    .attr("text-anchor", "middle")
-    .attr("y", (d) =>
-      d.y > height - margin.bottom - 16 ? -radius(d.sessions) - 12 : radius(d.sessions) + 25,
-    )
-    .text((d) => shortContext(d.context));
+  drawThemeMap(data);
 }
 
 function renderShiftMap(data) {
   if (!document.querySelector("#shift-map") || !data) return;
   renderShiftYearControls(data);
   syncShiftControls();
-  syncShiftViewControls();
   syncShiftModeControls();
   renderShiftQuickRead(data);
-  renderShiftTopicChips(data);
   drawShiftMap(data);
   renderShiftMapPanel(data);
 }
@@ -1801,22 +1424,9 @@ function wireShiftMap(data) {
     button.addEventListener("click", () => {
       stopShiftReplay();
       activeShiftMode = button.dataset.shiftMode || "all";
-      if (activeShiftView === "themes" && activeShiftTheme && !shiftThemeAllowed(activeShiftTheme)) {
+      if (activeShiftTheme && !shiftThemeAllowed(activeShiftTheme)) {
         activeShiftTheme = null;
       }
-      if (activeShiftView !== "themes" && activeShiftContext && !shiftContextAllowed(activeShiftContext)) {
-        activeShiftContext = null;
-      }
-      renderShiftMap(data);
-    });
-  });
-  document.querySelectorAll(".shift-view").forEach((button) => {
-    button.addEventListener("click", () => {
-      stopShiftReplay();
-      activeShiftView = button.dataset.shiftView || "contexts";
-      activeShiftContext = null;
-      activeShiftTheme = null;
-      activeShiftMode = "all";
       renderShiftMap(data);
     });
   });
@@ -1978,7 +1588,8 @@ function resetExploration() {
   syncYearControls();
   activeOverviewMode = "all";
   activeOverviewContext = null;
-  activeShiftContext = null;
+  activeShiftTheme = null;
+  activeShiftMode = "all";
   drawHeroSignalField(storyData);
   renderOverviewPlayground(storyData);
   renderShiftMap(storyData);
@@ -3834,7 +3445,13 @@ function wireDataStoryCards(data) {
       const context = card.dataset.drillContext || "All";
       activeFocusYear = year;
       activeNetworkYear = year;
-      activeShiftContext = context === "All" ? null : context;
+      activeShiftTheme = null;
+      activeShiftMode =
+        context === "Selection/assessment/methods"
+          ? "iside"
+          : context === "Org/development/training"
+            ? "oside"
+            : "all";
       activeContext = context;
       activeSide = "All";
       selectedLink = null;
