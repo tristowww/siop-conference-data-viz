@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-home-playground" />
+    <link rel="stylesheet" href="styles.css?v=20260520-explorer-map" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260520-home-playground" defer></script>
+    <script src="app.js?v=20260520-explorer-map" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#home-step">Skip to story</a>
@@ -51,7 +51,7 @@
       </div>
     </header>
     <main class="guide-main">
-      <!-- EDIT SECTION: Home. This is the opening playground and main interactive visual. -->
+      <!-- EDIT SECTION: Home. This is the opening Explorer Map and main interactive visual. -->
       <section
         id="home-step"
         class="home-panel home-playground guided-step is-active"
@@ -61,19 +61,19 @@
       >
         <div class="guide-step-label" data-edit-id="home-step-label">Home <span>1 of 4</span></div>
         <p class="eyebrow" data-edit-id="home-eyebrow">SIOP 2022 to 2026 program analysis</p>
-        <h1 id="home-title" data-edit-id="home-title">Play with where AI is showing up at SIOP.</h1>
+        <h1 id="home-title" data-edit-id="home-title">Scrub the years to see where AI shows up at SIOP.</h1>
         <p class="hero-copy" data-edit-id="home-intro-copy">
-          The short version: AI is showing up more, but the better story is where. Drag a theme,
-          scrub the years, or filter the view to see how selection and assessment sit next to
-          training, coaching, leadership, culture, accessibility, and work design.
+          AI is showing up more, but the better story is where. Move from 2022 to 2026, then click
+          a theme to see examples behind the shift from selection and assessment toward broader
+          people and work contexts.
         </p>
         <div id="shift-map" class="shift-map" aria-label="AI shift map" data-edit-id="explore-shift-map">
           <div class="shift-map-topline" data-edit-id="explore-map-intro">
             <div>
               <span class="stat-label">Use-case center of gravity</span>
-              <strong>Click trails, drag themes, search terms, or play the years.</strong>
+              <strong>Start with the year scrubber. Then click a theme for examples.</strong>
               <p>
-                The constellation keeps the I-to-O shift in one place: left is selection and assessment,
+                The map keeps the I-to-O shift in one place: left is selection and assessment,
                 center is cross-cutting methods and governance, and right is people/work context.
               </p>
             </div>
@@ -91,7 +91,7 @@
           </div>
           <div id="shift-quick-read" class="shift-quick-read" aria-live="polite" data-edit-id="explore-quick-read">
             <span>2026</span>
-            <strong>Click or drag a theme bubble to see its trail, terms, and sessions.</strong>
+            <strong>Move the year, switch the I/O lens, or click a theme bubble.</strong>
           </div>
           <div class="shift-map-body">
             <!-- Dynamic chart target. The bubbles and axes are generated in app.js. -->
@@ -99,7 +99,7 @@
               id="shift-map-canvas"
               class="shift-map-canvas"
               role="img"
-              aria-label="AI theme constellation mapped from I-side assessment to O-side people and work context"
+              aria-label="AI Explorer Map from I-side assessment to O-side people and work context"
             ></div>
             <!-- Dynamic detail panel. This placeholder is replaced when app.js loads. -->
             <aside id="shift-map-panel" class="shift-map-panel" aria-live="polite" data-edit-id="explore-detail-panel">
@@ -114,7 +114,7 @@
         </div>
       </section>
 
-      <!-- EDIT SECTION: Explore. This is the short interpretation after the home playground. -->
+      <!-- EDIT SECTION: Explore. This is the short interpretation after the Home Explorer Map. -->
       <section
         id="visibility-step"
         class="section-band story-step guided-step"
@@ -124,14 +124,14 @@
       >
         <div class="guide-step-label" data-edit-id="explore-step-label">Explore <span>2 of 4</span></div>
         <div class="section-heading" data-edit-id="explore-heading">
-          <h2 id="page-title" data-edit-id="explore-title">What to notice in the playground.</h2>
+          <h2 id="page-title" data-edit-id="explore-title">What to notice in the Explorer Map.</h2>
           <p data-edit-id="explore-intro-copy">
             The point is not that every session fits perfectly into one bucket. The point is the pattern:
             AI still has a selection and assessment home base, but the broader people/work side gets
             easier to see over time.
           </p>
         </div>
-        <div class="explore-note-grid" aria-label="Ways to read the constellation" data-edit-id="explore-note-cards">
+        <div class="explore-note-grid" aria-label="Ways to read the Explorer Map" data-edit-id="explore-note-cards">
           <article>
             <span class="compare-label">Try first</span>
             <h3>Play the years.</h3>
@@ -144,8 +144,8 @@
           </article>
           <article>
             <span class="compare-label">Finally</span>
-            <h3>Drag a theme.</h3>
-            <p>Use the drag interaction as a gut-check: where would you place that theme on the I-to-O line?</p>
+            <h3>Open a theme.</h3>
+            <p>Click a bubble to see its five-year trail, top terms, and a few concrete session examples.</p>
           </article>
         </div>
       </section>

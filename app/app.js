@@ -130,10 +130,6 @@ let activeOverviewMode = "all";
 let activeOverviewContext = null;
 let activeShiftTheme = null;
 let activeShiftMode = "all";
-let shiftThemeQuery = "";
-let shiftSpread = 1;
-let shiftTrailsVisible = true;
-let shiftOrbit = false;
 let riverMode = "contexts";
 let selectedLink = null;
 let selectedTime = null;
@@ -143,7 +139,6 @@ let shiftReplayTimer = null;
 let shiftReplayIndex = 0;
 let activeGuideStep = "home";
 let storyData;
-const shiftThemeOverrides = new Map();
 const SESSION_PREVIEW_LIMIT = 4;
 const SESSION_EXPANDED_LIMIT = 12;
 
@@ -886,23 +881,6 @@ function themeTermsFor(data, theme) {
   return (data.theme_terms || []).find((item) => item.theme === theme)?.terms || [];
 }
 
-function shiftThemeMatchesQuery(theme, data = storyData) {
-  const query = shiftThemeQuery.toLowerCase().trim();
-  if (!query) return true;
-  const terms = data ? themeTermsFor(data, theme) : [];
-  return [theme, sideForTheme(theme), ...terms].join(" ").toLowerCase().includes(query);
-}
-
-function shiftThemeVisible(theme, data = storyData, mode = activeShiftMode) {
-  return shiftThemeAllowed(theme, mode) && shiftThemeMatchesQuery(theme, data);
-}
-
-function axisZoneLabel(xNorm) {
-  if (xNorm < 0.34) return "I-side";
-  if (xNorm < 0.58) return "cross-cutting";
-  return "O-side";
-}
-
 function setShiftMapYear(data, year) {
   activeFocusYear = Number(year);
   activeNetworkYear = activeFocusYear;
@@ -959,15 +937,13 @@ function renderShiftQuickRead(data) {
 
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
   const themeRows = getThemeRowsForYear(data, activeFocusYear);
-  const visibleRows = themeRows.filter((row) => shiftThemeVisible(row.theme, data));
+  const visibleRows = themeRows.filter((row) => shiftThemeAllowed(row.theme));
   const topTheme = [...visibleRows].sort((a, b) => b.sessions - a.sessions)[0] || themeRows[0];
   const selectedRow = activeShiftTheme ? themeRowFor(data, activeFocusYear, activeShiftTheme) : null;
   const actionText = activeShiftTheme
     ? `${shortTheme(activeShiftTheme)} is open.`
     : activeShiftMode === "all"
-      ? shiftThemeQuery
-        ? `Searching "${shiftThemeQuery}". Drag a match or clear search.`
-        : "Click or drag a theme bubble to see terms and sessions."
+      ? "Move the year, switch the lens, or click a theme bubble."
       : `${shiftModeTitle()} is highlighted.`;
   const mainText = selectedRow
     ? `${selectedRow.sessions} ${shortTheme(activeShiftTheme)} sessions in ${activeFocusYear}.`
@@ -1031,7 +1007,7 @@ function renderThemeMapPanel(data) {
 
   const current = data.ai_summary.find((item) => item.year === activeFocusYear);
   const themeRows = getThemeRowsForYear(data, activeFocusYear);
-  const visibleThemeRows = themeRows.filter((row) => shiftThemeVisible(row.theme, data));
+  const visibleThemeRows = themeRows.filter((row) => shiftThemeAllowed(row.theme));
   const topTheme = [...(visibleThemeRows.length ? visibleThemeRows : themeRows)].sort((a, b) => b.sessions - a.sessions)[0];
   const side = shiftModeSide();
   const selectedRow = activeShiftTheme ? themeRowFor(data, activeFocusYear, activeShiftTheme) : null;
@@ -1049,7 +1025,6 @@ function renderThemeMapPanel(data) {
     : [];
   const trendDelta = trendRows.length ? trendRows.at(-1).sessions - trendRows[0].sessions : 0;
   const terms = activeShiftTheme ? themeTermsFor(data, activeShiftTheme) : [];
-  const movedPlacement = activeShiftTheme ? shiftThemeOverrides.get(activeShiftTheme) : null;
   const trendHtml = activeShiftTheme
     ? `
       <div class="shift-trend-strip" aria-label="${escapeHtml(shortTheme(activeShiftTheme))} five-year trail">
@@ -1083,25 +1058,15 @@ function renderThemeMapPanel(data) {
         </div>
       `
       : "";
-  const placementHtml =
-    movedPlacement && activeShiftTheme
-      ? `
-        <div class="shift-placement-note">
-          <span class="stat-label">Your placement</span>
-          <strong>${escapeHtml(axisZoneLabel(movedPlacement.xNorm))}</strong>
-          <p>You dragged this theme there. The faint stem still shows where the data placed it.</p>
-        </div>
-      `
-      : "";
   const title = selectedRow
     ? `${activeFocusYear}: ${shortTheme(activeShiftTheme)}`
     : side !== "All"
       ? `${activeFocusYear}: ${shiftModeTitle()}`
-      : `${activeFocusYear}: AI shift constellation`;
+      : `${activeFocusYear}: AI Explorer Map`;
   const copy = selectedRow
     ? `${themeMicrocopy(activeShiftTheme)} This cluster has ${selectedRow.sessions} sessions in ${activeFocusYear}.`
     : side !== "All"
-      ? `${shiftModeTitle()} is highlighted inside the same constellation. Click any bright theme bubble to open a focused read.`
+      ? `${shiftModeTitle()} is highlighted inside the same map. Click any bright theme bubble to open a focused read.`
       : `The biggest visible theme is ${shortTheme(topTheme.theme)} with ${topTheme.sessions} sessions. Click a theme to see its trail, common terms, and examples.`;
   const exampleHtml = examples
     .map(
@@ -1127,7 +1092,7 @@ function renderThemeMapPanel(data) {
         <strong>${escapeHtml(title)}</strong>
       </div>
       ${
-        activeShiftTheme || activeShiftMode !== "all" || shiftThemeQuery || shiftThemeOverrides.size
+        activeShiftTheme || activeShiftMode !== "all"
           ? '<button class="shift-reset" type="button">Clear</button>'
           : ""
       }
@@ -1148,7 +1113,6 @@ function renderThemeMapPanel(data) {
       </article>
     </div>
     ${trendHtml}
-    ${placementHtml}
     ${termsHtml}
     <div class="shift-panel-examples">
       <span class="stat-label">${activeShiftTheme || side !== "All" ? "Session examples" : "Try this"}</span>
@@ -1165,11 +1129,6 @@ function renderThemeMapPanel(data) {
     reset.addEventListener("click", () => {
       activeShiftTheme = null;
       activeShiftMode = "all";
-      shiftThemeQuery = "";
-      shiftThemeOverrides.clear();
-      shiftSpread = 1;
-      shiftTrailsVisible = true;
-      shiftOrbit = false;
       renderShiftMap(data);
     });
   }
@@ -1189,10 +1148,7 @@ function drawThemeMap(data) {
   const width = 1280;
   const height = 660;
   const margin = { top: 82, right: 92, bottom: 112, left: 96 };
-  const svg = makeSvg("#shift-map-canvas", width, height).attr(
-    "class",
-    `shift-map-svg shift-theme-svg${shiftOrbit ? " is-orbiting" : ""}`,
-  );
+  const svg = makeSvg("#shift-map-canvas", width, height).attr("class", "shift-map-svg shift-theme-svg");
   const years = getYears(data);
   const maxSessions = d3.max(data.theme_summary || [], (item) => item.sessions) || 1;
   const x = d3.scaleLinear().domain([0, 1]).range([margin.left, width - margin.right]);
@@ -1211,22 +1167,16 @@ function drawThemeMap(data) {
     "Education, methods, and research tools": 8,
     "DEI, accessibility, and fairness": 42,
   };
-  const plotTop = margin.top + 12;
-  const plotHeight = height - margin.top - margin.bottom - 24;
   const currentRows = getThemeRowsForYear(data, activeFocusYear).map((row) => {
     const baseX = x(themeAxisPosition(row.theme));
-    const baseY = y(row.sessions) + (themeOffsets[row.theme] || 0) * shiftSpread;
-    const override = shiftThemeOverrides.get(row.theme);
+    const baseY = y(row.sessions) + (themeOffsets[row.theme] || 0);
     return {
       ...row,
-      baseX,
-      baseY,
-      x: override ? x(override.xNorm) : baseX,
-      y: override ? plotTop + override.yNorm * plotHeight : baseY,
-      userPlaced: Boolean(override),
+      x: baseX,
+      y: baseY,
       color: THEME_COLORS[row.theme],
       selected: activeShiftTheme === row.theme,
-      allowed: shiftThemeVisible(row.theme, data),
+      allowed: shiftThemeAllowed(row.theme),
     };
   });
 
@@ -1326,11 +1276,11 @@ function drawThemeMap(data) {
     .attr("y", margin.top - 22)
     .text("Theme visibility in the program");
 
-  const background = svg.append("g").attr("class", `theme-trails${shiftTrailsVisible ? "" : " is-hidden"}`);
-  if (shiftTrailsVisible) THEME_ORDER.forEach((theme) => {
+  const background = svg.append("g").attr("class", "theme-trails");
+  THEME_ORDER.forEach((theme) => {
     const isSelectedTrail = activeShiftTheme === theme;
     const isBackgroundTrail = Boolean(activeShiftTheme && !isSelectedTrail);
-    const isAllowedTrail = shiftThemeVisible(theme, data);
+    const isAllowedTrail = shiftThemeAllowed(theme);
     const trail = years.map((year) => {
       const row = themeRowFor(data, year, theme) || { sessions: 0 };
       return {
@@ -1338,7 +1288,7 @@ function drawThemeMap(data) {
         theme,
         sessions: row.sessions,
         x: x(themeAxisPosition(theme)),
-        y: y(row.sessions) + (themeOffsets[theme] || 0) * shiftSpread,
+        y: y(row.sessions) + (themeOffsets[theme] || 0),
       };
     });
     const line = d3
@@ -1416,28 +1366,6 @@ function drawThemeMap(data) {
     }
   });
 
-  const moved = currentRows.filter((row) => row.userPlaced);
-  const userLines = svg.append("g").attr("class", "shift-user-placements");
-  userLines
-    .selectAll("line")
-    .data(moved)
-    .join("line")
-    .attr("class", "shift-user-line")
-    .attr("x1", (d) => d.baseX)
-    .attr("y1", (d) => d.baseY)
-    .attr("x2", (d) => d.x)
-    .attr("y2", (d) => d.y)
-    .attr("stroke", (d) => d.color);
-  userLines
-    .selectAll("circle")
-    .data(moved)
-    .join("circle")
-    .attr("class", "shift-user-anchor")
-    .attr("cx", (d) => d.baseX)
-    .attr("cy", (d) => d.baseY)
-    .attr("r", 5)
-    .attr("fill", (d) => d.color);
-
   const nodes = svg
     .append("g")
     .selectAll("g")
@@ -1445,10 +1373,7 @@ function drawThemeMap(data) {
     .join("g")
     .attr(
       "class",
-      (d) =>
-        `shift-topic shift-theme${d.selected ? " is-selected" : ""}${d.userPlaced ? " is-user-placed" : ""}${
-          d.allowed ? "" : " is-muted"
-        }`,
+      (d) => `shift-topic shift-theme${d.selected ? " is-selected" : ""}${d.allowed ? "" : " is-muted"}`,
     )
     .attr("transform", (d) => `translate(${d.x},${d.y})`)
     .attr("tabindex", "0")
@@ -1476,33 +1401,7 @@ function drawThemeMap(data) {
         activeShiftTheme = d.theme;
         renderShiftMap(data);
       }
-    })
-    .call(
-      d3
-        .drag()
-        .on("start", function (event, d) {
-          activeShiftTheme = d.theme;
-          d3.select(this).raise().classed("is-dragging", true);
-          showTooltip(event.sourceEvent || event, shortTheme(d.theme), "Drag to place this theme where it feels like it belongs.");
-        })
-        .on("drag", function (event, d) {
-          const nextX = clampValue(event.x, margin.left + 24, width - margin.right - 24);
-          const nextY = clampValue(event.y, plotTop + 30, plotTop + plotHeight - 30);
-          d3.select(this).attr("transform", `translate(${nextX},${nextY})`);
-          moveTooltip(event.sourceEvent || event);
-        })
-        .on("end", function (event, d) {
-          const nextX = clampValue(event.x, margin.left + 24, width - margin.right - 24);
-          const nextY = clampValue(event.y, plotTop + 30, plotTop + plotHeight - 30);
-          shiftThemeOverrides.set(d.theme, {
-            xNorm: clampValue(x.invert(nextX), 0, 1),
-            yNorm: clampValue((nextY - plotTop) / plotHeight, 0, 1),
-          });
-          d3.select(this).classed("is-dragging", false);
-          hideTooltip();
-          renderShiftMap(data);
-        }),
-    );
+    });
 
   nodes
     .append("circle")
@@ -1529,78 +1428,6 @@ function drawThemeMap(data) {
     )
     .text((d) => shortTheme(d.theme));
 
-  renderShiftVisualDock(target, data);
-}
-
-function renderShiftVisualDock(target, data) {
-  const dock = d3
-    .select(target)
-    .append("div")
-    .attr("class", "shift-visual-dock")
-    .attr("aria-label", "Constellation controls");
-
-  dock.html(`
-    <form class="shift-visual-search" data-shift-dock="search">
-      <label for="shift-theme-search">Find a theme</label>
-      <div>
-        <input id="shift-theme-search" type="search" value="${escapeHtml(shiftThemeQuery)}" placeholder="coaching, hiring, ethics..." />
-        <button type="submit">Find</button>
-      </div>
-    </form>
-    <label class="shift-spread-control" for="shift-spread">
-      <span>Spread</span>
-      <input id="shift-spread" type="range" min="0.72" max="1.38" step="0.06" value="${shiftSpread}" />
-    </label>
-    <div class="shift-dock-buttons">
-      <button type="button" data-shift-dock="trails" class="${shiftTrailsVisible ? "active" : ""}">
-        ${shiftTrailsVisible ? "Hide trails" : "Show trails"}
-      </button>
-      <button type="button" data-shift-dock="orbit" class="${shiftOrbit ? "active" : ""}">
-        ${shiftOrbit ? "Calm" : "Orbit"}
-      </button>
-      <button type="button" data-shift-dock="reset">Reset</button>
-    </div>
-  `);
-
-  const form = dock.select('[data-shift-dock="search"]').node();
-  const input = dock.select("#shift-theme-search").node();
-  if (form && input) {
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      shiftThemeQuery = input.value.trim();
-      const match = THEME_ORDER.find((theme) => shiftThemeMatchesQuery(theme, data));
-      if (match) activeShiftTheme = match;
-      renderShiftMap(data);
-    });
-  }
-
-  const spread = dock.select("#shift-spread").node();
-  if (spread) {
-    spread.addEventListener("input", () => {
-      shiftSpread = Number(spread.value);
-      renderShiftMap(data);
-    });
-  }
-
-  dock.select('[data-shift-dock="trails"]').on("click", () => {
-    shiftTrailsVisible = !shiftTrailsVisible;
-    renderShiftMap(data);
-  });
-  dock.select('[data-shift-dock="orbit"]').on("click", () => {
-    shiftOrbit = !shiftOrbit;
-    renderShiftMap(data);
-  });
-  dock.select('[data-shift-dock="reset"]').on("click", () => {
-    activeShiftTheme = null;
-    activeShiftMode = "all";
-    shiftThemeQuery = "";
-    shiftSpread = 1;
-    shiftTrailsVisible = true;
-    shiftOrbit = false;
-    shiftThemeOverrides.clear();
-    stopShiftReplay();
-    renderShiftMap(data);
-  });
 }
 
 function drawShiftMap(data) {
@@ -1642,7 +1469,7 @@ function wireShiftMap(data) {
     button.addEventListener("click", () => {
       stopShiftReplay();
       activeShiftMode = button.dataset.shiftMode || "all";
-      if (activeShiftTheme && !shiftThemeVisible(activeShiftTheme, data)) {
+      if (activeShiftTheme && !shiftThemeAllowed(activeShiftTheme)) {
         activeShiftTheme = null;
       }
       renderShiftMap(data);

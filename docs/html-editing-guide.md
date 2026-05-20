@@ -8,7 +8,7 @@ or a code review without needing to understand every D3 function first.
 | What you want to change | File | Search for |
 | --- | --- | --- |
 | Main story copy, section titles, nav labels | `app/index.html` | `data-edit-id` |
-| Home playground and focus tray text that changes by year/theme | `app/app.js` | `renderShiftMapPanel`, `renderThemeMapPanel`, `renderShiftVisualDock` |
+| Home Explorer Map and focus tray text that changes by year/theme | `app/app.js` | `renderShiftMapPanel`, `renderThemeMapPanel` |
 | Topic interpretation snippets | `app/app.js` | `contextMicrocopy`, `themeMicrocopy` |
 | Visual spacing, colors, layout | `app/styles.css` | the class name from the HTML |
 | Counts, session examples, topic rows | `app/data/siop_ai_story.json` | the year or topic name |
