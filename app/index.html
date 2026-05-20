@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SIOP AI Shift</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-constellation" />
+    <link rel="stylesheet" href="styles.css?v=20260520-home-playground" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260520-constellation" defer></script>
+    <script src="app.js?v=20260520-home-playground" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#home-step">Skip to story</a>
@@ -29,7 +29,7 @@
         <strong data-edit-id="nav-brand">SIOP AI Shift</strong>
       </a>
       <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="story-nav">
-        Story menu
+        Menu
       </button>
       <nav id="story-nav" class="nav-links" aria-label="Story sections">
         <button class="guide-nav active" type="button" data-guide-target="home">Home</button>
@@ -51,64 +51,27 @@
       </div>
     </header>
     <main class="guide-main">
-      <!-- EDIT SECTION: Home. This is the opening frame before the interactive explore map. -->
+      <!-- EDIT SECTION: Home. This is the opening playground and main interactive visual. -->
       <section
         id="home-step"
-        class="home-panel guided-step is-active"
+        class="home-panel home-playground guided-step is-active"
         data-guide-step="home"
         data-edit-id="section-home"
         aria-labelledby="home-title"
       >
         <div class="guide-step-label" data-edit-id="home-step-label">Home <span>1 of 4</span></div>
         <p class="eyebrow" data-edit-id="home-eyebrow">SIOP 2022 to 2026 program analysis</p>
-        <h1 id="home-title" data-edit-id="home-title">A guided look at where AI is showing up at SIOP.</h1>
+        <h1 id="home-title" data-edit-id="home-title">Play with where AI is showing up at SIOP.</h1>
         <p class="hero-copy" data-edit-id="home-intro-copy">
-          Start with how often AI appears, then look at where it appears: selection and assessment,
-          training and coaching, leadership, culture, accessibility, and work design.
-        </p>
-        <div class="home-actions" aria-label="Start guided story" data-edit-id="home-actions">
-          <button class="primary-guide-button guide-nav" type="button" data-guide-target="overview">Start the story</button>
-          <button class="guide-nav secondary-guide-button" type="button" data-guide-target="meaning">Jump to meaning</button>
-        </div>
-        <div class="home-step-grid" aria-label="Guided story path" data-edit-id="home-story-path">
-          <button class="guide-nav home-step-card" type="button" data-guide-target="overview" data-edit-id="home-card-explore">
-            <span class="stat-label">Step 1</span>
-            <strong>Explore</strong>
-            <span>Scrub the years to see AI move across selection, assessment, and org-side work.</span>
-          </button>
-          <button class="guide-nav home-step-card" type="button" data-guide-target="meaning" data-edit-id="home-card-meaning">
-            <span class="stat-label">Step 2</span>
-            <strong>Meaning</strong>
-            <span>See why rule-based assessment work differs from more judgment-heavy org work.</span>
-          </button>
-          <button class="guide-nav home-step-card" type="button" data-guide-target="takeaway" data-edit-id="home-card-takeaway">
-            <span class="stat-label">Step 3</span>
-            <strong>So what</strong>
-            <span>Close with the clearest read of what the conference pattern suggests.</span>
-          </button>
-        </div>
-      </section>
-
-      <!-- EDIT SECTION: Explore. Static intro copy is here; the changing panel copy is in renderShiftMapPanel() in app.js. -->
-      <section
-        id="visibility-step"
-        class="hero story-step guided-step"
-        data-guide-step="overview"
-        data-edit-id="section-explore"
-        aria-labelledby="page-title"
-      >
-        <div class="guide-step-label" data-edit-id="explore-step-label">Explore <span>2 of 4</span></div>
-        <h1 id="page-title" data-edit-id="explore-title">AI is becoming a broader I-O conversation.</h1>
-        <p class="hero-copy" data-edit-id="explore-intro-copy">
-          The interesting part is not just that AI appears more often. It is where AI shows up:
-          still in selection and assessment, but increasingly around training, coaching, leadership,
-          culture, accessibility, employee experience, and work design.
+          The short version: AI is showing up more, but the better story is where. Drag a theme,
+          scrub the years, or filter the view to see how selection and assessment sit next to
+          training, coaching, leadership, culture, accessibility, and work design.
         </p>
         <div id="shift-map" class="shift-map" aria-label="AI shift map" data-edit-id="explore-shift-map">
           <div class="shift-map-topline" data-edit-id="explore-map-intro">
             <div>
               <span class="stat-label">Use-case center of gravity</span>
-              <strong>Click a theme, scrub the year, or filter by the I/O lens.</strong>
+              <strong>Click trails, drag themes, search terms, or play the years.</strong>
               <p>
                 The constellation keeps the I-to-O shift in one place: left is selection and assessment,
                 center is cross-cutting methods and governance, and right is people/work context.
@@ -128,7 +91,7 @@
           </div>
           <div id="shift-quick-read" class="shift-quick-read" aria-live="polite" data-edit-id="explore-quick-read">
             <span>2026</span>
-            <strong>Click a theme bubble to see its trail, terms, and sessions.</strong>
+            <strong>Click or drag a theme bubble to see its trail, terms, and sessions.</strong>
           </div>
           <div class="shift-map-body">
             <!-- Dynamic chart target. The bubbles and axes are generated in app.js. -->
@@ -148,6 +111,42 @@
               </p>
             </aside>
           </div>
+        </div>
+      </section>
+
+      <!-- EDIT SECTION: Explore. This is the short interpretation after the home playground. -->
+      <section
+        id="visibility-step"
+        class="section-band story-step guided-step"
+        data-guide-step="overview"
+        data-edit-id="section-explore"
+        aria-labelledby="page-title"
+      >
+        <div class="guide-step-label" data-edit-id="explore-step-label">Explore <span>2 of 4</span></div>
+        <div class="section-heading" data-edit-id="explore-heading">
+          <h2 id="page-title" data-edit-id="explore-title">What to notice in the playground.</h2>
+          <p data-edit-id="explore-intro-copy">
+            The point is not that every session fits perfectly into one bucket. The point is the pattern:
+            AI still has a selection and assessment home base, but the broader people/work side gets
+            easier to see over time.
+          </p>
+        </div>
+        <div class="explore-note-grid" aria-label="Ways to read the constellation" data-edit-id="explore-note-cards">
+          <article>
+            <span class="compare-label">Try first</span>
+            <h3>Play the years.</h3>
+            <p>Watch the biggest bubbles and trails. The story gets clearer when the years move.</p>
+          </article>
+          <article>
+            <span class="compare-label">Then</span>
+            <h3>Pull apart I-side and O-side.</h3>
+            <p>Use the lens buttons to compare structured assessment work with people/work contexts.</p>
+          </article>
+          <article>
+            <span class="compare-label">Finally</span>
+            <h3>Drag a theme.</h3>
+            <p>Use the drag interaction as a gut-check: where would you place that theme on the I-to-O line?</p>
+          </article>
         </div>
       </section>
 
