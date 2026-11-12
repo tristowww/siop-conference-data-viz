@@ -1,121 +1,44 @@
-# SIOP Conference Data Viz
+# SIOP Conference Data Visualization
 
-Public portfolio data visualization comparing SIOP Annual Conference session data across years.
+How has AI-related discussion changed across SIOP conference programs?
 
-Live site: https://tristowww.github.io/siop-conference-data-viz/
+This project looks at public session information from the Society for Industrial and Organizational Psychology's 2022–2026 conferences. It combines data collection and cleaning with an interactive view of where AI appears, the topics around it, and the session examples behind the patterns.
 
-## Project goal
+**[Open the interactive visualization](https://tristowww.github.io/siop-conference-data-viz/)** · [Explore the saved data](app/data/siop_ai_story.json) · [Data workflow and build notes](docs/DEVELOPMENT.md)
 
-Build a standalone data visualization that compares recent SIOP conference sessions, with a focus
-on AI-related program structure, topics, use-case contexts, timing, locations, and session metadata
-where available.
+[![SIOP AI Explorer Map showing the 2026 theme bubbles, year controls, and focus tray](docs/siop-explorer-preview.png)](https://tristowww.github.io/siop-conference-data-viz/)
 
-## Current status
+## A quick read of the saved results
 
-- 2025 Whova-style workbook added in `data/raw/2025/`.
-- 2025 normalized session CSV generated in `data/processed/sessions_2025.csv`.
-- 2026 public Whova embed scrape workflow added.
-- 2026 public Whova agenda API workflow added for richer public session metadata.
-- 2022, 2023, and 2024 archived SIOP program OCR files parsed from Internet Archive text exports.
-- Static D3 portfolio app now reads a five-year AI-shift story dataset.
-- Archived-program author names are parsed from both local session blocks and global citation lines
-  when the OCR includes a reliable title match; schedule-only rows may still have blank authors.
-- The public app does not currently include talk-level browsing; missing author names are queued in
-  `data/processed/siop_ai_missing_authors.csv` for a focused recovery pass before that feature returns.
-- The app now opens on a Home Explorer Map with a year scrubber, I-side/O-side lens controls,
-  seeded TF-IDF topic labels, faint five-year theme trails, top terms, and session examples.
-- Stable HTML annotation anchors are included for review and copy edits.
+The collected dataset contains **3,444 session records across five years**. Two patterns in the saved analysis:
 
-## Editing the app
+- **AI-related sessions make up a larger share in 2026 than in 2022:** 169 of 552 records (30.6%), compared with 90 of 729 (12.3%). This flag uses titles, descriptions, tracks, and formats.
+- **The narrower AI visibility measure also increases:** from 37 of 729 records (5.1%) in 2022 to 113 of 552 (20.5%) in 2026. This measure uses titles, tracks, and formats, leaving out descriptions.
 
-Use `docs/html-editing-guide.md` when annotating or editing the static page. The main story copy is
-in `app/index.html`; the changing Explore panel copy is generated in `app/app.js`.
+Both measures use all collected session records for the same year as the denominator. Counts and definitions are in the [saved analysis](app/data/siop_ai_story.json); the [analysis script](scripts/build_ai_story_dataset.py) records how the flags and summaries are built.
 
-## Data workflow
+The source material differs by year, from archived-program OCR to newer workbook and agenda records. Coverage and text detail affect what can be detected. These are descriptive comparisons of the collected records, rather than estimates of the full conference program or evidence of workplace AI adoption.
 
-```text
-data/raw/2025/siop2025sessions_updated.xlsx
-  -> scripts/normalize_sessions.py
-  -> data/processed/sessions_2025.csv
+## Explore the analysis
 
-data/raw/{2022,2023,2024}/archive_*_djvu.txt
-  -> scripts/parse_archive_program.py
-  -> data/processed/sessions_{year}_archive.csv
+Start with the year controls, then select a theme to see its terms and session examples. The I-side lens focuses on selection and assessment; the O-side lens focuses on people and organizational contexts. The theme groups use TF-IDF similarity to seed themes and are exploratory.
 
-2026 public Whova agenda API
-  -> scripts/fetch_whova_public_agenda.py
-  -> data/processed/sessions_2026_enriched.csv
+The [processed session table](data/processed/siop_ai_story_sessions.csv) supports closer inspection. Author parsing is incomplete, and talk-level browsing remains disabled while missing authors are reviewed. The [missing-author table](data/processed/siop_ai_missing_authors.csv) records that work.
 
-data/processed/sessions_*_archive.csv + 2025/2026 processed files
-  -> scripts/build_comparison_dataset.py
-  -> scripts/build_ai_story_dataset.py
-  -> app visualization + data/processed/siop_ai_missing_authors.csv
-```
+## Preview locally
 
-## Scraping guardrails
-
-Use the scraper only with normal access to the SIOP Whova app. Do not bypass login, paywalls,
-CAPTCHAs, rate limits, or access controls. Treat attendee profile details, private comments, and
-networking data as sensitive. The portfolio-ready dataset should focus on public program/session
-metadata.
-
-## Public archive sources
-
-- SIOP attendee information page links to the historical conference-program archive.
-- Internet Archive SIOP conference-program collection provides the 2022, 2023, and 2024 OCR text
-  exports used for the archived-program parser.
-
-## Useful commands
-
-Normalize the 2025 workbook:
-
-```bash
-python scripts/normalize_sessions.py --input data/raw/2025/siop2025sessions_updated.xlsx --year 2025 --output data/processed/sessions_2025.csv
-```
-
-Scrape the public Whova agenda embed:
-
-```bash
-python scripts/scrape_public_whova.py --output data/processed/sessions_2026_public.csv
-```
-
-Fetch the richer public Whova agenda API data:
-
-```bash
-python scripts/fetch_whova_public_agenda.py --output data/processed/sessions_2026_enriched.csv
-```
-
-Parse archived SIOP program OCR:
-
-```bash
-python scripts/parse_archive_program.py --year 2022 --input data/raw/2022/archive_2022_djvu.txt --output data/processed/sessions_2022_archive.csv
-python scripts/parse_archive_program.py --year 2023 --input data/raw/2023/archive_2023_djvu.txt --output data/processed/sessions_2023_archive.csv
-python scripts/parse_archive_program.py --year 2024 --input data/raw/2024/archive_2024_djvu.txt --output data/processed/sessions_2024_archive.csv
-```
-
-Build the year-over-year comparison table:
-
-```bash
-python scripts/build_comparison_dataset.py
-```
-
-Build the AI shift story dataset used by the static app:
-
-```bash
-python scripts/build_ai_story_dataset.py
-```
-
-Preview the static app locally:
+The visualization is a static HTML/CSS/JavaScript app with bundled analysis data. It loads D3 from a public CDN, so the interactive charts need an internet connection.
 
 ```bash
 python -m http.server 8000 --directory app
 ```
 
-Start the assisted authenticated Whova capture workflow only if the public embed is not enough:
+Open `http://localhost:8000`. Previewing the app does not collect new data or rerun the analysis.
 
-```bash
-python scripts/capture_whova.py --url "PASTE_WHOVA_EVENT_URL_HERE" --out data/raw/2026/private_api_captures
-```
+## Methods and development
 
-After capture, we will inspect the JSON payloads and write a small parser for the exact 2026
-response shape.
+- [Data workflow and development notes](docs/DEVELOPMENT.md): existing source history, processing steps, and build commands.
+- [HTML editing guide](docs/html-editing-guide.md): locations for copy, charts, and styling.
+- [Scraping plan](docs/scraping-plan.md): source-collection approach and access limits.
+
+This is an independent exploratory project using public conference-program information.
