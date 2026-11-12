@@ -6,7 +6,7 @@ This project looks at public session information from the Society for Industrial
 
 **[Open the interactive visualization](https://tristowww.github.io/siop-conference-data-viz/)** · [Explore the saved data](app/data/siop_ai_story.json) · [Data workflow and build notes](docs/DEVELOPMENT.md)
 
-[![SIOP AI Explorer Map showing the 2026 theme bubbles, year controls, and focus tray](docs/siop-explorer-preview.png)](https://tristowww.github.io/siop-conference-data-viz/)
+[![SIOP AI Explorer Map showing the 2026 theme bubbles, year controls, and focus tray](docs/siop-explorer-preview.jpg)](https://tristowww.github.io/siop-conference-data-viz/)
 
 ## A quick read of the saved results
 
