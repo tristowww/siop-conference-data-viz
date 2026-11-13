@@ -66,8 +66,8 @@ const STORY_BEATS = [
   {
     id: "baseline",
     step: "1. Baseline",
-    title: "Start before the surge",
-    copy: "AI is already present in 2022, but it is not yet the headline.",
+    title: "Start with 2022",
+    copy: "Start with the AI-related sessions in the collected 2022 program.",
     year: 2022,
     riverMode: "contexts",
     context: "All",
@@ -77,7 +77,7 @@ const STORY_BEATS = [
     id: "rise",
     step: "2. Visibility",
     title: "Watch AI become more visible",
-    copy: "By 2024, the AI conversation starts to feel more prominent.",
+    copy: "Compare how often AI appears in the collected 2024 sessions.",
     year: 2024,
     riverMode: "contexts",
     context: "All",
@@ -86,7 +86,7 @@ const STORY_BEATS = [
   {
     id: "context",
     step: "3. Shift map",
-    title: "Follow the center of gravity",
+    title: "Compare the topics",
     copy: "2026 puts more attention on training, leadership, and work context.",
     year: 2026,
     riverMode: "contexts",
@@ -578,7 +578,7 @@ function renderOverviewDetail(data) {
     ? `${contextMicrocopy(selectedContext.context)} This topic has ${selectedContext.sessions} AI-related topic signals in ${activeFocusYear}.`
     : side !== "All"
       ? `${overviewModeTitle()} includes ${side === "I-side selection/assessment" ? iSide.sessions : oSide.sessions} AI-related topic signals in ${activeFocusYear}. Use this view to compare where AI is closer to structured assessment versus people and work systems.`
-      : `AI is showing up more often: ${percent(first.ai_share)} of parsed sessions in ${first.year} and ${percent(current.ai_share)} in ${activeFocusYear}. The more interesting shift is where it shows up: selection remains important, while org-side topics become more visible.`;
+      : `AI is showing up more often: ${percent(first.ai_share)} of parsed sessions in ${first.year} and ${percent(current.ai_share)} in ${activeFocusYear}. Selection remains prominent, and organizational topics become more visible in the collected records.`;
   const balance = oSide.sessions - iSide.sessions;
   const balanceCopy =
     balance >= 0
@@ -1088,7 +1088,7 @@ function renderThemeMapPanel(data) {
   panel.innerHTML = `
     <div class="shift-panel-heading">
       <div>
-        <span class="stat-label">${activeShiftTheme ? "Selected theme" : side !== "All" ? "Selected lens" : "Focus tray"}</span>
+        <span class="stat-label">${activeShiftTheme ? "Selected theme" : side !== "All" ? "Selected lens" : "Theme details"}</span>
         <strong>${escapeHtml(title)}</strong>
       </div>
       ${
@@ -1119,7 +1119,7 @@ function renderThemeMapPanel(data) {
       ${
         activeShiftTheme || side !== "All"
           ? exampleHtml || '<div class="shift-empty">No matching sessions found for this slice.</div>'
-          : '<div class="shift-empty"><strong>Make it move:</strong> scrub the year, switch I-side/O-side, or click a theme bubble to see its five-year trail.</div>'
+          : '<div class="shift-empty"><strong>Try another view:</strong> choose a year, switch I-side/O-side, or click a theme to follow it across the five years.</div>'
       }
     </div>
   `;

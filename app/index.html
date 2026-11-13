@@ -6,7 +6,7 @@
     <title>SIOP AI Shift</title>
     <link rel="stylesheet" href="styles.css?v=20260520-explorer-map" />
     <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
-    <script src="app.js?v=20260520-explorer-map" defer></script>
+    <script src="app.js?v=20261113-voice" defer></script>
   <link rel="stylesheet" href="research-web.css?v=20261113">
 </head>
   <body class="research-web siop-project">
@@ -62,20 +62,20 @@
       >
         <div class="guide-step-label" data-edit-id="home-step-label">Home <span>1 of 4</span></div>
         <p class="eyebrow" data-edit-id="home-eyebrow">SIOP 2022 to 2026 program analysis</p>
-        <h1 id="home-title" data-edit-id="home-title">Scrub the years to see where AI shows up at SIOP.</h1>
+        <h1 id="home-title" data-edit-id="home-title">How has AI discussion changed at SIOP?</h1>
         <p class="hero-copy" data-edit-id="home-intro-copy">
-          AI is showing up more, but the better story is where. Move from 2022 to 2026, then click
-          a theme to see examples behind the shift from selection and assessment toward broader
-          people and work contexts.
+          I'm interested in where AI shows up in the program, as well as how often. Compare 2022
+          through 2026, then open a theme to see the sessions behind the pattern, from selection
+          and assessment to teams, leadership and other parts of work.
         </p>
         <div id="shift-map" class="shift-map" aria-label="AI shift map" data-edit-id="explore-shift-map">
           <div class="shift-map-topline" data-edit-id="explore-map-intro">
             <div>
-              <span class="stat-label">Use-case center of gravity</span>
-              <strong>Start with the year scrubber. Then click a theme for examples.</strong>
+              <span class="stat-label">AI topics across the program</span>
+              <strong>Choose a year, then click a theme to see examples.</strong>
               <p>
-                The map keeps the I-to-O shift in one place: left is selection and assessment,
-                center is cross-cutting methods and governance, and right is people/work context.
+                Read the map from selection and assessment on the left to people and work contexts
+                on the right. Methods and governance sit in the middle.
               </p>
             </div>
             <div class="shift-map-controls">
@@ -105,7 +105,7 @@
             <!-- Dynamic detail panel. This placeholder is replaced when app.js loads. -->
             <aside id="shift-map-panel" class="shift-map-panel" aria-live="polite" data-edit-id="explore-detail-panel">
               <span class="stat-label">Start here</span>
-              <strong>Pick a theme to open the focus tray.</strong>
+              <strong>Choose a theme to see its details.</strong>
               <p>
                 The bubbles show theme volume for the selected year. Trails show how those themes move
                 from 2022 to 2026.
@@ -127,20 +127,20 @@
         <div class="section-heading" data-edit-id="explore-heading">
           <h2 id="page-title" data-edit-id="explore-title">What to notice in the Explorer Map.</h2>
           <p data-edit-id="explore-intro-copy">
-            The point is not that every session fits perfectly into one bucket. The point is the pattern:
-            AI still has a selection and assessment home base, but the broader people/work side gets
-            easier to see over time.
+            The theme groups are exploratory, and some sessions could fit in more than one.
+            I use them to look for patterns across years. Selection and assessment remain prominent,
+            while discussion of people and work contexts becomes more visible.
           </p>
         </div>
         <div class="explore-note-grid" aria-label="Ways to read the Explorer Map" data-edit-id="explore-note-cards">
           <article>
             <span class="compare-label">Try first</span>
             <h3>Play the years.</h3>
-            <p>Watch the biggest bubbles and trails. The story gets clearer when the years move.</p>
+            <p>Compare the bubble sizes and follow the trails to see how the themes change across years.</p>
           </article>
           <article>
             <span class="compare-label">Then</span>
-            <h3>Pull apart I-side and O-side.</h3>
+            <h3>Compare I-side and O-side.</h3>
             <p>Use the lens buttons to compare structured assessment work with people/work contexts.</p>
           </article>
           <article>
@@ -163,12 +163,12 @@
         <div class="section-heading" data-edit-id="meaning-heading">
           <h2 id="side-title" data-edit-id="meaning-title">Why I think the shift matters.</h2>
           <p data-edit-id="meaning-main-copy">
-            I think the read is simple: this does not prove the whole field changed, but it does
-            show AI moving from "Can we score or predict this?" into "How do people actually use
-            this at work?"
+            What interests me is the range of questions people are asking about AI. Alongside
+            scoring and prediction, the program includes more discussion of how people use AI at work.
+            That tells me about these conference records, not how the whole field has changed.
           </p>
           <p class="microcopy" data-edit-id="meaning-side-definition">
-            Plainly: I-side is selection and assessment. O-side is teams, leadership, learning,
+            Here, I-side means selection and assessment. O-side is teams, leadership, learning,
             culture, employee experience, and work design.
           </p>
         </div>
@@ -183,7 +183,7 @@
           </article>
           <article data-edit-id="meaning-card-what-changes">
             <span class="compare-label">What changes</span>
-            <h3>The newer story is more human-contextual.</h3>
+            <h3>More discussion focuses on people at work.</h3>
             <p>
               Training, coaching, leadership, culture, accessibility, and work design depend more on
               judgment, trust, timing, and the messiness of real work.
@@ -193,8 +193,9 @@
             <span class="compare-label">Why it matters</span>
             <h3>The design problem changes.</h3>
             <p>
-              Once AI moves into coaching, leadership, and culture, the question is less "Did the
-              model get the score right?" and more "Did this help people make better sense of work?"
+              For coaching, leadership and culture, I'd also want to ask whether AI helped people
+              understand or make a decision about their work. Getting a score right is only part
+              of what I'd want to evaluate.
             </p>
           </article>
         </div>
@@ -210,29 +211,28 @@
       >
         <div class="guide-step-label" data-edit-id="takeaway-step-label">So what <span>4 of 4</span></div>
         <div class="section-heading" data-edit-id="takeaway-heading">
-          <h2 id="closing-title" data-edit-id="takeaway-title">The sharper story is where AI is showing up.</h2>
+          <h2 id="closing-title" data-edit-id="takeaway-title">I want to understand what people are using AI for.</h2>
           <p data-edit-id="takeaway-main-copy">
-            Across the public SIOP program data, AI appears to be moving beyond a mostly
-            assessment-and-methods conversation into a broader set of people-centered applications.
-            Selection did not disappear. The newer pattern is that training, coaching, leadership,
-            culture, accessibility, and work design are becoming easier to see in the AI conversation.
+            In these collected SIOP records, AI discussion includes a wider range of work contexts
+            over time. Selection and assessment remain part of it, alongside more visible discussion
+            of training, coaching, leadership, culture, accessibility and work design.
           </p>
         </div>
         <div class="closing-grid" data-edit-id="takeaway-summary-cards">
           <article data-edit-id="takeaway-card-what-changed">
             <span class="stat-label">What changed</span>
-            <strong>More volume, broader use cases</strong>
+            <strong>More AI discussion across more topics</strong>
             <p>More sessions mention AI, and org-side topics become easier to see in the program mix.</p>
           </article>
           <article data-edit-id="takeaway-card-why-it-matters">
             <span class="stat-label">Why it matters</span>
             <strong>The design problem changes</strong>
-            <p>O-side AI is less about one score and more about judgment, trust, learning, and context.</p>
+            <p>For these uses, I'd want to consider judgment, trust, learning and the situation people are working in.</p>
           </article>
           <article data-edit-id="takeaway-card-how-to-read-it">
             <span class="stat-label">How to read it</span>
-            <strong>A conference pattern, not a causal claim</strong>
-            <p>The charts describe conference sessions and examples, not definitive field-wide adoption.</p>
+            <strong>Keep the source in mind</strong>
+            <p>The source records differ across years. These charts describe the collected sessions; they don't establish adoption across the field or workplaces.</p>
           </article>
         </div>
       </section>
